@@ -1,0 +1,526 @@
+options
+{
+  // Use \ u escapes in streams AND use a reader for the query
+  // => get both raw and escaped unicode
+
+  JAVA_UNICODE_ESCAPE   = true;
+  UNICODE_INPUT         = true;
+
+  STATIC                = false;
+  DEBUG_PARSER          = true;
+  DEBUG_TOKEN_MANAGER   = true;
+  FORCE_LA_CHECK        = true;
+}
+
+PARSER_BEGIN(TurtleStarParser)
+
+import org.semanticweb.owlapi.model.IRI;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+
+import me.alejandrorm.klosure.model.*;
+
+
+public class TurtleStarParser {
+
+    private static final String NAMESPACE_PREFIX = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+
+    private Map<String, String> prefixes = new HashMap<>();
+
+    private Graph graph;
+
+    public TurtleStarParser(Graph graph) {
+        this.graph = graph;
+    }
+
+    public TurtleStarParser() {
+        this(new Graph());
+    }
+
+    private class VerbObjectAnnotation {
+        public IRI verb;
+        public Node object;
+        public List<VerbObjectAnnotation> annotations = new ArrayList<>();
+
+        public void addAll(Node subject, Graph graph) {
+            PredicateNode triple = graph.getOrCreatePredicate(subject, verb, object);
+            for (VerbObjectAnnotation voa : annotations) {
+                voa.addAll(triple, graph);
+            }
+        }
+     }
+
+     private class ObjectAnnotation {
+        public Node object;
+        public List<VerbObjectAnnotation> annotations = new ArrayList<>();
+     }
+}
+
+PARSER_END(TurtleStarParser)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+}
+
+void turtleDoc() :
+{}
+{
+  (statement()) *
+}
+
+void statement():
+{}
+{
+  directive() | ( triples() ".")
+}
+
+void directive():
+{}
+{
+  prefixID() | base() | sparqlPrefix() | sparqlBase()
+}
+
+void prefixID():
+{
+  Token t;
+  String prefix;
+}
+{
+  "@prefix" t = <PNAME_NS> prefix = iriRef() (".")? {
+    prefixes.put(t.image, prefix);
+  }
+}
+
+
+void base():
+{
+  String prefix;
+}
+{
+  "@base" prefix = iriRef() (".")? {
+    prefixes.put(":", prefix);
+  }
+}
+
+void sparqlPrefix():
+{
+  Token t;
+  String prefix;
+}
+{
+  "PREFIX" t = <PNAME_NS> prefix = iriRef() {
+    prefixes.put(t.image, prefix);
+  }
+}
+
+void sparqlBase():
+{
+  String prefix;
+}
+{
+  "BASE" prefix = iriRef() {
+    prefixes.put(":", prefix);
+  }
+}
+
+void triples():
+{
+  Node subject;
+  Node blank;
+  List<VerbObjectAnnotation> lvoa = null;
+}
+{
+  subject = subject() lvoa = predicateObjectList() {
+    for (VerbObjectAnnotation voa : lvoa) {
+        voa.addAll(subject, graph);
+    }
+  }|
+  blank = blankNodePropertyList() ( lvoa = predicateObjectList())? {
+    if (lvoa != null) {
+        for (VerbObjectAnnotation voa : lvoa) {
+            voa.addAll(blank, graph);
+        }
+    }
+  }
+}
+
+List<VerbObjectAnnotation> predicateObjectList():
+{
+  IRI verb;
+  List<VerbObjectAnnotation> newList = new ArrayList<>();
+  List<ObjectAnnotation> nestedList;
+}
+{
+  verb = verb() nestedList = objectList() {
+    for(ObjectAnnotation oa : nestedList) {
+        VerbObjectAnnotation voa = new VerbObjectAnnotation();
+        voa.verb = verb;
+        voa.object = oa.object;
+        voa.annotations.addAll(oa.annotations);
+        newList.add(voa);
+    }
+  }( ";" ( verb = verb() nestedList = objectList() {
+    for(ObjectAnnotation oa : nestedList) {
+        VerbObjectAnnotation voa = new VerbObjectAnnotation();
+        voa.verb = verb;
+        voa.object = oa.object;
+        voa.annotations.addAll(oa.annotations);
+        newList.add(voa);
+    }
+  }) ? ) * { return newList; }
+}
+
+List<ObjectAnnotation> objectList():
+{
+  Node object;
+  Node object2;
+  List<ObjectAnnotation> newList = new ArrayList<>();
+  List<VerbObjectAnnotation> nestedList = null;
+  List<VerbObjectAnnotation> nestedList2 = null;
+  ObjectAnnotation oa;
+}
+{
+  object = object() (nestedList = annotation())? {
+    oa = new ObjectAnnotation();
+    oa.object = object;
+    if (nestedList != null) oa.annotations.addAll(nestedList);
+    newList.add(oa);
+  } ( "," object2 = object() (nestedList2 = annotation())? {
+    oa = new ObjectAnnotation();
+    oa.object = object2;
+    if (nestedList2 != null) oa.annotations.addAll(nestedList2);
+    newList.add(oa);
+    nestedList2 = null;
+  }) *  { return newList; }
+}
+
+IRI verb():
+{ IRI iri; }
+{
+  iri = predicate() { return iri; }|
+  "a" { return IRI.create(NAMESPACE_PREFIX + "type"); }
+}
+
+Node subject():
+{
+  IRI iri;
+  Node blank;
+  Node node;
+}
+{
+  iri = iri() { return graph.getOrCreateNode(new IriId(iri)); }|
+  blank = BlankNode() { return blank; }|
+  node = collection() { return node; }|
+  node = quotedTriple() { return node; }
+}
+
+IRI predicate():
+{ IRI iri; }
+{
+  iri = iri() { return iri; }
+}
+
+Node object():
+{
+  IRI iri;
+  Node blank;
+  Node node;
+}
+{
+  iri = iri() { return graph.getOrCreateNode(new IriId(iri)); }|
+  blank = BlankNode() { return blank; }|
+  node = collection() { return node; }|
+  blank = blankNodePropertyList() { return blank; }|
+  node = literal() { return node; }|
+  node = quotedTriple() { return node; }
+}
+
+LiteralNode literal():
+{
+  LiteralNode literal;
+}
+{
+  literal = RDFLiteral() { return graph.getOrPutLiteralNode(literal); }|
+  literal = NumericLiteral() { return graph.getOrPutLiteralNode(literal); }|
+  literal = BooleanLiteral() { return graph.getOrPutLiteralNode(literal); }
+}
+
+Node blankNodePropertyList():
+{ List<VerbObjectAnnotation> lvoa; }
+{
+  "[" lvoa = predicateObjectList() "]" {
+    Node blank = graph.getNewBlankNode();
+    for (VerbObjectAnnotation voa : lvoa) {
+        voa.addAll(blank, graph);
+    }
+    return blank;
+  }
+}
+
+Node collection():
+{
+  List<Node> nodes = new ArrayList<>();
+  Node rdfObject;
+}
+{
+  "(" (rdfObject = object() { nodes.add(rdfObject); })* ")" { return ListNode.create(nodes, graph);}
+}
+
+NumberLiteral NumericLiteral():
+{ Token t;}
+{
+  t = <INTEGER> { return NumberLiteral.createLong(t.image); }|
+  t = <DECIMAL> { return NumberLiteral.createDouble(t.image); }|
+  t = <DOUBLE> { return NumberLiteral.createDouble(t.image); }
+}
+
+LiteralNode RDFLiteral():
+{
+ String s;
+ Token lang = null;
+ IRI type = null;
+}
+{
+  s = String() ( lang = <LANGTAG> | ( "^^" type = iri()) ) ? {
+    return LiteralNode.create(s, lang != null ? lang.image: null, type);
+  }
+}
+
+BooleanLiteral BooleanLiteral():
+{}
+{
+  "true" { return TrueLiteral.INSTANCE; } | "false" { return FalseLiteral.INSTANCE; }
+}
+
+String String():
+{
+  Token t;
+  String s;
+}
+{
+  t = <STRING_LITERAL_QUOTE> { s = t.image; return s.substring(1, s.length() - 2); }|
+  t = <STRING_LITERAL_SINGLE_QUOTE> { s = t.image; return s.substring(1, s.length() - 2); }|
+  t = <STRING_LITERAL_LONG_SINGLE_QUOTE> { s = t.image; return s.substring(3, s.length() - 6); }|
+  t = <STRING_LITERAL_LONG_QUOTE> { { s = t.image; return s.substring(3, s.length() - 6); }}
+}
+
+IRI iri():
+{
+  String s;
+}
+{
+  s = iriRef() { return IRI.create(s);} | s = PrefixedName() { return IRI.create(s);}
+}
+
+String PrefixedName():
+{
+  Token t;
+  String prefix;
+}
+{
+  t = <PNAME_LN> {
+    //TODO: check if prefix is defined
+    String[] parts = t.image.split(":");
+    prefix = prefixes.get(parts[0] + ":");
+    String suffix = parts[1];
+    return prefix + suffix;
+  }
+ | t = <PNAME_NS> {
+    prefix = prefixes.get(t.image + ":");
+    return prefix;
+  }
+}
+
+Node BlankNode():
+{ Token t; }
+{
+  t = <BLANK_NODE_LABEL> { graph.getOrCreateNode(new IriId(IRI.create(t.image))); }|
+  <ANON> { return graph.getOrCreateNode(graph.generateAnonId()); }
+}
+
+Node quotedTriple():
+{ Node subject; IRI predicate; Node object; }
+{
+  "<<" subject = qtSubject() predicate = predicate() object = qtObject() ">>" {
+    return graph.getOrCreatePredicate(subject, predicate, object);
+  }
+}
+
+Node qtSubject():
+{ IRI iri; Node n;}
+{
+  iri = iri() { return graph.getOrCreateNode(new IriId(iri)); }|
+  n = BlankNode() { return n; }|
+  n = quotedTriple() { return n; }
+}
+
+Node qtObject():
+{ IRI iri; Node n;}
+{
+  iri = iri() { return graph.getOrCreateNode(new IriId(iri)); }|
+  n = BlankNode() { return n; }|
+  n = literal() { return n; }|
+  n = quotedTriple() { return n; }
+}
+
+List<VerbObjectAnnotation> annotation():
+{
+  List<VerbObjectAnnotation> annotations;
+}
+{
+  "{|" annotations = predicateObjectList() "|}" { return annotations; }
+}
+
+String iriRef():
+{ Token t;}
+{
+  t = <IRIREF> { return t.image; }
+}
+
+TOKEN:
+{
+  <IRIREF: "<" ( ~["\u0000"-"\u0020", "<", ">", "{", "}", "|", "^", "`", "\\"] | <UCHAR>) * ">">
+}
+
+TOKEN:
+{
+  <PNAME_NS: (<PN_PREFIX>)? ":">
+}
+
+TOKEN:
+{
+  <PNAME_LN: <PNAME_NS> <PN_LOCAL>>
+}
+
+TOKEN:
+{
+  <BLANK_NODE_LABEL: "_:" ( <PN_CHARS_U> | ["0"-"9"] ) ( ( <PN_CHARS> | ".") * <PN_CHARS>) ?>
+}
+
+TOKEN:
+{
+  <LANGTAG:	"@" (["a"-"z", "A"-"Z"]) + ( "-" (["a"-"z","A"-"Z","0"-"9"]) + ) *>
+}
+
+TOKEN:
+{
+  <INTEGER:	(["+", "-"])? (["0"-"9"])+>
+}
+
+TOKEN:
+{
+  <DECIMAL:	(["+", "-"])? ((["0" - "9"])* "." (["0" - "9"])+)>
+}
+
+TOKEN:
+{
+  <DOUBLE: (["+", "-"])? (((["0" - "9"])+ "." (["0" - "9"])* <EXPONENT>) | ( "." (["0" - "9"])+ <EXPONENT>) | ((["0" - "9"])+ <EXPONENT>))>
+}
+
+TOKEN:
+{
+  <EXPONENT: ["e", "E"] (["+", "-"])? (["0" - "9"])+>
+}
+
+TOKEN:
+{
+  <STRING_LITERAL_QUOTE: "\"" ( ~[">", "\\", "\n", "\r"] | <ECHAR> | <UCHAR>)* "\"">
+}
+
+TOKEN:
+{
+  <STRING_LITERAL_SINGLE_QUOTE:	"'" ( ~["'", "\\", "\n", "\r"] | <ECHAR> | <UCHAR>)* "'">
+}
+
+TOKEN:
+{
+  <STRING_LITERAL_LONG_SINGLE_QUOTE: "'''" (( "'" | "''")? (~["'", "\\"] | <ECHAR> | <UCHAR>))* "'''">
+}
+
+TOKEN:
+{
+  <STRING_LITERAL_LONG_QUOTE: "\"\"\"" (( "\"" | "\"\"")? (~["\"", "\\"] | <ECHAR> | <UCHAR>)) * "\"\"\"">
+}
+
+TOKEN:
+{
+  <UCHAR: ("\\u" <HEX> <HEX> <HEX> <HEX>) | ( "\\U" <HEX> <HEX> <HEX> <HEX> <HEX> <HEX> <HEX> <HEX>)>
+}
+
+TOKEN:
+{
+  <ECHAR: "\\" ["t", "b", "n", "r", "f", "\\", "'"]>
+}
+
+TOKEN:
+{
+  <ANON: "[" "]">
+}
+
+TOKEN:
+{
+  <PN_CHARS_BASE:
+  ["A"-"Z"] |
+  ["a"-"z"] |
+  ["\u00C0"-"\u00D6"] |
+  ["\u00D8"-"\u00F6"] |
+  ["\u00F8"-"\u02FF"] |
+  ["\u0370"-"\u037D"] |
+  ["\u037F"-"\u1FFF"] |
+  ["\u200C"-"\u200D"] |
+  ["\u2070"-"\u218F"] |
+  ["\u2C00"-"\u2FEF"] |
+  ["\u3001"-"\uD7FF"] |
+  ["\uF900"-"\uFDCF"] |
+  ["\uFDF0"-"\uFFFD"]
+  //| ["𐀀"-"\uEFFFF"]
+  >
+}
+
+TOKEN:
+{
+  <PN_CHARS_U: <PN_CHARS_BASE> | "_">
+}
+
+TOKEN:
+{
+  <PN_CHARS: <PN_CHARS_U> | "-" | ["0" - "9"] | "\u00B7" | ["\u0300"-"\u036F"] | [ "\u203F"-"\u2040"]>
+}
+
+TOKEN:
+{
+  <PN_PREFIX: <PN_CHARS_BASE> ((<PN_CHARS> | ".")* <PN_CHARS>)?>
+}
+
+TOKEN:
+{
+  <PN_LOCAL: (<PN_CHARS_U> | ":" | ["0" - "9"] | <PLX>) ((<PN_CHARS> | "." | ":" | <PLX>)* (<PN_CHARS> | ":" | <PLX>))?>
+}
+
+TOKEN:
+{
+  <PLX: <PERCENT> | <PN_LOCAL_ESC>>
+}
+
+TOKEN:
+{
+  <PERCENT:	"%" <HEX> <HEX>>
+}
+
+TOKEN:
+{
+  <HEX:	["0" - "9"] | ["A" - "F"] | ["a" - "f"]>
+}
+
+TOKEN:
+{
+  <PN_LOCAL_ESC: "\"" ( "_" | "~" | "." | "-" | "!" | "$" | "&" | "'" | "(" | ")" | "*" | "+" | "," | ";" | "=" | "/" | "?" | "#" | "@" | "%")>
+}

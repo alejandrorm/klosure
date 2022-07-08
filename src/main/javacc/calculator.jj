@@ -1,0 +1,54 @@
+options { LOOKAHEAD = 2; }
+
+PARSER_BEGIN(CalculatorParser)
+
+public class CalculatorParser {
+  public static void main(String[] args) throws ParseException {
+    CalculatorParser parser = new CalculatorParser(System.in);
+    System.out.println(parser.Expression());
+  }
+
+  private static int eval(String operation, int s, int t) {
+    switch(operation) {
+        case "+":
+            return s + t;
+        case "-":
+            return s - t;
+        case "*":
+            return s * t;
+    }
+    throw new IllegalArgumentException(operation);
+  }
+}
+
+PARSER_END(CalculatorParser)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+}
+
+TOKEN :
+{
+  < NUMBER: (["0" - "9"]) + >
+| < OPERATOR: <PLUS> | <MINUS> | <TIMES> >
+| < #PLUS: "+" >
+| < #MINUS: "-" >
+| < #TIMES: "*" >
+}
+
+int Expression():
+{
+  Token t;
+  Token s;
+  Token o;
+}
+{
+  t=<NUMBER> <EOF> { return Integer.parseInt(t.image); }
+| t=<NUMBER> s=<NUMBER> o=<OPERATOR> <EOF> {
+    return eval(o.image, Integer.parseInt(t.image), Integer.parseInt(s.image));
+ }
+}
