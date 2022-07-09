@@ -19,4 +19,20 @@ open class Node(val id: NodeId) {
           {  ConcurrentHashMap.newKeySet<PredicateNode>() as MutableSet<PredicateNode> }
         outgoingEdges[node.id.predicate]!!.add(node)
     }
+
+    fun getIncomingEdges(): Iterator<PredicateNode> {
+        return incomingEdges.values.flatten().iterator()
+    }
+
+    fun getOutgoingEdges(): Iterator<PredicateNode> {
+        return outgoingEdges.values.flatten().iterator()
+    }
+
+    fun getIncomingEdges(predicate: IRI): Iterator<PredicateNode> {
+        return incomingEdges[predicate]?.iterator() ?: emptyList<PredicateNode>().iterator()
+    }
+
+    fun getOutgoingEdges(predicate: IRI): Iterator<PredicateNode> {
+        return outgoingEdges[predicate]?.iterator() ?: emptyList<PredicateNode>().iterator()
+    }
 }

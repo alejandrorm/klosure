@@ -13,4 +13,9 @@ class PredicateNode(id: TripleId) : Node(id) {
     override fun hashCode(): Int {
         return id.hashCode()
     }
+
+    override fun toString(): String {
+        val (subject, verb, rdfObject) = id as TripleId
+        return "$subject <$verb> $rdfObject ."
+    }
 }

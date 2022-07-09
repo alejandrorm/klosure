@@ -29,16 +29,16 @@ public class TurtleStarParser {
 
     private static final String NAMESPACE_PREFIX = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 
-    private Map<String, String> prefixes = new HashMap<>();
+    private final Map<String, String> prefixes = new HashMap<>();
 
-    private Graph graph;
+    private Graph graph = new Graph();
 
-    public TurtleStarParser(Graph graph) {
+    public void setGraph(Graph graph) {
         this.graph = graph;
     }
 
-    public TurtleStarParser() {
-        this(new Graph());
+    public Graph getGraph() {
+        return graph;
     }
 
     private class VerbObjectAnnotation {
@@ -306,6 +306,7 @@ String String():
   String s;
 }
 {
+ //TODO you might have to add 1 to the length
   t = <STRING_LITERAL_QUOTE> { s = t.image; return s.substring(1, s.length() - 2); }|
   t = <STRING_LITERAL_SINGLE_QUOTE> { s = t.image; return s.substring(1, s.length() - 2); }|
   t = <STRING_LITERAL_LONG_SINGLE_QUOTE> { s = t.image; return s.substring(3, s.length() - 6); }|
@@ -342,8 +343,8 @@ String PrefixedName():
 Node BlankNode():
 { Token t; }
 {
-  t = <BLANK_NODE_LABEL> { graph.getOrCreateNode(new IriId(IRI.create(t.image))); }|
-  <ANON> { return graph.getOrCreateNode(graph.generateAnonId()); }
+  t = <BLANK_NODE_LABEL> { graph.getOrCreateNode(new BlankId(t.image.substring(2))); }|
+  <ANON> { return graph.getNewBlankNode(); }
 }
 
 Node quotedTriple():
@@ -382,7 +383,7 @@ List<VerbObjectAnnotation> annotation():
 String iriRef():
 { Token t;}
 {
-  t = <IRIREF> { return t.image; }
+  t = <IRIREF> { return t.image.substring(1, t.image.length()-1); }
 }
 
 TOKEN:

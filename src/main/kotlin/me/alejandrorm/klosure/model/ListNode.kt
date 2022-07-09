@@ -13,9 +13,8 @@ class ListNode(val first: Node, val rest: Node, id: NodeId): Node(id) {
             } else {
                 val first = list.first()
                 val rest = create(list.drop(1), graph)
-                ListNode(first, rest, graph.generateAnonId())
+                graph.addListNode(first, rest)
             }
-            graph.addNode(node)
             //TODO: add type rdf:List to node and properties first and rest
             return node
         }

@@ -9,6 +9,14 @@ class Graph {
     private val terminalNodes: ConcurrentHashMap<LiteralId, LiteralNode> = ConcurrentHashMap();
     private val predicateNodes: ConcurrentHashMap<IRI, MutableSet<PredicateNode>> = ConcurrentHashMap();
 
+    fun getNode(nodeId: NodeId): Node? {
+        return if (nodeId is LiteralId) {
+            terminalNodes[nodeId]
+        } else {
+            nonTerminalNodes[nodeId]
+        }
+    }
+
     fun getNonTerminalNode(id: NodeId): Node? {
         return nonTerminalNodes[id]
     }
@@ -21,16 +29,19 @@ class Graph {
         return nonTerminalNodes.computeIfAbsent(id) { Node(id) }
     }
 
-    fun addNode(node: Node) {
-        nonTerminalNodes[node.id] = node
+    fun addListNode(first: Node, rest: Node): Node {
+        val listNode = ListNode(first, rest, generateAnonId())
+        nonTerminalNodes[listNode.id] = listNode
+        return listNode
     }
 
+    // TODO: should receive a LiteralId. LiteralNode constructors should be package private.
     fun getOrPutLiteralNode(node: LiteralNode): LiteralNode {
         return terminalNodes.computeIfAbsent(node.nodeId) { node }
     }
 
     fun generateAnonId(): NodeId {
-        return IriId(IRI.create("anon_${UUID.randomUUID()}"))
+        return BlankId(UUID.randomUUID().toString())
     }
 
     fun getNewBlankNode(): Node {
@@ -44,13 +55,17 @@ class Graph {
         predicateNodes.computeIfAbsent(verb)
             { ConcurrentHashMap.newKeySet<PredicateNode>() as MutableSet<PredicateNode> }.add(predicateNode)
 
-        subject.addIncomingEdge(predicateNode)
-        rdfObject.addOutgoingEdge(predicateNode)
+        subject.addOutgoingEdge(predicateNode)
+        rdfObject.addIncomingEdge(predicateNode)
 
         return predicateNode
     }
 
     fun getPredicateNodes(verb: IRI): Set<PredicateNode> {
         return predicateNodes[verb] ?: emptySet()
+    }
+
+    fun getAllTriples(): Iterator<PredicateNode> {
+        return predicateNodes.values.flatten().iterator()
     }
 }
