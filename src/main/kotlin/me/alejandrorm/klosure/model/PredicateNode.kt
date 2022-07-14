@@ -6,6 +6,7 @@ class PredicateNode(id: TripleId) : Node(id) {
     constructor(subject: NodeId, iri: IRI, rdfObject: NodeId) : this(TripleId(subject, iri, rdfObject))
     constructor(subject: Node, iri: IRI, rdfObject: Node) : this(subject.id, iri, rdfObject.id)
 
+    var asserted: Boolean = false
     override fun equals(other: Any?): Boolean {
         return other is Node && other.id == id
     }

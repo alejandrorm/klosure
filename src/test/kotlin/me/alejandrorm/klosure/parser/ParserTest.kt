@@ -3,6 +3,7 @@ package me.alejandrorm.klosure.parser
 import TurtleStarParser
 import me.alejandrorm.klosure.model.Graph
 import me.alejandrorm.klosure.model.PredicateNode
+import me.alejandrorm.klosure.parser.TripleComparator.Companion.areEqualTriples
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.DynamicTest
@@ -10,12 +11,17 @@ import org.junit.jupiter.api.TestFactory
 import java.io.InputStream
 import java.util.function.Predicate
 import kotlin.streams.toList
+import org.hamcrest.MatcherAssert.assertThat
 
 class ParserTest {
     private val acceptedTurtleFileNames = listOf(
         "turtle-star-syntax-basic-01",
-        "turtle-star-syntax-basic-02")
-        //"turtle-star-syntax-bnode-01")
+        "turtle-star-syntax-basic-02",
+        "turtle-star-syntax-bnode-01",
+        "turtle-star-syntax-bnode-02",
+        "turtle-star-syntax-bnode-03",
+        "turtle-star-syntax-compound",
+        "turtle-star-syntax-inside-01")
 
     private fun getTurtleFile(fileName: String): Pair<InputStream, InputStream> {
         val turtleFile =
@@ -33,7 +39,7 @@ class ParserTest {
         val parser = TurtleStarParser(stream)
         parser.graph = Graph()
         parser.turtleDoc()
-        return triplesToNTSet(parser.graph.getAllTriples())
+        return triplesToNTSet(parser.graph.getAllAssertedTriples())
     }
 
     private fun readNTFile(stream: InputStream): Set<String> {
@@ -45,7 +51,7 @@ class ParserTest {
     fun testTurtleToNT() = acceptedTurtleFileNames.map { fileName ->
         DynamicTest.dynamicTest("when reading $fileName.ttl expect $fileName.nt") {
             val (turtleFile, tripleFile) = getTurtleFile(fileName)
-            Assertions.assertEquals(readNTFile(tripleFile), readTurtleFile(turtleFile))
+            assertThat(readNTFile(tripleFile), areEqualTriples(readTurtleFile(turtleFile)))
         }
     }
 }

@@ -26,8 +26,9 @@ repositories {
 }
 
 dependencies {
-    implementation("net.sourceforge.owlapi:owlapi-distribution:5.1.0")
+    implementation("net.sourceforge.owlapi:owlapi-distribution:5.1.20")
     testImplementation(kotlin("test"))
+    testImplementation("org.hamcrest:hamcrest:2.2")
 }
 
 tasks.test {

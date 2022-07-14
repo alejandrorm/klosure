@@ -47,7 +47,7 @@ public class TurtleStarParser {
         public List<VerbObjectAnnotation> annotations = new ArrayList<>();
 
         public void addAll(Node subject, Graph graph) {
-            PredicateNode triple = graph.getOrCreatePredicate(subject, verb, object);
+            PredicateNode triple = graph.getOrCreatePredicate(subject, verb, object, true);
             for (VerbObjectAnnotation voa : annotations) {
                 voa.addAll(triple, graph);
             }
@@ -343,7 +343,7 @@ String PrefixedName():
 Node BlankNode():
 { Token t; }
 {
-  t = <BLANK_NODE_LABEL> { graph.getOrCreateNode(new BlankId(t.image.substring(2))); }|
+  t = <BLANK_NODE_LABEL> { return graph.getOrCreateNode(new BlankId(t.image.substring(2))); }|
   <ANON> { return graph.getNewBlankNode(); }
 }
 
@@ -351,7 +351,7 @@ Node quotedTriple():
 { Node subject; IRI predicate; Node object; }
 {
   "<<" subject = qtSubject() predicate = predicate() object = qtObject() ">>" {
-    return graph.getOrCreatePredicate(subject, predicate, object);
+    return graph.getOrCreatePredicate(subject, predicate, object, false);
   }
 }
 
