@@ -56,7 +56,7 @@ class Graph {
         val predicateNode =
             nonTerminalNodes.computeIfAbsent(predicateId) { PredicateNode(predicateId) } as PredicateNode
         predicateNodes.computeIfAbsent(verb)
-            { ConcurrentHashMap.newKeySet<PredicateNode>() as MutableSet<PredicateNode> }.add(predicateNode)
+        { ConcurrentHashMap.newKeySet<PredicateNode>() as MutableSet<PredicateNode> }.add(predicateNode)
 
         subject.addOutgoingEdge(predicateNode)
         rdfObject.addIncomingEdge(predicateNode)

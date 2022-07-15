@@ -1,0 +1,4 @@
+PREFIX : <http://example.com/ns#>
+
+:s :p :o {|  |} .
+

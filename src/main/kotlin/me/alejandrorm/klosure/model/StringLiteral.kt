@@ -1,3 +1,3 @@
 package me.alejandrorm.klosure.model
 
-class StringLiteral(val value: String, val language: String?) : LiteralNode(LiteralId(value))
+class StringLiteral(value: String, val language: String?) : LiteralNode(LiteralId(value, null))
