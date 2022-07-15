@@ -1,6 +1,6 @@
 package me.alejandrorm.klosure.model
 
-abstract class NumberLiteral(value: String): LiteralNode(LiteralId(value, null)) {
+abstract class NumberLiteral(value: String) : LiteralNode(LiteralId(value, null)) {
     companion object {
         @JvmStatic
         fun createLong(value: String): IntegerLiteral {

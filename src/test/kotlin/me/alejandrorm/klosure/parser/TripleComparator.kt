@@ -1,11 +1,11 @@
 package me.alejandrorm.klosure.parser
 
-import org.hamcrest.TypeSafeMatcher
 import org.hamcrest.Description
+import org.hamcrest.TypeSafeMatcher
 import java.util.*
 import kotlin.NoSuchElementException
 
-class TripleComparator(private val actual: Set<String>): TypeSafeMatcher<Set<String>>() {
+class TripleComparator(private val actual: Set<String>) : TypeSafeMatcher<Set<String>>() {
 
     private val message = StringBuilder()
     private val blankNodeId = Regex("(_:[a-z0-9-]+)")
@@ -40,7 +40,6 @@ class TripleComparator(private val actual: Set<String>): TypeSafeMatcher<Set<Str
             throw NoSuchElementException()
         }
 
-
         fun hasNext(): Boolean {
             return !stack.isEmpty()
         }
@@ -48,7 +47,7 @@ class TripleComparator(private val actual: Set<String>): TypeSafeMatcher<Set<Str
 
     private fun initialize(triples: Set<String>): Set<String> {
         val blankNodes = mutableSetOf<String>()
-        triples.forEach {  triple ->
+        triples.forEach { triple ->
             blankNodeId.findAll(triple).forEach { match ->
                 blankNodes.add(match.groupValues[0])
             }
@@ -63,7 +62,7 @@ class TripleComparator(private val actual: Set<String>): TypeSafeMatcher<Set<Str
             val permutation = permutator.next()
             val triples = actual.map { triple ->
                 var t = triple
-                for(i in permutation.indices) {
+                for (i in permutation.indices) {
                     t = t.replace(permutation[i], "_:" + ('a' + i))
                 }
                 t
@@ -84,7 +83,4 @@ class TripleComparator(private val actual: Set<String>): TypeSafeMatcher<Set<Str
     override fun describeTo(description: Description) {
         description.appendText(message.toString())
     }
-
-
-
 }

@@ -1,16 +1,16 @@
 package me.alejandrorm.klosure.parser
 
-import TurtleStarParser
 import ParseException
+import TurtleStarParser
 import me.alejandrorm.klosure.model.Graph
 import me.alejandrorm.klosure.model.PredicateNode
 import me.alejandrorm.klosure.parser.TripleComparator.Companion.areEqualTriples
+import org.hamcrest.MatcherAssert.assertThat
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
+import org.junit.jupiter.api.assertThrows
 import java.io.InputStream
 import kotlin.streams.toList
-import org.hamcrest.MatcherAssert.assertThat
-import org.junit.jupiter.api.assertThrows
 
 class ParserTest {
     private val acceptedTurtleFileNames = listOf(
@@ -27,7 +27,8 @@ class ParserTest {
         "turtle-star-annotation-1",
         "turtle-star-annotation-2",
         "nt-ttl-star-bnode-1",
-        "nt-ttl-star-syntax-4")
+        "nt-ttl-star-syntax-4"
+    )
 
     private val rejectedTurtleFileNames = listOf(
         "turtle-star-syntax-bad-01.ttl",
@@ -39,7 +40,7 @@ class ParserTest {
         "turtle-star-syntax-bad-07.ttl",
         "turtle-star-syntax-bad-08.ttl",
         "turtle-star-syntax-bad-ann-1.ttl",
-        "turtle-star-syntax-bad-ann-2.ttl",
+        "turtle-star-syntax-bad-ann-2.ttl"
     )
 
     private fun readTurtleRejectedFile(fileName: String): Set<String> {

@@ -19,7 +19,6 @@ class GraphTest {
         Assertions.assertSame(iriNode, graph.getNode(iriNode.id))
         Assertions.assertSame(iriNode, graph.getOrCreateNode(nodeId))
 
-
         val nodeId2 = IriId(IRI.create("http://example.org/node2"))
         val iriNode2 = graph.getOrCreateNode(nodeId2)
 
