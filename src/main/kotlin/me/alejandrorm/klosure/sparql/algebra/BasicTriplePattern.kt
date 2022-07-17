@@ -1,10 +1,10 @@
 package me.alejandrorm.klosure.sparql.algebra
 
 import me.alejandrorm.klosure.model.Graph
+import me.alejandrorm.klosure.model.IriId
 import me.alejandrorm.klosure.model.TripleId
 import me.alejandrorm.klosure.sparql.SolutionMapping
 import me.alejandrorm.klosure.sparql.Variable
-import java.lang.IllegalStateException
 
 class BasicTriplePattern(val subject: TermOrVariable, val predicate: TermOrVariable, val obj: TermOrVariable) : TriplePattern {
 
@@ -19,89 +19,68 @@ class BasicTriplePattern(val subject: TermOrVariable, val predicate: TermOrVaria
     }
 
     override fun eval(solution: SolutionMapping, graph: Graph): Iterable<SolutionMapping> {
-        return when (getKnowns(solution)) {
-            PatternKnowns.SUB_PRE_OBJ -> getSPO(solution, graph)
-            PatternKnowns.SUB_PRE -> getSP(solution, graph)
-            PatternKnowns.SUB -> getS(solution, graph)
-            PatternKnowns.PRE_OBJ -> getPO(solution, graph)
-            PatternKnowns.PRE -> getP(solution, graph)
-            PatternKnowns.OBJ -> getO(solution, graph)
-            PatternKnowns.SUB_OBJ -> getSO(solution, graph)
-            PatternKnowns.NONE -> getNone(solution, graph)
+        val resolvedTriple = getKnowns(solution)
+        return when (resolvedTriple.type) {
+            PatternKnowns.SUB_PRE_OBJ -> getSPO(solution, resolvedTriple, graph)
+            PatternKnowns.SUB_PRE -> getSP(solution, resolvedTriple, graph)
+            PatternKnowns.SUB -> getS(solution, resolvedTriple, graph)
+            PatternKnowns.PRE_OBJ -> getPO(solution, resolvedTriple, graph)
+            PatternKnowns.PRE -> getP(solution, resolvedTriple, graph)
+            PatternKnowns.OBJ -> getO(solution, resolvedTriple, graph)
+            PatternKnowns.SUB_OBJ -> getSO(solution, resolvedTriple, graph)
+            PatternKnowns.NONE -> getNone(solution, resolvedTriple, graph)
         }
     }
 
-    private fun getKnowns(currentSolution: SolutionMapping): PatternKnowns {
+    private fun getKnowns(currentSolution: SolutionMapping): ResolvedTriple {
         var mask = 0
-        for (i in terms.indices) {
-            // TODO return the bound values too here so we don't have to look them up again later
-            if (terms[i].resolve(currentSolution).isBound()) {
-                mask += (1 shl (2 - i))
-            }
-        }
-        // TODO benchmark if it is worthy to roll out the loop
-//        if (triple.subject is TermOrVariable.NodeTerm ||
-//            (triple.subject as TermOrVariable.VariableTerm).variable.isBound) mask += 4
-//        if (triple.predicate is TermOrVariable.NodeTerm ||
-//            (triple.predicate as TermOrVariable.VariableTerm).variable.isBound) mask += 2
-//        if (triple.obj is TermOrVariable.NodeTerm ||
-//            (triple.obj as TermOrVariable.VariableTerm).variable.isBound) mask += 1
+        val s = terms[0].resolve(currentSolution)
+        if (s.isBound()) mask += 4
+        val p = terms[1].resolve(currentSolution)
+        if (p.isBound()) mask += 2
+        val o = terms[2].resolve(currentSolution)
+        if (o.isBound()) mask += 1
 
-        return PatternKnowns.values()[mask]
+        return ResolvedTriple(s, p, o, PatternKnowns.values()[mask])
     }
 
-    private fun getSPO(currentSolution: SolutionMapping, graph: Graph): Iterable<SolutionMapping> {
-        val concretePre = predicate.resolve(currentSolution)
-        val concreteSub = subject.resolve(currentSolution)
-        val concreteObj = obj.resolve(currentSolution)
+    private fun getSPO(currentSolution: SolutionMapping, triple: ResolvedTriple, graph: Graph): Iterable<SolutionMapping> {
+        val concretePre = (triple.predicate.getTerm() as IriId).iri
+        val concreteSub = triple.subject.getTerm()
+        val concreteObj = triple.obj.getTerm()
 
-        // TODO get id of triple
-//        return if (graph.getNode(TripleId(concreteObj as ))getPredicateNodes(concretePre).contains()
-//            .contains(pre)
-//        ) {
-//            listOf(currentSolution)
-//        } else {
-//            emptyList()
-//        }
-        TODO()
+        val tripleId = TripleId(concreteSub, concretePre, concreteObj)
+        return if (graph.getNode(tripleId) != null)
+            listOf(currentSolution)
+        else
+            emptyList()
     }
 
-    private fun getSP(currentSolution: SolutionMapping, graph: Graph): Iterable<SolutionMapping> {
-        val concreteSub = subject.resolve(currentSolution)
-        val concretePre = predicate.resolve(currentSolution)
+    private fun getSP(currentSolution: SolutionMapping, triple: ResolvedTriple, graph: Graph): Iterable<SolutionMapping> {
+        val concreteSub = triple.subject.getTerm()
+        val concretePre = (triple.predicate.getTerm() as IriId).iri
 
-        val subId = when(concreteSub) {
-            is TermOrVariable.IriTerm -> concreteSub.iri
-            is TermOrVariable.BlankTerm -> concreteSub.blankId
-            is TermOrVariable.TripleTerm -> concreteSub.tripleId
-            else -> throw IllegalStateException()
-        }
-
-        val it = graph.getNode(subId)?.getOutgoingEdges((concretePre as TermOrVariable.IriTerm).iri.iri)
+        val it = graph.getNode(concreteSub)?.getOutgoingEdges(concretePre)
         it ?: return emptyList()
         return it.asSequence().map { edge ->
-            currentSolution.bind((obj as TermOrVariable.VariableTerm).variable, (graph.getNode((edge.id as TripleId).rdfObject)!!))
+            currentSolution.bind((obj as TermOrVariable.VariableTerm).variable, (edge.id as TripleId).rdfObject)
         }.asIterable()
     }
 
-    private fun getS(currentSolution: SolutionMapping, graph: Graph): Iterable<SolutionMapping> {
-        TODO()
-//        val sub =
-//            when (subject) {
-//                is TermOrVariable.NodeTerm -> subject.node
-//                is TermOrVariable.VariableTerm -> currentSolution.boundVariables[subject.variable]!!
-//            }
-//        val it = graph.getNode(sub.id)?.getOutgoingEdges()
-//        it ?: return emptyList()
-//        return it.asSequence().map { edge ->
-//            // FIXME predicate and object could be the same variable
-//            val tripleId = edge.id as TripleId
-//            currentSolution.bind((obj as TermOrVariable.VariableTerm).variable, (graph.getNode(tripleId.rdfObject)!!))
-//                .bind((predicate as TermOrVariable.VariableTerm).variable, edge)
-//        }.asIterable()
+    private fun getS(currentSolution: SolutionMapping, triple: ResolvedTriple, graph: Graph): Iterable<SolutionMapping> {
+        val concreteSub = triple.subject.getTerm()
+
+        val it = graph.getNode(concreteSub)?.getOutgoingEdges()
+        it ?: return emptyList()
+        return it.asSequence().map { edge ->
+            // FIXME predicate and object could be the same variable
+            val tripleId = edge.id as TripleId
+            currentSolution.bind((obj as TermOrVariable.VariableTerm).variable, tripleId.rdfObject)
+                .bind((predicate as TermOrVariable.VariableTerm).variable, IriId(tripleId.predicate))
+        }.asIterable()
     }
 
-    private fun getPO(currentSolution: SolutionMapping, graph: Graph): Iterable<SolutionMapping> {
+    private fun getPO(currentSolution: SolutionMapping, triple: ResolvedTriple, graph: Graph): Iterable<SolutionMapping> {
         TODO()
 //        val preIri =
 //            when (predicate) {
@@ -125,7 +104,7 @@ class BasicTriplePattern(val subject: TermOrVariable, val predicate: TermOrVaria
 //        }.asIterable()
     }
 
-    private fun getP(currentSolution: SolutionMapping, graph: Graph): Iterable<SolutionMapping> {
+    private fun getP(currentSolution: SolutionMapping, triple: ResolvedTriple, graph: Graph): Iterable<SolutionMapping> {
         TODO()
 //        val preIri =
 //            when (predicate) {
@@ -148,7 +127,7 @@ class BasicTriplePattern(val subject: TermOrVariable, val predicate: TermOrVaria
 //        }.asIterable()
     }
 
-    private fun getO(currentSolution: SolutionMapping, graph: Graph): Iterable<SolutionMapping> {
+    private fun getO(currentSolution: SolutionMapping, triple: ResolvedTriple, graph: Graph): Iterable<SolutionMapping> {
 TODO()
 //        val obj =
 //            when (obj) {
@@ -165,7 +144,7 @@ TODO()
 //        }.asIterable()
     }
 
-    private fun getSO(currentSolution: SolutionMapping, graph: Graph): Iterable<SolutionMapping> {
+    private fun getSO(currentSolution: SolutionMapping, triple: ResolvedTriple, graph: Graph): Iterable<SolutionMapping> {
 TODO()
 //        val sub =
 //            when (subject) {
@@ -186,7 +165,7 @@ TODO()
 //        }.asIterable()
     }
 
-    private fun getNone(currentSolution: SolutionMapping, graph: Graph): Iterable<SolutionMapping> {
+    private fun getNone(currentSolution: SolutionMapping, triple: ResolvedTriple, graph: Graph): Iterable<SolutionMapping> {
         TODO()
         // check for on of five cases
         // all variables different, all variables the same, or two of them the same
@@ -202,4 +181,11 @@ TODO()
         SUB_PRE,
         SUB_PRE_OBJ
     }
+
+    private data class ResolvedTriple(
+        val subject : TermOrVariable,
+        val predicate: TermOrVariable,
+        val obj: TermOrVariable,
+        val type: PatternKnowns
+    )
 }
