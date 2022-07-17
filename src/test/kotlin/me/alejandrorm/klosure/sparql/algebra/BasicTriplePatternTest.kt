@@ -37,10 +37,10 @@ class BasicTriplePatternTest {
     @Test
     fun testMatchNoVariables() {
         val pattern = BasicTriplePattern(
-            TermOrVariable.NodeTerm(graph.getNode(IriId(IRI.create("http://example/s1")))!!),
-            TermOrVariable.NodeTerm(graph.getNode(IriId(IRI.create("http://example/p1")))!!),
-            TermOrVariable.NodeTerm(graph.getNode(IriId(IRI.create("http://example/o1")))!!)
-        )
+            TermOrVariable.IriTerm(IriId(IRI.create("http://example/s1"))),
+            TermOrVariable.IriTerm(IriId(IRI.create("http://example/p1"))),
+            TermOrVariable.IriTerm(IriId(IRI.create("http://example/o1"))))
+
         val initialSolution = SolutionMapping(pattern.getVariables(), emptyMap())
         val solutions = pattern.eval(initialSolution, graph)
 
@@ -50,10 +50,10 @@ class BasicTriplePatternTest {
     @Test
     fun testNoMatch() {
         val pattern = BasicTriplePattern(
-            TermOrVariable.NodeTerm(graph.getNode(IriId(IRI.create("http://example/s1")))!!),
-            TermOrVariable.NodeTerm(graph.getNode(IriId(IRI.create("http://example/p1")))!!),
-            TermOrVariable.NodeTerm(graph.getNode(IriId(IRI.create("http://example/o4")))!!)
-        )
+            TermOrVariable.IriTerm(IriId(IRI.create("http://example/s1"))),
+            TermOrVariable.IriTerm(IriId(IRI.create("http://example/p1"))),
+            TermOrVariable.IriTerm(IriId(IRI.create("http://example/o4"))))
+
         val initialSolution = SolutionMapping(pattern.getVariables(), emptyMap())
         val solutions = pattern.eval(initialSolution, graph)
 
@@ -63,10 +63,10 @@ class BasicTriplePatternTest {
     @Test
     fun testMatchSubjectAndPredicate() {
         val pattern = BasicTriplePattern(
-            TermOrVariable.NodeTerm(graph.getNode(IriId(IRI.create("http://example/s1")))!!),
-            TermOrVariable.NodeTerm(graph.getNode(IriId(IRI.create("http://example/p1")))!!),
-            TermOrVariable.VariableTerm(Variable("x"))
-        )
+            TermOrVariable.IriTerm(IriId(IRI.create("http://example/s1"))),
+            TermOrVariable.IriTerm(IriId(IRI.create("http://example/p1"))),
+            TermOrVariable.VariableTerm(Variable("x")))
+
         val initialSolution = SolutionMapping(pattern.getVariables(), emptyMap())
         val solutions = pattern.eval(initialSolution, graph)
 

@@ -33,4 +33,8 @@ open class Node(val id: NodeId) {
     fun getOutgoingEdges(predicate: IRI): Iterator<PredicateNode> {
         return outgoingEdges[predicate]?.iterator() ?: emptyList<PredicateNode>().iterator()
     }
+
+    override fun toString(): String {
+        return "Node($id)"
+    }
 }
