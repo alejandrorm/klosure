@@ -1,6 +1,6 @@
 package me.alejandrorm.klosure.sparql.algebra
 
-import me.alejandrorm.klosure.model.*
+import me.alejandrorm.klosure.model.NodeId
 import me.alejandrorm.klosure.sparql.SolutionMapping
 import me.alejandrorm.klosure.sparql.Variable
 import java.lang.IllegalStateException

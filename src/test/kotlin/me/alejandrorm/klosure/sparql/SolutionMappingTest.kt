@@ -29,8 +29,10 @@ class SolutionMappingTest {
 
         val n2 = Node(BlankId("a"))
         val n4 = Node(BlankId("b"))
-        val solutionMapping = SolutionMapping(setOf(v1, v2, v3, v4),
-            mapOf(v2 to n2.id, v4 to n4.id))
+        val solutionMapping = SolutionMapping(
+            setOf(v1, v2, v3, v4),
+            mapOf(v2 to n2.id, v4 to n4.id)
+        )
 
         Assertions.assertEquals(setOf(v1, v3), solutionMapping.getFreeVariables())
         Assertions.assertEquals(setOf(v1, v2, v3, v4), solutionMapping.variables)

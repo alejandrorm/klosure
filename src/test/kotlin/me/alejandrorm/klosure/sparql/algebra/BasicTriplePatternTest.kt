@@ -6,7 +6,6 @@ import me.alejandrorm.klosure.model.IriId
 import me.alejandrorm.klosure.sparql.SolutionMapping
 import me.alejandrorm.klosure.sparql.Variable
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.semanticweb.owlapi.model.IRI
@@ -39,7 +38,8 @@ class BasicTriplePatternTest {
         val pattern = BasicTriplePattern(
             TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/s1"))),
             TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/p1"))),
-            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/o1"))))
+            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/o1")))
+        )
 
         val initialSolution = SolutionMapping(pattern.getVariables(), emptyMap())
         val solutions = pattern.eval(initialSolution, graph)
@@ -52,7 +52,8 @@ class BasicTriplePatternTest {
         val pattern = BasicTriplePattern(
             TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/s1"))),
             TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/p1"))),
-            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/o4"))))
+            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/o4")))
+        )
 
         val initialSolution = SolutionMapping(pattern.getVariables(), emptyMap())
         val solutions = pattern.eval(initialSolution, graph)
@@ -65,7 +66,8 @@ class BasicTriplePatternTest {
         val pattern = BasicTriplePattern(
             TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/s1"))),
             TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/p1"))),
-            TermOrVariable.VariableTerm(Variable("x")))
+            TermOrVariable.VariableTerm(Variable("x"))
+        )
 
         val initialSolution = SolutionMapping(pattern.getVariables(), emptyMap())
         val solutions = pattern.eval(initialSolution, graph)
@@ -80,7 +82,8 @@ class BasicTriplePatternTest {
                     setOf(Variable("x")),
                     mapOf(Variable("x") to IriId(IRI.create("http://example/o2")))
                 )
-            ), solutions.toSet()
+            ),
+            solutions.toSet()
         )
     }
 

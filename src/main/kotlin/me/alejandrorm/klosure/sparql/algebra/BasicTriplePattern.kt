@@ -50,10 +50,11 @@ class BasicTriplePattern(val subject: TermOrVariable, val predicate: TermOrVaria
         val concreteObj = triple.obj.getTerm()
 
         val tripleId = TripleId(concreteSub, concretePre, concreteObj)
-        return if (graph.getNode(tripleId) != null)
+        return if (graph.getNode(tripleId) != null) {
             listOf(currentSolution)
-        else
+        } else {
             emptyList()
+        }
     }
 
     private fun getSP(currentSolution: SolutionMapping, triple: ResolvedTriple, graph: Graph): Iterable<SolutionMapping> {
@@ -101,7 +102,8 @@ class BasicTriplePattern(val subject: TermOrVariable, val predicate: TermOrVaria
         return it.asSequence().map { edge ->
             currentSolution.bind(
                 (subject as TermOrVariable.VariableTerm).variable,
-                (edge.id as TripleId).subject)
+                (edge.id as TripleId).subject
+            )
         }.asIterable()
     }
 
@@ -166,8 +168,10 @@ class BasicTriplePattern(val subject: TermOrVariable, val predicate: TermOrVaria
         return it.asSequence().filter { predicateNode ->
             (predicateNode.id as TripleId).rdfObject == concreteObj
         }.map { edge ->
-            currentSolution.bind((predicate as TermOrVariable.VariableTerm).variable,
-                IriId((edge.id as TripleId).predicate))
+            currentSolution.bind(
+                (predicate as TermOrVariable.VariableTerm).variable,
+                IriId((edge.id as TripleId).predicate)
+            )
         }.asIterable()
     }
 
@@ -175,12 +179,18 @@ class BasicTriplePattern(val subject: TermOrVariable, val predicate: TermOrVaria
         // FIXME handle repeated variables
         return graph.getAllAssertedTriples().asSequence().map { edge ->
             val tripleId = edge.id as TripleId
-            currentSolution.bind((subject as TermOrVariable.VariableTerm).variable,
-            tripleId.subject)
-                .bind((predicate as TermOrVariable.VariableTerm).variable,
-                IriId(tripleId.predicate))
-                .bind((obj as TermOrVariable.VariableTerm).variable,
-                tripleId.rdfObject)
+            currentSolution.bind(
+                (subject as TermOrVariable.VariableTerm).variable,
+                tripleId.subject
+            )
+                .bind(
+                    (predicate as TermOrVariable.VariableTerm).variable,
+                    IriId(tripleId.predicate)
+                )
+                .bind(
+                    (obj as TermOrVariable.VariableTerm).variable,
+                    tripleId.rdfObject
+                )
         }.asIterable()
     }
 
@@ -196,7 +206,7 @@ class BasicTriplePattern(val subject: TermOrVariable, val predicate: TermOrVaria
     }
 
     private data class ResolvedTriple(
-        val subject : TermOrVariable,
+        val subject: TermOrVariable,
         val predicate: TermOrVariable,
         val obj: TermOrVariable,
         val type: PatternKnowns
