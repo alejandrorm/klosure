@@ -28,7 +28,7 @@ class BasicTriplePattern(val subject: TermOrVariable, val predicate: TermOrVaria
             PatternKnowns.PRE -> getP(solution, resolvedTriple, graph)
             PatternKnowns.OBJ -> getO(solution, resolvedTriple, graph)
             PatternKnowns.SUB_OBJ -> getSO(solution, resolvedTriple, graph)
-            PatternKnowns.NONE -> getNone(solution, resolvedTriple, graph)
+            PatternKnowns.NONE -> getNone(solution, graph)
         }
     }
 
@@ -72,103 +72,116 @@ class BasicTriplePattern(val subject: TermOrVariable, val predicate: TermOrVaria
 
         val it = graph.getNode(concreteSub)?.getOutgoingEdges()
         it ?: return emptyList()
-        return it.asSequence().map { edge ->
-            // FIXME predicate and object could be the same variable
-            val tripleId = edge.id as TripleId
-            currentSolution.bind((obj as TermOrVariable.VariableTerm).variable, tripleId.rdfObject)
-                .bind((predicate as TermOrVariable.VariableTerm).variable, IriId(tripleId.predicate))
-        }.asIterable()
+
+        val objVariable = (obj as TermOrVariable.VariableTerm).variable
+        val predicateVariable = (predicate as TermOrVariable.VariableTerm).variable
+
+        return if (objVariable == predicateVariable) {
+            it.asSequence().filter { edge ->
+                val tripleId = edge.id as TripleId
+                tripleId.rdfObject == IriId(tripleId.predicate)
+            }.map {
+                currentSolution.bind(objVariable, (it.id as TripleId).rdfObject)
+            }.asIterable()
+        } else {
+            it.asSequence().map { edge ->
+                val tripleId = edge.id as TripleId
+                currentSolution.bind(objVariable, tripleId.rdfObject)
+                    .bind(predicateVariable, IriId(tripleId.predicate))
+            }.asIterable()
+        }
     }
 
     private fun getPO(currentSolution: SolutionMapping, triple: ResolvedTriple, graph: Graph): Iterable<SolutionMapping> {
-        TODO()
-//        val preIri =
-//            when (predicate) {
-//                // TODO make this more readable by moving this stuff to TermOrVariable
-//                is TermOrVariable.NodeTerm -> (predicate.node.id as TripleId).predicate
-//                is TermOrVariable.VariableTerm -> (currentSolution.boundVariables[predicate.variable]!!.id as TripleId).predicate
-//            }
-//        val obj =
-//            when (obj) {
-//                is TermOrVariable.NodeTerm -> obj.node
-//                is TermOrVariable.VariableTerm -> currentSolution.boundVariables[obj.variable]!!
-//            }
-//
-//        val it = graph.getNode(obj.id)?.getIncomingEdges(preIri)
-//        it ?: return emptyList()
-//        return it.asSequence().map { edge ->
-//            currentSolution.bind(
-//                (subject as TermOrVariable.VariableTerm).variable,
-//                (graph.getNode((edge.id as TripleId).subject)!!)
-//            )
-//        }.asIterable()
+        val concretePredicate = (triple.predicate.getTerm() as IriId).iri
+        val concreteObj = triple.obj.getTerm()
+
+        val it = graph.getNode(concreteObj)?.getIncomingEdges(concretePredicate)
+        it ?: return emptyList()
+        return it.asSequence().map { edge ->
+            currentSolution.bind(
+                (subject as TermOrVariable.VariableTerm).variable,
+                (edge.id as TripleId).subject)
+        }.asIterable()
     }
 
     private fun getP(currentSolution: SolutionMapping, triple: ResolvedTriple, graph: Graph): Iterable<SolutionMapping> {
-        TODO()
-//        val preIri =
-//            when (predicate) {
-//                // TODO make this more readable by moving this stuff to TermOrVariable
-//                is TermOrVariable.NodeTerm -> (predicate.node.id as TripleId).predicate
-//                is TermOrVariable.VariableTerm -> (currentSolution.boundVariables[predicate.variable]!!.id as TripleId).predicate
-//            }
-//
-//        val it = graph.getPredicateNodes(preIri)
-//        return it.map { edge ->
-//            // FIXME subject and object could be the same variable and then need to be the same node
-//            currentSolution.bind(
-//                (subject as TermOrVariable.VariableTerm).variable,
-//                (graph.getNode((edge.id as TripleId).subject)!!)
-//            )
-//                .bind(
-//                    (obj as TermOrVariable.VariableTerm).variable,
-//                    (graph.getNode(edge.id.rdfObject)!!)
-//                )
-//        }.asIterable()
+        val concretePre = (triple.predicate.getTerm() as IriId).iri
+
+        val it = graph.getPredicateNodes(concretePre)
+
+        val objVariable = (obj as TermOrVariable.VariableTerm).variable
+        val subjectVariable = (subject as TermOrVariable.VariableTerm).variable
+
+        return if (objVariable == subjectVariable) {
+            it.asSequence().filter { edge ->
+                val tripleId = edge.id as TripleId
+                tripleId.rdfObject == tripleId.subject
+            }.map {
+                currentSolution.bind(objVariable, (it.id as TripleId).rdfObject)
+            }.asIterable()
+        } else {
+            it.map { edge ->
+                currentSolution.bind(
+                    subjectVariable,
+                    (edge.id as TripleId).subject
+                )
+                    .bind(
+                        objVariable,
+                        edge.id.rdfObject
+                    )
+            }.asIterable()
+        }
     }
 
     private fun getO(currentSolution: SolutionMapping, triple: ResolvedTriple, graph: Graph): Iterable<SolutionMapping> {
-TODO()
-//        val obj =
-//            when (obj) {
-//                is TermOrVariable.NodeTerm -> obj.node
-//                is TermOrVariable.VariableTerm -> currentSolution.boundVariables[obj.variable]!!
-//            }
-//        val it = graph.getNode(obj.id)?.getIncomingEdges()
-//        it ?: return emptyList()
-//        return it.asSequence().map { edge ->
-//            // FIXME predicate and subject could be the same variable
-//            val tripleId = edge.id as TripleId
-//            currentSolution.bind((subject as TermOrVariable.VariableTerm).variable, (graph.getNode(tripleId.subject)!!))
-//                .bind((predicate as TermOrVariable.VariableTerm).variable, edge)
-//        }.asIterable()
+        val concreteObj = triple.obj.getTerm()
+        val it = graph.getNode(concreteObj)?.getIncomingEdges()
+        it ?: return emptyList()
+
+        val subjectVariable = (subject as TermOrVariable.VariableTerm).variable
+        val predicateVariable = (predicate as TermOrVariable.VariableTerm).variable
+
+        return if (subjectVariable == predicateVariable) {
+            it.asSequence().filter { edge ->
+                val tripleId = edge.id as TripleId
+                tripleId.subject == IriId(tripleId.predicate)
+            }.map {
+                currentSolution.bind(subjectVariable, (it.id as TripleId).subject)
+            }.asIterable()
+        } else {
+            it.asSequence().map { edge ->
+                val tripleId = edge.id as TripleId
+                currentSolution.bind(subjectVariable, tripleId.subject)
+                    .bind(predicateVariable, IriId(tripleId.predicate))
+            }.asIterable()
+        }
     }
 
     private fun getSO(currentSolution: SolutionMapping, triple: ResolvedTriple, graph: Graph): Iterable<SolutionMapping> {
-TODO()
-//        val sub =
-//            when (subject) {
-//                is TermOrVariable.NodeTerm -> subject.node
-//                is TermOrVariable.VariableTerm -> currentSolution.boundVariables[subject.variable]!!
-//            }
-//        val obj =
-//            when (obj) {
-//                is TermOrVariable.NodeTerm -> obj.node
-//                is TermOrVariable.VariableTerm -> currentSolution.boundVariables[obj.variable]!!
-//            }
-//        val it = graph.getNode(sub.id)?.getOutgoingEdges()
-//        it ?: return emptyList()
-//        return it.asSequence().filter { predicateNode ->
-//            (predicateNode.id as TripleId).rdfObject == obj
-//        }.map { edge ->
-//            currentSolution.bind((predicate as TermOrVariable.VariableTerm).variable, edge)
-//        }.asIterable()
+        val concreteSubject = triple.subject.getTerm()
+        val concreteObj = triple.obj.getTerm()
+        val it = graph.getNode(concreteSubject)?.getOutgoingEdges()
+        it ?: return emptyList()
+        return it.asSequence().filter { predicateNode ->
+            (predicateNode.id as TripleId).rdfObject == concreteObj
+        }.map { edge ->
+            currentSolution.bind((predicate as TermOrVariable.VariableTerm).variable,
+                IriId((edge.id as TripleId).predicate))
+        }.asIterable()
     }
 
-    private fun getNone(currentSolution: SolutionMapping, triple: ResolvedTriple, graph: Graph): Iterable<SolutionMapping> {
-        TODO()
-        // check for on of five cases
-        // all variables different, all variables the same, or two of them the same
+    private fun getNone(currentSolution: SolutionMapping, graph: Graph): Iterable<SolutionMapping> {
+        // FIXME handle repeated variables
+        return graph.getAllAssertedTriples().asSequence().map { edge ->
+            val tripleId = edge.id as TripleId
+            currentSolution.bind((subject as TermOrVariable.VariableTerm).variable,
+            tripleId.subject)
+                .bind((predicate as TermOrVariable.VariableTerm).variable,
+                IriId(tripleId.predicate))
+                .bind((obj as TermOrVariable.VariableTerm).variable,
+                tripleId.rdfObject)
+        }.asIterable()
     }
 
     private enum class PatternKnowns {
