@@ -33,6 +33,9 @@ class BasicTriplePatternTest {
             :s6 :q6 :s6 .
             [] :q6 [] .
             :s7 :q6 :s8 .
+            :s9 :s9 :o9 .
+            :xx1 :yy1 <<:s0 :p0 :o0>> .
+            :xx1 :yy1 <<:s0 :p0 <<:s00 :p00 :o00>>>> .
         """.trimIndent()
 
         val parser = TurtleStarParser(StringReader(ttl))
@@ -316,27 +319,312 @@ class BasicTriplePatternTest {
 
     @Test
     fun testMatchObjectTwoVariablesWithMatch() {
+        val pattern = BasicTriplePattern(
+            TermOrVariable.VariableTerm(Variable("x")),
+            TermOrVariable.VariableTerm(Variable("y")),
+            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/o2"))),
+        )
+
+        val initialSolution = SolutionMapping(pattern.getVariables(), emptyMap())
+        val solutions = pattern.eval(initialSolution, graph)
+
+        SolutionSet.compareEqualSet(
+            solutions,
+            """
+            ?x ?y
+            <http://example/s1> <http://example/p1>
+            _:a <http://example/p1>
+            """.trimIndent()
+        )
     }
 
     @Test
     fun testMatchObjectTwoVariablesWithNoMatch() {
-        // Assertions.assertEquals(emptySet<SolutionMapping>(), solutions.toSet())
+        val pattern = BasicTriplePattern(
+            TermOrVariable.VariableTerm(Variable("x")),
+            TermOrVariable.VariableTerm(Variable("y")),
+            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/o10"))),
+        )
+
+        val initialSolution = SolutionMapping(pattern.getVariables(), emptyMap())
+        val solutions = pattern.eval(initialSolution, graph)
+
+        Assertions.assertEquals(emptySet<SolutionMapping>(), solutions.toSet())
     }
 
     @Test
     fun testMatchObjectOneVariableWithMatch() {
+        val pattern = BasicTriplePattern(
+            TermOrVariable.VariableTerm(Variable("x")),
+            TermOrVariable.VariableTerm(Variable("x")),
+            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/o9"))),
+        )
+
+        val initialSolution = SolutionMapping(pattern.getVariables(), emptyMap())
+        val solutions = pattern.eval(initialSolution, graph)
+
+        SolutionSet.compareEqualSet(
+            solutions,
+            """
+            ?x
+            <http://example/s9>
+            """.trimIndent()
+        )
     }
 
     @Test
     fun testMatchObjectOneVariableWithNoMatch() {
-        // Assertions.assertEquals(emptySet<SolutionMapping>(), solutions.toSet())
+        val pattern = BasicTriplePattern(
+            TermOrVariable.VariableTerm(Variable("x")),
+            TermOrVariable.VariableTerm(Variable("x")),
+            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/o1"))),
+        )
+
+        val initialSolution = SolutionMapping(pattern.getVariables(), emptyMap())
+        val solutions = pattern.eval(initialSolution, graph)
+
+        Assertions.assertEquals(emptySet<SolutionMapping>(), solutions.toSet())
     }
 
     // TODO test other matching cases
 
-    // TODO test all matching cases when initial solution binds some variables
+    @Test
+    fun testMatchSubjectBound() {
+        val pattern = BasicTriplePattern(
+            TermOrVariable.VariableTerm(Variable("x")),
+            TermOrVariable.VariableTerm(Variable("y")),
+            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/o1"))),
+        )
 
+        val initialSolution = SolutionMapping(pattern.getVariables(), mapOf(Variable("x") to IriId(IRI.create("http://example/s1"))))
+        val solutions = pattern.eval(initialSolution, graph)
+
+        SolutionSet.compareEqualSet(
+            solutions,
+            """
+            ?x ?y
+            <http://example/s1> <http://example/p1>
+            """.trimIndent()
+        )
+    }
+
+    @Test
+    fun testNoMatchSubjectBound() {
+        val pattern = BasicTriplePattern(
+            TermOrVariable.VariableTerm(Variable("x")),
+            TermOrVariable.VariableTerm(Variable("y")),
+            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/o2"))),
+        )
+
+        val initialSolution = SolutionMapping(pattern.getVariables(), mapOf(Variable("x") to IriId(IRI.create("http://example/x1"))))
+        val solutions = pattern.eval(initialSolution, graph)
+
+        Assertions.assertEquals(emptySet<SolutionMapping>(), solutions.toSet())
+    }
+
+    @Test
+    fun testMatchObjectBound() {
+        val pattern = BasicTriplePattern(
+            TermOrVariable.VariableTerm(Variable("x")),
+            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/p1"))),
+            TermOrVariable.VariableTerm(Variable("y")),
+        )
+
+        val initialSolution = SolutionMapping(pattern.getVariables(), mapOf(Variable("y") to IriId(IRI.create("http://example/o2"))))
+        val solutions = pattern.eval(initialSolution, graph)
+
+        SolutionSet.compareEqualSet(
+            solutions,
+            """
+            ?x ?y
+            <http://example/s1> <http://example/o2>
+            _:a <http://example/o2>
+            """.trimIndent()
+        )
+    }
+
+    @Test
+    fun testNoMatchObjectBound() {
+
+    }
+
+    @Test
+    fun testMatchPredicateBound() {
+
+    }
+
+    @Test
+    fun testNoMatchPredicateBound() {
+
+    }
+
+    @Test
+    fun testMatchSubjectObjectBound() {
+
+    }
+
+    @Test
+    fun testNoMatchSubjectObjectBound() {
+
+    }
+
+    @Test
+    fun testMatchSubjectPredicateBound() {
+
+    }
+
+    @Test
+    fun testNoMatchSubjectPredicateBound() {
+
+    }
+
+    @Test
+    fun testMatchPredicateObjectBound() {
+
+    }
+
+    @Test
+    fun testNoMatchPredicateObjectBound() {
+
+    }
     // TODO test with blank nodes in the pattern
 
     // TODO test with asserted vs quoted
+
+    @Test
+    fun testQuotedNoNestedVariables() {
+        val pattern = BasicTriplePattern(
+            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/xx1"))),
+            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/yy1"))),
+            TermOrVariable.VariableTerm(Variable("x"))
+        )
+
+        val initialSolution = SolutionMapping(pattern.getVariables(), emptyMap())
+        val solutions = pattern.eval(initialSolution, graph)
+
+        SolutionSet.compareEqualSet(
+            solutions,
+            """
+            ?x
+            <<<http://example/s0> <http://example/p0> <http://example/o0>>>
+            <<<http://example/s0> <http://example/p0> <<<http://example/s00> <http://example/p00> <http://example/o00>>>>>
+            """.trimIndent()
+        )
+    }
+
+    @Test
+    fun testQuotedNestedSubjectSubjectMatchOneVariable() {
+        val pattern = BasicTriplePattern(
+            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/xx1"))),
+            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/yy1"))),
+            TermOrVariable.QuotedTriple(
+                TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/s0"))),
+                TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/p0"))),
+                TermOrVariable.VariableTerm(Variable("x"))
+            )
+        )
+
+
+        val initialSolution = SolutionMapping(pattern.getVariables(), emptyMap())
+        val solutions = pattern.eval(initialSolution, graph)
+
+        SolutionSet.compareEqualSet(
+            solutions,
+            """
+            ?x
+            <http://example/o0>
+            <<<http://example/s00> <http://example/p00> <http://example/o00>>>
+            """.trimIndent()
+        )
+    }
+
+    @Test
+    fun testQuotedNestedSubjectSubjectSubjectMatchOneVariable() {
+        val pattern = BasicTriplePattern(
+            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/xx1"))),
+            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/yy1"))),
+            TermOrVariable.QuotedTriple(
+                TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/s0"))),
+                TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/p0"))),
+                TermOrVariable.QuotedTriple(
+                    TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/s00"))),
+                    TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/p00"))),
+                    TermOrVariable.VariableTerm(Variable("x"))
+                )
+            )
+        )
+
+        val initialSolution = SolutionMapping(pattern.getVariables(), emptyMap())
+        val solutions = pattern.eval(initialSolution, graph)
+
+        SolutionSet.compareEqualSet(
+            solutions,
+            """
+            ?x
+            <http://example/o00>
+            """.trimIndent()
+        )
+    }
+
+    @Test
+    fun testQuotedNestedSubjectSubjectMatchTwoVariables() {
+        val pattern = BasicTriplePattern(
+            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/xx1"))),
+            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/yy1"))),
+            TermOrVariable.QuotedTriple(
+                TermOrVariable.VariableTerm(Variable("x")),
+                TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/p0"))),
+                TermOrVariable.VariableTerm(Variable("y"))
+            )
+        )
+
+
+        val initialSolution = SolutionMapping(pattern.getVariables(), emptyMap())
+        val solutions = pattern.eval(initialSolution, graph)
+
+        SolutionSet.compareEqualSet(
+            solutions,
+            """
+            ?x ?y
+            <http://example/s0> <http://example/o0>
+            <http://example/s0> <<<http://example/s00> <http://example/p00> <http://example/o00>>>
+            """.trimIndent()
+        )
+    }
+
+    @Test
+    fun testQuotedNestedSubjectSubjectNoMatchTwoVariables() {
+        val pattern = BasicTriplePattern(
+            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/xx1"))),
+            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/yy1"))),
+            TermOrVariable.QuotedTriple(
+                TermOrVariable.VariableTerm(Variable("x")),
+                TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/p0"))),
+                TermOrVariable.VariableTerm(Variable("x"))
+            )
+        )
+
+        val initialSolution = SolutionMapping(pattern.getVariables(), emptyMap())
+        val solutions = pattern.eval(initialSolution, graph)
+
+        Assertions.assertEquals(emptySet<SolutionMapping>(), solutions.toSet())
+    }
+
+    @Test
+    fun testQuotedNestedSubjectSubjectNoMatchOneVariable() {
+        val pattern = BasicTriplePattern(
+            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/xx1"))),
+            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/yy1"))),
+            TermOrVariable.QuotedTriple(
+                TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/s1"))),
+                TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/p0"))),
+                TermOrVariable.VariableTerm(Variable("x"))
+            )
+        )
+
+        val initialSolution = SolutionMapping(pattern.getVariables(), emptyMap())
+        val solutions = pattern.eval(initialSolution, graph)
+
+        Assertions.assertEquals(emptySet<SolutionMapping>(), solutions.toSet())
+    }
 }

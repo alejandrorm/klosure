@@ -17,6 +17,6 @@ data class LiteralId(val literal: String, val type: IRI?) : NodeId() {
     override fun toString(): String = if (type != null) "\"$literal\"^^<$type>" else "\"$literal\""
 }
 
-data class TripleId(val subject: NodeId, val predicate: IRI, val rdfObject: NodeId) : NodeId() {
-    override fun toString(): String = "<<$subject <$predicate> $rdfObject>>"
+data class TripleId(val subject: NodeId, val predicate: IRI, val obj: NodeId) : NodeId() {
+    override fun toString(): String = "<<$subject <$predicate> $obj>>"
 }

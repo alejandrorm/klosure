@@ -4,13 +4,22 @@ import me.alejandrorm.klosure.model.NodeId
 
 class SolutionMapping(val variables: Set<Variable>, val boundVariables: Map<Variable, NodeId>) {
 
+    companion object {
+        @JvmStatic
+        val EmptySolutionMapping = SolutionMapping(emptySet(), emptyMap())
+    }
+
     fun getFreeVariables(): Set<Variable> = variables.filter { !boundVariables.containsKey(it) }.toSet()
 
     fun bind(variable: Variable, value: NodeId): SolutionMapping {
         return SolutionMapping(variables, boundVariables + (variable to value))
     }
 
-    fun isCompatible(solution: SolutionMapping): Boolean = TODO()
+    fun isCompatible(solution: SolutionMapping): Boolean =
+        boundVariables.entries.all { entry -> (solution.boundVariables[entry.key] ?: entry.value) == entry.value }
+
+    fun merge(solution: SolutionMapping): SolutionMapping = SolutionMapping(variables + solution.variables,
+    boundVariables + solution.boundVariables)
 
     override fun toString(): String {
         return "Solution($boundVariables)"
