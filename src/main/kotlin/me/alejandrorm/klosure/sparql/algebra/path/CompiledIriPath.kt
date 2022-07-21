@@ -11,7 +11,8 @@ import org.semanticweb.owlapi.model.IRI
 class CompiledIriPath(
     val head: TermOrVariable,
     val iri: IRI,
-    val tail: TermOrVariable) : CompiledPath {
+    val tail: TermOrVariable
+) : CompiledPath {
 
     private val triple = BasicTriplePattern(head, TermOrVariable.NodeOrIriTerm(IriId(iri)), tail)
 

@@ -9,6 +9,13 @@ class SolutionMapping(val variables: Set<Variable>, val boundVariables: Map<Vari
         val EmptySolutionMapping = SolutionMapping(emptySet(), emptyMap())
     }
 
+    fun filterOutAnonymousVariables(): SolutionMapping {
+        return SolutionMapping(
+            variables.filterNot { it.isBlankNode }.toSet(),
+            boundVariables.filterNot { it.key.isBlankNode }
+        )
+    }
+
     fun getFreeVariables(): Set<Variable> = variables.filter { !boundVariables.containsKey(it) }.toSet()
 
     fun bind(variable: Variable, value: NodeId): SolutionMapping {
@@ -18,8 +25,10 @@ class SolutionMapping(val variables: Set<Variable>, val boundVariables: Map<Vari
     fun isCompatible(solution: SolutionMapping): Boolean =
         boundVariables.entries.all { entry -> (solution.boundVariables[entry.key] ?: entry.value) == entry.value }
 
-    fun merge(solution: SolutionMapping): SolutionMapping = SolutionMapping(variables + solution.variables,
-    boundVariables + solution.boundVariables)
+    fun merge(solution: SolutionMapping): SolutionMapping = SolutionMapping(
+        variables + solution.variables,
+        boundVariables + solution.boundVariables
+    )
 
     override fun toString(): String {
         return "Solution($boundVariables)"

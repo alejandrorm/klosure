@@ -10,7 +10,8 @@ import java.util.UUID
 
 class CompiledOneOrMorePath(
     val head: TermOrVariable,
-    val path: Path, val tail: TermOrVariable
+    val path: Path,
+    val tail: TermOrVariable
 ) : CompiledPath, TriplePattern {
 
     override fun eval(solution: SolutionMapping, graph: Graph): Iterable<SolutionMapping> {
@@ -58,5 +59,5 @@ class CompiledOneOrMorePath(
         return solutions.flatMap { eval(it, graph) }
     }
 
-    override fun getVariables(): Set<Variable> = TODO() //setOf(head, tail)
+    override fun getVariables(): Set<Variable> = TODO() // setOf(head, tail)
 }

@@ -322,7 +322,7 @@ class BasicTriplePatternTest {
         val pattern = BasicTriplePattern(
             TermOrVariable.VariableTerm(Variable("x")),
             TermOrVariable.VariableTerm(Variable("y")),
-            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/o2"))),
+            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/o2")))
         )
 
         val initialSolution = SolutionMapping(pattern.getVariables(), emptyMap())
@@ -343,7 +343,7 @@ class BasicTriplePatternTest {
         val pattern = BasicTriplePattern(
             TermOrVariable.VariableTerm(Variable("x")),
             TermOrVariable.VariableTerm(Variable("y")),
-            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/o10"))),
+            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/o10")))
         )
 
         val initialSolution = SolutionMapping(pattern.getVariables(), emptyMap())
@@ -357,7 +357,7 @@ class BasicTriplePatternTest {
         val pattern = BasicTriplePattern(
             TermOrVariable.VariableTerm(Variable("x")),
             TermOrVariable.VariableTerm(Variable("x")),
-            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/o9"))),
+            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/o9")))
         )
 
         val initialSolution = SolutionMapping(pattern.getVariables(), emptyMap())
@@ -377,7 +377,7 @@ class BasicTriplePatternTest {
         val pattern = BasicTriplePattern(
             TermOrVariable.VariableTerm(Variable("x")),
             TermOrVariable.VariableTerm(Variable("x")),
-            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/o1"))),
+            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/o1")))
         )
 
         val initialSolution = SolutionMapping(pattern.getVariables(), emptyMap())
@@ -393,7 +393,7 @@ class BasicTriplePatternTest {
         val pattern = BasicTriplePattern(
             TermOrVariable.VariableTerm(Variable("x")),
             TermOrVariable.VariableTerm(Variable("y")),
-            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/o1"))),
+            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/o1")))
         )
 
         val initialSolution = SolutionMapping(pattern.getVariables(), mapOf(Variable("x") to IriId(IRI.create("http://example/s1"))))
@@ -413,7 +413,7 @@ class BasicTriplePatternTest {
         val pattern = BasicTriplePattern(
             TermOrVariable.VariableTerm(Variable("x")),
             TermOrVariable.VariableTerm(Variable("y")),
-            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/o2"))),
+            TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/o2")))
         )
 
         val initialSolution = SolutionMapping(pattern.getVariables(), mapOf(Variable("x") to IriId(IRI.create("http://example/x1"))))
@@ -427,7 +427,7 @@ class BasicTriplePatternTest {
         val pattern = BasicTriplePattern(
             TermOrVariable.VariableTerm(Variable("x")),
             TermOrVariable.NodeOrIriTerm(IriId(IRI.create("http://example/p1"))),
-            TermOrVariable.VariableTerm(Variable("y")),
+            TermOrVariable.VariableTerm(Variable("y"))
         )
 
         val initialSolution = SolutionMapping(pattern.getVariables(), mapOf(Variable("y") to IriId(IRI.create("http://example/o2"))))
@@ -445,47 +445,38 @@ class BasicTriplePatternTest {
 
     @Test
     fun testNoMatchObjectBound() {
-
     }
 
     @Test
     fun testMatchPredicateBound() {
-
     }
 
     @Test
     fun testNoMatchPredicateBound() {
-
     }
 
     @Test
     fun testMatchSubjectObjectBound() {
-
     }
 
     @Test
     fun testNoMatchSubjectObjectBound() {
-
     }
 
     @Test
     fun testMatchSubjectPredicateBound() {
-
     }
 
     @Test
     fun testNoMatchSubjectPredicateBound() {
-
     }
 
     @Test
     fun testMatchPredicateObjectBound() {
-
     }
 
     @Test
     fun testNoMatchPredicateObjectBound() {
-
     }
     // TODO test with blank nodes in the pattern
 
@@ -523,7 +514,6 @@ class BasicTriplePatternTest {
                 TermOrVariable.VariableTerm(Variable("x"))
             )
         )
-
 
         val initialSolution = SolutionMapping(pattern.getVariables(), emptyMap())
         val solutions = pattern.eval(initialSolution, graph)
@@ -577,7 +567,6 @@ class BasicTriplePatternTest {
                 TermOrVariable.VariableTerm(Variable("y"))
             )
         )
-
 
         val initialSolution = SolutionMapping(pattern.getVariables(), emptyMap())
         val solutions = pattern.eval(initialSolution, graph)

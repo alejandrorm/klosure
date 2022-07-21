@@ -7,7 +7,8 @@ import me.alejandrorm.klosure.sparql.Variable
 class CompiledSequencePath(val compiledPath: List<CompiledPath>) : CompiledPath {
     override fun eval(solution: SolutionMapping, graph: Graph): Iterable<SolutionMapping> {
         return compiledPath.fold(listOf(solution).asIterable()) {
-            solutions, path -> path.eval(solutions, graph)
+                solutions, path ->
+            path.eval(solutions, graph)
         }
     }
 
