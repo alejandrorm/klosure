@@ -1,4 +1,4 @@
 package me.alejandrorm.klosure.sparql.algebra
 
-class ZeroOrMorePath {
+class Minus {
 }
