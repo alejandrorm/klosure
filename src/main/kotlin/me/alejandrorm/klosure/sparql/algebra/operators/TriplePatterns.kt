@@ -1,4 +1,4 @@
-package me.alejandrorm.klosure.sparql.algebra
+package me.alejandrorm.klosure.sparql.algebra.operators
 
 import me.alejandrorm.klosure.model.Graph
 import me.alejandrorm.klosure.sparql.SolutionMapping

@@ -4,8 +4,8 @@ import me.alejandrorm.klosure.model.Graph
 import me.alejandrorm.klosure.model.NodeId
 import me.alejandrorm.klosure.sparql.SolutionMapping
 import me.alejandrorm.klosure.sparql.Variable
-import me.alejandrorm.klosure.sparql.algebra.TermOrVariable
-import me.alejandrorm.klosure.sparql.algebra.TriplePattern
+import me.alejandrorm.klosure.sparql.algebra.operators.TermOrVariable
+import me.alejandrorm.klosure.sparql.algebra.operators.TriplePattern
 import java.util.UUID
 
 class CompiledOneOrMorePath(
@@ -24,17 +24,6 @@ class CompiledOneOrMorePath(
             evalHelper(it, v, graph, setOf(head.resolve(it).getTerm()))
         }
     }
-
-    /*
-      p(h, t)
-
-      p(h, x0)
-      p(x0, t)
-
-      p(h, x)
-      p(x0, y0)
-
-     */
 
     private fun evalHelper(
         solution: SolutionMapping,

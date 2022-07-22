@@ -4,8 +4,8 @@ import me.alejandrorm.klosure.model.Graph
 import me.alejandrorm.klosure.model.IriId
 import me.alejandrorm.klosure.sparql.SolutionMapping
 import me.alejandrorm.klosure.sparql.Variable
-import me.alejandrorm.klosure.sparql.algebra.BasicTriplePattern
-import me.alejandrorm.klosure.sparql.algebra.TermOrVariable
+import me.alejandrorm.klosure.sparql.algebra.operators.BasicTriplePattern
+import me.alejandrorm.klosure.sparql.algebra.operators.TermOrVariable
 import org.semanticweb.owlapi.model.IRI
 
 class CompiledIriPath(

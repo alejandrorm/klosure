@@ -6,7 +6,7 @@ import me.alejandrorm.klosure.model.IriId
 import me.alejandrorm.klosure.sparql.SolutionMapping
 import me.alejandrorm.klosure.sparql.Variable
 import me.alejandrorm.klosure.sparql.algebra.SolutionSet
-import me.alejandrorm.klosure.sparql.algebra.TermOrVariable
+import me.alejandrorm.klosure.sparql.algebra.operators.TermOrVariable
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.semanticweb.owlapi.model.IRI

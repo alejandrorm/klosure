@@ -1,4 +1,4 @@
-package me.alejandrorm.klosure.sparql.algebra
+package me.alejandrorm.klosure.sparql.algebra.operators
 
 import me.alejandrorm.klosure.model.Graph
 import me.alejandrorm.klosure.model.IriId
@@ -6,7 +6,8 @@ import me.alejandrorm.klosure.model.TripleId
 import me.alejandrorm.klosure.sparql.SolutionMapping
 import me.alejandrorm.klosure.sparql.Variable
 
-class BasicTriplePattern(val subject: TermOrVariable, val predicate: TermOrVariable, val obj: TermOrVariable) : TriplePattern {
+class BasicTriplePattern(val subject: TermOrVariable, val predicate: TermOrVariable, val obj: TermOrVariable) :
+    TriplePattern {
 
     private val terms = arrayOf(subject, predicate, obj)
 
