@@ -1,7 +1,5 @@
-package me.alejandrorm.klosure.parser
+package me.alejandrorm.klosure.parser.turtle
 
-import ParseException
-import TurtleStarParser
 import me.alejandrorm.klosure.model.Graph
 import me.alejandrorm.klosure.model.PredicateNode
 import me.alejandrorm.klosure.parser.TripleComparator.Companion.areEqualTriples

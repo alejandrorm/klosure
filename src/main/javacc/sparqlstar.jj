@@ -1,0 +1,1521 @@
+options
+{
+  // Use \ u escapes in streams AND use a reader for the query
+  // => get both raw and escaped unicode
+
+  JAVA_UNICODE_ESCAPE   = true;
+  UNICODE_INPUT         = true;
+
+  STATIC                = false;
+  //DEBUG_PARSER          = true;
+  //DEBUG_TOKEN_MANAGER   = true;
+  FORCE_LA_CHECK        = true;
+}
+
+PARSER_BEGIN(SparqlStarParser)
+
+package me.alejandrorm.klosure.parser.sparql;
+
+import org.semanticweb.owlapi.model.IRI;
+
+import java.util.*;
+
+import me.alejandrorm.klosure.model.*;
+import me.alejandrorm.klosure.sparql.*;
+
+public class SparqlStarParser {
+
+    private static final String NAMESPACE_PREFIX = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+
+    private final Map<String, String> prefixes = new HashMap<>();
+
+    private class TermAndTriples {
+        public TermOrVariable term;
+        public List<TriplePattern> patterns;
+
+        public TermAndTriples(TermOrVariable term, List<TriplePattern> patterns) {
+            this.term = term;
+            this.patterns = patterns;
+        }
+    }
+
+    private class VerbAndObjects {
+        public TermOrVariable verb;
+        public Path path;
+        public List<TermAndTriples> objectsAndTriples;
+
+        public VerbAndObjects(TermOrVariable verb, Path path, List<TermAndTriples> objectsAndTriples) {
+            this.term = term;
+            this.path = path;
+            this.objectsAndTriples = objectsAndTriples;
+        }
+
+        public VerbAndObjects(Path path, List<TermAndTriples> objectsAndTriples) {
+            this.path = path;
+            this.objectsAndTriples = objectsAndTriples;
+        }
+    }
+
+    private class VerbObjectAnnotation {
+        public IRI verb;
+        public Node object;
+        public List<VerbObjectAnnotation> annotations = new ArrayList<>();
+
+        public void addAll(Node subject, Graph graph) {
+            PredicateNode triple = graph.getOrCreatePredicate(subject, verb, object, true);
+            for (VerbObjectAnnotation voa : annotations) {
+                voa.addAll(triple, graph);
+            }
+        }
+     }
+
+     private class ObjectAnnotation {
+        public Node object;
+        public List<VerbObjectAnnotation> annotations = new ArrayList<>();
+     }
+
+     private List<TriplePattern> getTriples(TermOrVariable subject, List<VerbAndObjects> vos) {
+        List<TriplePattern> triples = new ArrayList<>();
+        for (VerbAndObjects vo : vos) {
+            if (vo.path != null){
+                for (TermAndTriples tat : vo.objectsAndTriples) {
+                    triples.add(vo.path.compile(subject, tat.term));
+                    triples.addAll(tat.patterns);
+                }
+            }else {
+                for (TermAndTriples tat : vo.objectsAndTriples) {
+                    triples.add(new BasicTriplePattern(subject, vo.verb, tat.term));
+                    triples.addAll(tat.patterns);
+                }
+            }
+        }
+        return triples;
+     }
+
+     private List<TriplePattern> getTriples(TermAndTriples tat,
+                                            List<VerbAndObjects> maybeVos) {
+         List<TriplePattern> triples = new ArrayList<>(tat.patterns);
+         if(maybeVos != null) {
+             for (VerbAndObjects vo : maybeVos) {
+                 if (vo.path != null){
+                     for (TermAndTriples tat2 : vo.objectsAndTriples) {
+                         triples.add(vo.path.compile(tat.term, tat2.term));
+                         triples.addAll(tat2.patterns);
+                     }
+                 } else {
+                     for (TermAndTriples tat2 : vo.objectsAndTriples) {
+                         triples.add(new BasicTriplePattern(tat.term, vo.verb, tat2.term));
+                         triples.addAll(tat.patterns);
+                     }
+                 }
+             }
+         }
+         return triples;
+     }
+}
+
+PARSER_END(SparqlStarParser)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+}
+
+void QueryUnit():
+{}
+{
+  Query()
+}
+
+void Query():
+{}
+{
+  Prologue() ( SelectQuery() | ConstructQuery() | DescribeQuery() | AskQuery()) ValuesClause()
+}
+
+void UpdateUnit():
+{}
+{
+  Update()
+}
+
+void Prologue():
+{}
+{
+  (BaseDecl() | PrefixDecl()) *
+}
+
+void BaseDecl():
+{
+ Token t;
+}
+{
+  "BASE" t = <IRIREF> { prefixes.put(":", t.image); }
+}
+
+void PrefixDecl():
+{
+ Token t1, t2;
+}
+{
+  "PREFIX" t1 = <PNAME_NS> t2 = <IRIREF> { prefixes.put(t1.image, t2.image); }
+}
+
+void SelectQuery():
+{}
+{
+  SelectClause() (DatasetClause()) * WhereClause() SolutionModifier()
+}
+
+void SubSelect():
+{}
+{
+  SelectClause() WhereClause() SolutionModifier() ValuesClause()
+}
+
+void SelectClause():
+{}
+{
+  "SELECT" ( "DISTINCT" | "REDUCED") ? ( ( Var() | ( "(" Expression() "AS" Var() ")") ) + | "*")
+}
+
+void ConstructQuery():
+{}
+{
+  "CONSTRUCT"
+   ConstructTemplate() (DatasetClause())* WhereClause() SolutionModifier() (DatasetClause())* "WHERE" "{" (TriplesTemplate())? "}" SolutionModifier()
+}
+
+void DescribeQuery():
+{}
+{
+  "DESCRIBE" ( (VarOrIri())+ | "*") (DatasetClause())* (WhereClause())? SolutionModifier()
+}
+
+void AskQuery():
+{}
+{
+  "ASK" (DatasetClause())* WhereClause() ValuesClause()
+}
+
+void DatasetClause():
+{}
+{
+  "FROM" ( DefaultGraphClause() | NamedGraphClause())
+}
+
+void DefaultGraphClause():
+{}
+{
+  SourceSelector()
+}
+
+void NamedGraphClause():
+{}
+{
+  "NAMED" SourceSelector()
+}
+
+void SourceSelector():
+{}
+{
+  iri()
+}
+
+void WhereClause():
+{}
+{
+  ("WHERE")? GroupGraphPattern()
+}
+
+void SolutionModifier():
+{}
+{
+  (GroupClause())? (HavingClause())? (OrderClause())? (LimitOffsetClauses())?
+}
+
+void GroupClause():
+{}
+{
+  "GROUP" "BY" (GroupCondition())+
+}
+
+void GroupCondition():
+{}
+{
+  BuiltInCall() |
+  FunctionCall() |
+  ( "(" Expression() ( "AS" Var()) ? ")") |
+  Var()
+}
+
+void HavingClause():
+{}
+{
+  "HAVING" (HavingCondition())+
+}
+
+void HavingCondition():
+{}
+{
+  Constraint()
+}
+
+void OrderClause():
+{}
+{
+  "ORDER" "BY" (OrderCondition())+
+}
+
+void OrderCondition():
+{}
+{
+  ( ( "ASC" | "DESC") BrackettedExpression()) |
+  Constraint() |
+  Var()
+}
+
+void LimitOffsetClauses():
+{}
+{
+  ( LimitClause() (OffsetClause())? ) | ( OffsetClause() (LimitClause())? )
+}
+
+void LimitClause():
+{}
+{
+  "LIMIT" Integer()
+}
+
+void OffsetClause():
+{}
+{
+  "OFFSET" Integer()
+}
+
+void ValuesClause():
+{}
+{
+  ( LOOKAHEAD(3) "VALUES" DataBlock()) ?
+}
+
+void Update():
+{}
+{
+  Prologue() ( Update1() ( ";" Update()) ? ) ?
+}
+
+void Update1():
+{}
+{
+  Load() | Clear() | Drop() | Add() | Move() | Copy() | Create() | InsertData() | DeleteData() | DeleteWhere() | Modify()
+}
+
+void Load():
+{}
+{
+  "LOAD" ("SILENT")? iri() ( "INTO" GraphRef()) ?
+}
+
+void Clear():
+{}
+{
+  "CLEAR" ("SILENT")? GraphRefAll()
+}
+
+void Drop():
+{}
+{
+  "DROP" ("SILENT")? GraphRefAll()
+}
+
+void Create():
+{}
+{
+  "CREATE" ("SILENT")? GraphRef()
+}
+
+void Add():
+{}
+{
+  "ADD" ("SILENT")? GraphOrDefault() "TO" GraphOrDefault()
+}
+
+void Move():
+{}
+{
+  "MOVE" ("SILENT")? GraphOrDefault() "TO" GraphOrDefault()
+}
+
+void Copy():
+{}
+{
+  "COPY" ("SILENT")? GraphOrDefault() "TO" GraphOrDefault()
+}
+
+void InsertData():
+{}
+{
+  "INSERT DATA" QuadData()
+}
+
+void DeleteData():
+{}
+{
+  "DELETE DATA" QuadData()
+}
+
+void DeleteWhere():
+{}
+{
+  "DELETE WHERE" QuadPattern()
+}
+
+void Modify():
+{}
+{
+  ( "WITH" iri()) ? ( ( DeleteClause() (InsertClause())? ) | InsertClause()) (UsingClause())* "WHERE" GroupGraphPattern()
+}
+
+void DeleteClause():
+{}
+{
+  "DELETE" QuadPattern()
+}
+
+void InsertClause():
+{}
+{
+  "INSERT" QuadPattern()
+}
+
+void UsingClause():
+{}
+{
+  "USING" ( iri() | ( "NAMED" iri()) )
+}
+
+void GraphOrDefault():
+{}
+{
+  "DEFAULT" | ( ("GRAPH")? iri())
+}
+
+void GraphRef():
+{}
+{
+  "GRAPH" iri()
+}
+
+void GraphRefAll():
+{}
+{
+  GraphRef() | "DEFAULT" | "NAMED" | "ALL"
+}
+
+void QuadPattern():
+{}
+{
+  "{" Quads() "}"
+}
+
+void QuadData():
+{}
+{
+  "{" Quads() "}"
+}
+
+void Quads():
+{}
+{
+  (TriplesTemplate())? ( QuadsNotTriples() (".")? (TriplesTemplate())? ) *
+}
+
+void QuadsNotTriples():
+{}
+{
+  "GRAPH" VarOrIri() "{" (TriplesTemplate())? "}"
+}
+
+void TriplesTemplate():
+{}
+{
+  TriplesSameSubject() ( "." (TriplesTemplate())? ) ?
+}
+
+void GroupGraphPattern():
+{}
+{
+  "{" ( SubSelect() | GroupGraphPatternSub()) "}"
+}
+
+GraphPattern GroupGraphPatternSub():
+{
+  List<GraphPattern> gps = new ArrayList<GraphPattern>();
+  GraphPattern gp = null;
+  List<TriplePattern> triples;
+}
+{
+  (triples = TriplesBlock() { gps.add(new BasicGraphPattern(triples)); })?
+   ( gp = GraphPatternNotTriples() (".")? (triples = TriplesBlock() { gps.add(new BasicGraphPattern(triples)); })? ) * {
+     return new Join(gps);
+   }
+}
+
+//TODO: separate groups of triples with the same subject
+List<TriplePattern> TriplesBlock():
+{
+  List<TriplePattern> triples = new List<TriplePattern>();
+  List<TriplePattern> t;
+}
+{
+  t = TriplesSameSubjectPath() { triples.addAll(t); }
+  ( "." (t = TriplesBlock() { triples.addAll(t); })? ) ?
+}
+
+//TODO: implement this
+GraphPattern GraphPatternNotTriples():
+{}
+{
+  GroupOrUnionGraphPattern() | // Union
+  OptionalGraphPattern() | // LeftJoin
+  MinusGraphPattern() | // Minus
+  GraphGraphPattern() |
+  ServiceGraphPattern() |
+  Filter() | // Filter
+  Bind() | // Bind
+  InlineData()
+}
+
+void OptionalGraphPattern():
+{}
+{
+  "OPTIONAL" GroupGraphPattern()
+}
+
+void GraphGraphPattern():
+{}
+{
+  "GRAPH" VarOrIri() GroupGraphPattern()
+}
+
+void ServiceGraphPattern():
+{}
+{
+  "SERVICE" ("SILENT")? VarOrIri() GroupGraphPattern()
+}
+
+void Bind():
+{}
+{
+  "BIND" "(" Expression() "AS" Var() ")"
+}
+
+void InlineData():
+{}
+{
+  "VALUES" DataBlock()
+}
+
+void DataBlock():
+{}
+{
+  InlineDataOneVar() |
+  InlineDataFull()
+}
+
+void InlineDataOneVar():
+{}
+{
+  Var() "{" (DataBlockValue())* "}"
+}
+
+void InlineDataFull():
+{}
+{
+  ( <NIL> | ( "(" (Var())* ")") ) "{" ( ( "(" (DataBlockValue())* ")") | <NIL>) * "}"
+}
+
+void DataBlockValue():
+{}
+{
+  QuotedTriple() |
+  iri() |
+  RDFLiteral() |
+  NumericLiteral() |
+  BooleanLiteral() |
+  "UNDEF"
+}
+
+void MinusGraphPattern():
+{}
+{
+  "MINUS" GroupGraphPattern()
+}
+
+void GroupOrUnionGraphPattern():
+{}
+{
+  GroupGraphPattern() ( "UNION" GroupGraphPattern()) *
+}
+
+void Filter():
+{}
+{
+  "FILTER" Constraint()
+}
+
+void Constraint():
+{}
+{
+  BrackettedExpression() |
+  BuiltInCall() |
+  FunctionCall()
+}
+
+void FunctionCall():
+{}
+{
+  iri() ArgList()
+}
+
+void ArgList():
+{}
+{
+  <NIL> | ( "(" ("DISTINCT")? Expression() ( "," Expression()) * ")")
+}
+
+void ExpressionList():
+{}
+{
+  <NIL> | ( "(" Expression() ( "," Expression()) * ")")
+}
+
+void ConstructTemplate():
+{}
+{
+  "{" (ConstructTriples())? "}"
+}
+
+void ConstructTriples():
+{}
+{
+  TriplesSameSubject() ( "." (ConstructTriples())? ) ?
+}
+
+void TriplesSameSubject():
+{}
+{
+  ( VarOrTermOrQuotedTP() PropertyListNotEmpty()) | ( TriplesNode() PropertyList())
+}
+
+void PropertyList():
+{}
+{
+  (PropertyListNotEmpty())?
+}
+
+void PropertyListNotEmpty():
+{}
+{
+  Verb() ObjectList() ( ";" ( Verb() ObjectList()) ? ) *
+}
+
+TermOrVariable Verb():
+{
+  TermOrVariable v;
+}
+{
+  v = VarOrIri() { return v;}|
+  "a" { return new TermOrVariable.NodeOrTerm(new IriId(IRI.create(NAMESPACE_PREFIX + "type"))); }
+}
+
+List<TermAndTriples> ObjectList():
+{
+  List<TermAndTriples>  tts = new ArrayList<>();
+  TermAndTriples tt;
+}
+{
+  tt = Object() { tts.add(tt); } ( "," tt = Object() { tts.add(tt); }) * { return tts; }
+}
+
+TermAndTriples Object():
+{
+  TermAndTriples t;
+}
+{
+  t = GraphNode() (AnnotationPattern() { /* TODO */})? { return t;}
+}
+
+List<TriplePattern> TriplesSameSubjectPath():
+{
+  TermOrVariable subject;
+  List<VerbAndObjects> vos;
+  TermAndTriples tat;
+  List<VerbAndObjects> maybeVos;
+}
+{
+  ( subject = VarOrTermOrQuotedTP() vos = PropertyListPathNotEmpty() {
+    return getTriples(subject, vos);
+  }) | ( tat = TriplesNodePath() vos = PropertyListPath() {
+    return getTriples(tat, vos);
+  })
+}
+
+List<VerbAndObjects> PropertyListPath():
+{
+ List<VerbAndObjects> vos;}
+{
+  (vos = PropertyListPathNotEmpty())? { return vos; }
+}
+
+List<VerbAndObjects> PropertyListPathNotEmpty():
+{
+  List<VerbAndObjects> vos = new ArrayList<>();
+  List<TermAndTriples> tts = null;
+  Path p = null;
+  TermOrVariable t = null;
+
+}
+{
+  ( p = VerbPath() | t = VerbSimple()) tts = ObjectListPath() {
+    vos.add(new VerbAndObjects(p, t, tts)); p = null; t = null; tts = null;
+  } ( ";" ( ( p = VerbPath() | t = VerbSimple()) tts = ObjectList() {
+    vos.add(new VerbAndObjects(p, t, tts)); p = null; t = null; tts = null;
+  }) ? ) * { return vos; }
+}
+
+Path VerbPath():
+{
+  Path p;
+}
+{
+  p = Path() { return p; }
+}
+
+TermOrVariable VerbSimple():
+{
+    Variable v;
+}
+{
+  v = Var() { return new  TermOrVariable.VariableTerm(v); }
+}
+
+List<TermAndTriples> ObjectListPath():
+{
+  List<TermAndTriples> tts = new ArrayList<>();
+  TermAndTriples tt;
+}
+{
+  tt = ObjectPath() { tts.add(tt); } ( "," tt = ObjectPath() { tts.add(tt); }) * { return tts; }
+}
+
+TermAndTriples ObjectPath():
+{
+  TermAndTriples t;
+}
+{
+  t = GraphNodePath() (AnnotationPatternPath() { /* TODO */})? { return t;}
+}
+
+Path Path():
+{
+  Path p;
+}
+{
+  p = PathAlternative() { return p; }
+}
+
+Path PathAlternative():
+{
+  List<Path> paths = new ArrayList<>();
+  Path p;
+}
+{
+  p = PathSequence() { paths.add(p); }( "|" p = PathSequence() { paths.add(p); }) * {
+
+    if (paths.size() == 1) {
+      return paths.get(0);
+    } else {
+      return new AlternatePath(paths);
+    }
+  }
+}
+
+Path PathSequence():
+{
+  Path p;
+  List<Path> paths = new ArrayList<>();
+}
+{
+  p = PathEltOrInverse() { paths.add(p); }( "/" p = PathEltOrInverse() { paths.add(p); }) * {
+    if (paths.size() == 1) {
+      return paths.get(0);
+    } else {
+      return new SequencePath(paths);
+    }
+  }
+}
+
+Path PathElt():
+{
+  Path p;
+  int mode = -1;
+}
+{
+  p = PathPrimary() ( mode = PathMod())? {
+    switch(mode) {
+      case -1:
+        return p;
+      case 0:
+        return new ZeroOrMorePath(p);
+      case 1:
+        return new ZeroOrOnePath(p);
+      case 2:
+        return new OneOrMorePath(p);
+      default:
+        throw new RuntimeException("Invalid path mode");
+    }
+  }
+}
+
+Path PathEltOrInverse():
+{
+  Path p;
+}
+{
+  p = PathElt() { return p; }|
+  ( "^" p = PathElt() { return InversePath(p); })
+}
+
+int PathMod():
+{}
+{
+  "*" { return 0; } |
+  "?" { return 1; }|
+  "+" { return 2; }
+}
+
+void PathPrimary():
+{
+  Path p;
+  IRI i;
+}
+{
+  i = iri() { return new IriPath(i); }|
+  "a" { return new IriPath(IRI.create(NAMESPACE_PREFIX + "type")); }|
+  ( "!" p = PathNegatedPropertySet() { return new NegatedPath(p); }) |
+  ( "(" p = Path() { return p; }")")
+}
+
+Path PathNegatedPropertySet():
+{
+  Path p;
+  List<Path> paths = new ArrayList<>();
+}
+{
+  p = PathOneInPropertySet() { return p; }|
+  "(" ( p = PathOneInPropertySet() { paths.add(p); }( "|" p = PathOneInPropertySet() { paths.add(p); }) * ) ? ")" {
+    return new AlternatePath(paths);
+  }
+}
+
+void PathOneInPropertySet():
+{
+  IRI i;
+}
+{
+  i = iri() { return new IriPath(i); }|
+  "a" { return new IriPath(IRI.create(NAMESPACE_PREFIX + "type")); }|
+  ( "^" ( i = iri() { return new InversePath(new IriPath(i)); } | "a" { return new InversePath(new IriPath(IRI.create(NAMESPACE_PREFIX + "type")));}) )
+}
+
+long Integer():
+{
+ Token t;
+}
+{
+  t = <INTEGER> { return Long.parseLong(t.image); }
+}
+
+TermAndTriples TriplesNode():
+{
+  TermAndTriples tt;
+}
+{
+  tt = Collection() { return tt;}|
+  tt = BlankNodePropertyList() { return tt; }
+}
+
+TermAndTriples BlankNodePropertyList():
+{}
+{
+  "[" PropertyListNotEmpty() "]"
+}
+
+TermAndTriples TriplesNodePath():
+{
+  TermAndTriples t;
+}
+{
+  t = CollectionPath() { return t; }|
+  t = BlankNodePropertyListPath() { return t; }
+}
+
+TermAndTriples BlankNodePropertyListPath():
+{}
+{
+  "[" PropertyListPathNotEmpty() "]" {
+    // TODO
+  }
+}
+
+TermAndTriples Collection():
+{
+  List<TermOrVariable> list = new ArrayList<>();
+  TermOrVariable t;
+}
+{
+  "(" (t = GraphNode() { list.add(t); })+ ")"
+  {
+    ListTerm lt = ListTerm.create(list);
+    return new TermAndTriples(lt.node, lt.list);
+  }
+}
+
+TermAndTriples CollectionPath():
+{
+  List<TermOrVariable> list = new ArrayList<>();
+  TermOrVariable t;
+}
+{
+  "(" (t = GraphNodePath() { list.add(t); })+ ")"
+  {
+    ListTerm lt = ListTerm.create(list);
+    return new TermAndTriples(lt.node, lt.list);
+  }
+}
+
+TermAndTriples GraphNode():
+{
+   TermOrVariable t;
+   TermAndTriples tt;
+}
+{
+  t = VarOrTermOrQuotedTP() { return new TermAndTriples(t, Collections.emptyList()); }|
+  tt = TriplesNode() { return tt; }
+}
+
+TermAndTriples GraphNodePath():
+{
+  TermOrVariable t;
+  TermAndTriples tt;
+}
+{
+  t = VarOrTermOrQuotedTP() { return new TermAndTriples(t, Collections.emptyList()); }|
+  tt = TriplesNodePath() { return tt; }
+}
+
+//void VarOrTerm():
+//{}
+//{
+//  Var() | GraphTerm()
+//}
+
+TermOrVariable VarOrIri():
+{
+  Variable v;
+  IRI i;
+}
+{
+  v = Var() { return new TermOrVariable.VariableTerm(v); }|
+  i = iri() { return new TermOrVariable.NodeOrIriTerm(new IriId(i)); }
+}
+
+Variable Var():
+{
+  Token t;
+}
+{
+  t = <VAR1> { return new Variable(t.image.substring(1)); } |
+  t = <VAR2> { return new Variable(t.image.substring(1)); }
+}
+
+TermOrVariable GraphTerm():
+{
+  LiteralId l;
+  IRI i;
+  BlankId b;
+}
+{
+  i = iri() { return new TermOrVariable.NodeOrIdTerm(new IriId(i)); }|
+  l = RDFLiteral() { return TermOrVariable.NodeOrIriTerm(l); }|
+  l = NumericLiteral() { return new TermOrVariable.NodeOrIriTerm(l); }|
+  l = BooleanLiteral() { return new TermOrVariable.NodeOrIriTerm(l); }|
+  b = BlankNode() { return new TermOrVariable(VariableTerm(new Variable(b.name, true))); }|
+  <NIL> { return null;}
+}
+
+void Expression():
+{}
+{
+  ConditionalOrExpression()
+}
+
+void ConditionalOrExpression():
+{}
+{
+  ConditionalAndExpression() ( "||" ConditionalAndExpression()) *
+}
+
+void ConditionalAndExpression():
+{}
+{
+  ValueLogical() ( "&&" ValueLogical()) *
+}
+
+void ValueLogical():
+{}
+{
+  RelationalExpression()
+}
+
+void RelationalExpression():
+{}
+{
+  NumericExpression()
+( ( "=" NumericExpression())  |
+( "!=" NumericExpression()) |
+( "<" NumericExpression()) |
+( ">" NumericExpression()) |
+( "<=" NumericExpression()) |
+( ">=" NumericExpression()) |
+( "IN" ExpressionList()) |
+( "NOT" "IN" ExpressionList()) ) ?
+}
+
+void NumericExpression():
+{}
+{
+  AdditiveExpression()
+}
+
+void AdditiveExpression():
+{}
+{
+  MultiplicativeExpression()
+( ( "+" MultiplicativeExpression()) |
+  ( "-" MultiplicativeExpression()) |
+  ( ( NumericLiteralPositive() | NumericLiteralNegative()) ( ( "*" UnaryExpression()) | ( "/" UnaryExpression()) ) ? ) ) *
+}
+
+void MultiplicativeExpression():
+{}
+{
+  UnaryExpression() ( ( "*" UnaryExpression()) | ( "/" UnaryExpression()) ) *
+}
+
+void UnaryExpression():
+{}
+{
+  ( "!" PrimaryExpression()) |
+  ( "+" PrimaryExpression()) |
+  ( "-" PrimaryExpression()) |
+  PrimaryExpression()
+}
+
+void PrimaryExpression():
+{}
+{
+  BrackettedExpression() |
+  BuiltInCall() |
+  iriOrFunction() |
+  RDFLiteral() |
+  NumericLiteral()|
+  BooleanLiteral() |
+  Var() |
+  ExprQuotedTP()
+}
+
+void BrackettedExpression():
+{}
+{
+  "(" Expression() ")"
+}
+
+void BuiltInCall():
+{}
+{
+  Aggregate()
+|	( "STR" "(" Expression() ")")
+|	( "LANG" "(" Expression() ")")
+|	( "LANGMATCHES" "(" Expression() "," Expression() ")")
+|	( "DATATYPE" "(" Expression() ")")
+|	( "BOUND" "(" Var() ")")
+|	( "IRI" "(" Expression() ")")
+|	( "URI" "(" Expression() ")")
+|	( "BNODE" ( ( "(" Expression() ")") | <NIL>) )
+|	( "RAND" <NIL>)
+|	( "ABS" "(" Expression() ")")
+|	( "CEIL" "(" Expression() ")")
+|	( "FLOOR" "(" Expression() ")")
+|	( "ROUND" "(" Expression() ")")
+|	( "CONCAT" ExpressionList())
+|	SubstringExpression()
+|	( "STRLEN" "(" Expression() ")")
+|	StrReplaceExpression()
+|	( "UCASE" "(" Expression() ")")
+|	( "LCASE" "(" Expression() ")")
+|	( "ENCODE_FOR_URI" "(" Expression() ")")
+|	( "CONTAINS" "(" Expression() "," Expression() ")")
+|	( "STRSTARTS" "(" Expression() "," Expression() ")")
+|	( "STRENDS" "(" Expression() "," Expression() ")")
+|	( "STRBEFORE" "(" Expression() "," Expression() ")")
+|	( "STRAFTER" "(" Expression() "," Expression() ")")
+|	( "YEAR" "(" Expression() ")")
+|	( "MONTH" "(" Expression() ")")
+|	( "DAY" "(" Expression() ")")
+|	( "HOURS" "(" Expression() ")")
+|	( "MINUTES" "(" Expression() ")")
+|	( "SECONDS" "(" Expression() ")")
+|	( "TIMEZONE" "(" Expression() ")")
+|	( "TZ" "(" Expression() ")")
+|	( "NOW" <NIL>)
+|	( "UUID" <NIL>)
+|	( "STRUUID" <NIL>)
+|	( "MD5" "(" Expression() ")")
+|	( "SHA1" "(" Expression() ")")
+|	( "SHA224" "(" Expression() ")")
+|	( "SHA256" "(" Expression() ")")
+|	( "SHA384" "(" Expression() ")")
+|	( "SHA512" "(" Expression() ")")
+|	( "COALESCE" ExpressionList())
+|	( "IF" "(" Expression() "," Expression() "," Expression() ")")
+|	( "STRLANG" "(" Expression() "," Expression() ")")
+|	( "STRDT" "(" Expression() "," Expression() ")")
+|	( "sameTerm" "(" Expression() "," Expression() ")")
+|	( "isIRI" "(" Expression() ")")
+|	( "isURI" "(" Expression() ")")
+|	( "isBLANK" "(" Expression() ")")
+|	( "isLITERAL" "(" Expression() ")")
+|	( "isNUMERIC" "(" Expression() ")")
+|	( "TRIPLE" "(" Expression() "," Expression() "," Expression() ")")
+|	( "SUBJECT" "(" Expression() ")")
+|	( "PREDICATE" "(" Expression() ")")
+|	( "OBJECT" "(" Expression() ")")
+|	( "isTRIPLE" "(" Expression() ")")
+|	RegexExpression()
+|	ExistsFunc()
+|	NotExistsFunc()
+}
+
+void RegexExpression():
+{}
+{
+  "REGEX" "(" Expression() "," Expression() ( "," Expression()) ? ")"
+}
+
+void SubstringExpression():
+{}
+{
+  "SUBSTR" "(" Expression() "," Expression() ( "," Expression()) ? ")"
+}
+
+void StrReplaceExpression():
+{}
+{
+  "REPLACE" "(" Expression() "," Expression() "," Expression() ( "," Expression()) ? ")"
+}
+
+void ExistsFunc():
+{}
+{
+  "EXISTS" GroupGraphPattern()
+}
+
+void NotExistsFunc():
+{}
+{
+  "NOT" "EXISTS" GroupGraphPattern()
+}
+
+void Aggregate():
+{}
+{
+  ( "COUNT" "(" ("DISTINCT")? "*" Expression() ")") |
+  ( "SUM" "(" ("DISTINCT")? Expression() ")") |
+  ( "MIN" "(" ("DISTINCT")? Expression() ")") |
+  ( "MAX" "(" ("DISTINCT")? Expression() ")") |
+  ( "AVG" "(" ("DISTINCT")? Expression() ")") |
+  ( "SAMPLE" "(" ("DISTINCT")? Expression() ")") |
+  ( "GROUP_CONCAT" "(" ("DISTINCT")? Expression() ( ";" "SEPARATOR" "=" String()) ? ")")
+}
+
+void iriOrFunction():
+{}
+{
+  iri() (ArgList())?
+}
+
+LiteralId RDFLiteral():
+{
+  String s;
+  Token t;
+  String lang = null;
+  IRI i = null;
+}
+{
+  s = String() ( t = <LANGTAG> { lang = t.image; }| ( "^^" i = iri()) ) ? { return new LiteralId(s, lang, i); }
+}
+
+void NumericLiteral():
+{}
+{
+  NumericLiteralUnsigned() |
+  NumericLiteralPositive() |
+  NumericLiteralNegative()
+}
+
+void NumericLiteralUnsigned():
+{}
+{
+  <INTEGER> |
+  <DECIMAL> |
+  <DOUBLE>
+}
+
+void NumericLiteralPositive():
+{}
+{
+  <INTEGER_POSITIVE> |
+  <DECIMAL_POSITIVE> |
+  <DOUBLE_POSITIVE>
+}
+
+void NumericLiteralNegative():
+{}
+{
+  <INTEGER_NEGATIVE> | <DECIMAL_NEGATIVE> | <DOUBLE_NEGATIVE>
+}
+
+BooleanLiteral BooleanLiteral():
+{}
+{
+  "true" { return TrueLiteral; }|
+  "false" { return FalseLiteral; }
+}
+
+void String():
+{}
+{
+  <STRING_LITERAL1> |
+  <STRING_LITERAL2> |
+  <STRING_LITERAL_LONG1> |
+  <STRING_LITERAL_LONG2>
+}
+
+IRI iri():
+{
+ Token t;
+ String s;
+}
+{
+  t = <IRIREF> { return IRI.create(t.image); } |
+  s = PrefixedName() { return IRI.create(s); }
+}
+
+String PrefixedName():
+{
+ Token t;
+}
+{
+  t = <PNAME_LN> {
+   String[] parts = t.image.split(":", 2);
+   return prefixes.get(parts[0] + ":") + parts[1];
+  }|
+  t = <PNAME_NS> { return prefixes.get(t.image); }
+}
+
+BlankId BlankNode():
+{ Token t; }
+{
+  t = <BLANK_NODE_LABEL> { return new BlankId(t.image); }|
+  <ANON> { return new BlankId(UUID.randomUUID().toString()); }
+}
+
+TermOrVariable.QuotedTriple QuotedTP():
+{
+ TermOrVariable s;
+ TermOrVariable p;
+ TermOrVariable o;}
+{
+  "<<" s = qtSubjectOrObject() p = Verb() o = qtSubjectOrObject() ">>" {
+     return new TermOrVariable.QuotedTriple(s, p, o);
+  }
+}
+
+void QuotedTriple():
+{}
+{
+  "<<" DataValueTerm() ( iri() | "a") DataValueTerm() ">>"
+}
+
+TermOrVariable qtSubjectOrObject():
+{
+  Variable v;
+  BlankId n;
+  IRI i;
+  LiteralId l;
+  QuotedTriple t;
+}
+{
+  v = Var() { return new TermOrVariable.VariableTerm(v); }|
+  //FIXME blank nodes should be scoped
+  n = BlankNode() { return new TermOrVariable.VariableTerm(new Variable(n.name, true)); }|
+  i = iri() { return new TermOrVariable.NodeOrIriTerm(new IriId(i)); }|
+  l = RDFLiteral() { return TermOrVariable.NodeOrIriTerm(l); }|
+  l = NumericLiteral() { return TermOrVariable.NodeOrIriTerm(l); }|
+  l = BooleanLiteral() { return TermOrVariable.NodeOrIriTerm(l); }|
+  t = QuotedTP() { return t; }
+}
+
+void DataValueTerm():
+{}
+{
+  iri() |
+  RDFLiteral() |
+  NumericLiteral() |
+  BooleanLiteral() |
+  QuotedTriple()
+}
+
+TermOrVariable VarOrTermOrQuotedTP():
+{
+ Variable v;
+ TermOrVariable t;
+}
+{
+  v = Var() { return new TermOrVariable.VariableTerm(v); }|
+  t = GraphTerm() { return t; }|
+  t = QuotedTP() { return t; }
+}
+
+void AnnotationPattern():
+{}
+{
+  "{|" PropertyListNotEmpty() "|}"
+}
+
+void AnnotationPatternPath():
+{}
+{
+  "{|" PropertyListPathNotEmpty() "|}"
+}
+
+void ExprQuotedTP():
+{}
+{
+  "<<" ExprVarOrTerm() Verb() ExprVarOrTerm() ">>"
+}
+
+void ExprVarOrTerm():
+{}
+{
+  iri() |
+  RDFLiteral() |
+  NumericLiteral() |
+  BooleanLiteral() |
+  Var() |
+  ExprQuotedTP()
+}
+
+TOKEN:
+{
+  <IRIREF: "<" ( ~["\u0000"-"\u0020", "<", ">", "{", "}", "|", "^", "`", "\\"] | <UCHAR>) * ">">
+}
+
+TOKEN:
+{
+  <PNAME_NS: (<PN_PREFIX>)? ":">
+}
+
+TOKEN:
+{
+  <PNAME_LN: <PNAME_NS> <PN_LOCAL>>
+}
+
+TOKEN:
+{
+  <BLANK_NODE_LABEL: "_:" ( <PN_CHARS_U> | ["0"-"9"] ) ( ( <PN_CHARS> | ".") * <PN_CHARS>) ?>
+}
+
+TOKEN: {
+  <VAR1: "?" <VARNAME>>
+}
+
+TOKEN: {
+  <VAR2: "$" <VARNAME>>
+}
+
+TOKEN:
+{
+  <LANGTAG:	"@" (["a"-"z", "A"-"Z"]) + ( "-" (["a"-"z","A"-"Z","0"-"9"]) + ) *>
+}
+
+TOKEN:
+{
+  <INTEGER:	(["+", "-"])? (["0"-"9"])+>
+}
+
+TOKEN:
+{
+  <DECIMAL:	(["+", "-"])? ((["0" - "9"])* "." (["0" - "9"])+)>
+}
+
+TOKEN:
+{
+  <DOUBLE: (["+", "-"])? (((["0" - "9"])+ "." (["0" - "9"])* <EXPONENT>) | ( "." (["0" - "9"])+ <EXPONENT>) | ((["0" - "9"])+ <EXPONENT>))>
+}
+
+TOKEN:
+{
+  <INTEGER_POSITIVE: "+" <INTEGER>>
+}
+
+TOKEN:
+{
+  <DECIMAL_POSITIVE: "+" <DECIMAL>>
+}
+
+TOKEN:
+{
+  <DOUBLE_POSITIVE: "+" <DOUBLE>>
+}
+
+TOKEN:
+{
+  <INTEGER_NEGATIVE: "-" <INTEGER>>
+}
+
+TOKEN:
+{
+  <DECIMAL_NEGATIVE: "-" <DECIMAL>>
+}
+
+TOKEN:
+{
+  <DOUBLE_NEGATIVE: "-" <DOUBLE>>
+}
+
+TOKEN:
+{
+  <EXPONENT: ["e", "E"] (["+", "-"])? (["0" - "9"])+>
+}
+
+TOKEN:
+{
+  <STRING_LITERAL1:	"'" ( ~["'", "\\", "\n", "\r"] | <ECHAR>) * "'">
+}
+
+TOKEN:
+{
+  <STRING_LITERAL2: "\"" ( ~[">", "\\", "\n", "\r"] | <ECHAR>) * "\"" >
+}
+
+TOKEN:
+{
+  <STRING_LITERAL_LONG1:	"'''" (( "'" | "''")? (~["'", "\\"] | <ECHAR> | <UCHAR>))* "'''">
+}
+
+TOKEN:
+{
+  <STRING_LITERAL_LONG2: "\"\"\"" (( "\"" | "\"\"")? (~["\"", "\\"] | <ECHAR> | <UCHAR>)) * "\"\"\"">
+}
+
+TOKEN:
+{
+  <ECHAR: "\\" ["t", "b", "n", "r", "f", "\\", "'"]>
+}
+
+TOKEN:
+{
+  <UCHAR: ("\\u" <HEX> <HEX> <HEX> <HEX>) | ( "\\U" <HEX> <HEX> <HEX> <HEX> <HEX> <HEX> <HEX> <HEX>)>
+}
+
+
+TOKEN:
+{
+  <NIL: "(" ")">
+}
+
+TOKEN:
+{
+  <ANON: "[" "]">
+}
+
+TOKEN:
+{
+  <PN_CHARS_BASE:
+  ["A"-"Z"] |
+  ["a"-"z"] |
+  ["\u00C0"-"\u00D6"] |
+  ["\u00D8"-"\u00F6"] |
+  ["\u00F8"-"\u02FF"] |
+  ["\u0370"-"\u037D"] |
+  ["\u037F"-"\u1FFF"] |
+  ["\u200C"-"\u200D"] |
+  ["\u2070"-"\u218F"] |
+  ["\u2C00"-"\u2FEF"] |
+  ["\u3001"-"\uD7FF"] |
+  ["\uF900"-"\uFDCF"] |
+  ["\uFDF0"-"\uFFFD"]
+  // | ["𐀀"-"\uEFFFF"]
+  >
+}
+
+TOKEN:
+{
+  <PN_CHARS_U: <PN_CHARS_BASE> | "_">
+}
+
+TOKEN:
+{
+  <VARNAME: ( <PN_CHARS_U> | ["0"-"9"] ) ( <PN_CHARS_U> | ["0"-"9"] | "\u00B7" | [ "\u0300"-"\u036F"] | [ "\u203F"-"\u2040"] ) *>
+}
+
+TOKEN:
+{
+  <PN_CHARS: <PN_CHARS_U> | "-" | ["0" - "9"] | "\u00B7" | ["\u0300"-"\u036F"] | [ "\u203F"-"\u2040"]>
+}
+
+TOKEN:
+{
+  <PN_PREFIX: <PN_CHARS_BASE> ((<PN_CHARS> | ".")* <PN_CHARS>)?>
+}
+
+TOKEN:
+{
+  <PN_LOCAL: (<PN_CHARS_U> | ":" | ["0" - "9"] | <PLX>) ((<PN_CHARS> | "." | ":" | <PLX>)* (<PN_CHARS> | ":" | <PLX>))?>
+}
+TOKEN:
+{
+  <PLX: <PERCENT> | <PN_LOCAL_ESC>>
+}
+
+TOKEN:
+{
+  <PERCENT:	"%" <HEX> <HEX>>
+}
+
+TOKEN:
+{
+  <HEX:	["0" - "9"] | ["A" - "F"] | ["a" - "f"]>
+}
+
+TOKEN:
+{
+  <PN_LOCAL_ESC: "\"" ( "_" | "~" | "." | "-" | "!" | "$" | "&" | "'" | "(" | ")" | "*" | "+" | "," | ";" | "=" | "/" | "?" | "#" | "@" | "%")>
+}

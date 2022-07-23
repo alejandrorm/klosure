@@ -1,8 +1,8 @@
 package me.alejandrorm.klosure.sparql.algebra
 
-import TurtleStarParser
 import me.alejandrorm.klosure.model.Graph
 import me.alejandrorm.klosure.model.IriId
+import me.alejandrorm.klosure.parser.turtle.TurtleStarParser
 import me.alejandrorm.klosure.sparql.SolutionMapping
 import me.alejandrorm.klosure.sparql.Variable
 import me.alejandrorm.klosure.sparql.algebra.operators.BasicTriplePattern

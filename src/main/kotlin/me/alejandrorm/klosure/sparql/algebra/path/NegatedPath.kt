@@ -4,9 +4,10 @@ import me.alejandrorm.klosure.model.Graph
 import me.alejandrorm.klosure.sparql.SolutionMapping
 import me.alejandrorm.klosure.sparql.algebra.operators.TermOrVariable
 
-class AlternatePath(val paths: List<Path>) : Path {
-    override fun compile(head: TermOrVariable, tail: TermOrVariable): CompiledPath =
-        CompiledAlternatePath(paths.map { it.compile(head, tail) })
+class NegatedPath(val path: Path) : Path {
+    override fun compile(head: TermOrVariable, tail: TermOrVariable): CompiledPath {
+        TODO("Not yet implemented")
+    }
 
     override fun eval(
         head: TermOrVariable,
@@ -14,8 +15,6 @@ class AlternatePath(val paths: List<Path>) : Path {
         solutionMapping: SolutionMapping,
         graph: Graph
     ): Iterable<SolutionMapping> {
-        return paths.fold(emptyList()) { acc, path ->
-            acc + path.eval(head, tail, solutionMapping, graph)
-        }
+        TODO("Not yet implemented")
     }
 }

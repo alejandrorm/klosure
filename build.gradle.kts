@@ -12,9 +12,14 @@ javacc {
     // configuration container for all javacc configurations
     javaCCVersion = "7.0.11"
     configs {
-        register("template") {
+        register("turtlestar") {
             inputFile = file("src/main/javacc/turtlestar.jj")
-            packageName = "me.alejandrorm.klosure.parser"
+            packageName = "me.alejandrorm.klosure.parser.turtle"
+            lookahead = 1
+        }
+        register("sparqlstar") {
+            inputFile = file("src/main/javacc/sparqlstar.jj")
+            packageName = "me.alejandrorm.klosure.parser.sparql"
             lookahead = 1
         }
     }
