@@ -7,9 +7,9 @@ import me.alejandrorm.klosure.sparql.algebra.operators.TermOrVariable
 interface Path {
     fun compile(head: TermOrVariable, tail: TermOrVariable): CompiledPath
 
-    fun eval(head: TermOrVariable, tail: TermOrVariable, solutionMapping: SolutionMapping, graph: Graph): Iterable<SolutionMapping>
+    fun eval(head: TermOrVariable, tail: TermOrVariable, solutionMapping: SolutionMapping, graph: Graph): Sequence<SolutionMapping>
 
-    fun eval(head: TermOrVariable, tail: TermOrVariable, solutions: Iterable<SolutionMapping>, graph: Graph): Iterable<SolutionMapping> {
+    fun eval(head: TermOrVariable, tail: TermOrVariable, solutions: Sequence<SolutionMapping>, graph: Graph): Sequence<SolutionMapping> {
         return solutions.flatMap { eval(head, tail, it, graph) }
     }
 }

@@ -5,14 +5,14 @@ import me.alejandrorm.klosure.sparql.SolutionMapping
 import me.alejandrorm.klosure.sparql.Variable
 
 class CompiledSequencePath(val compiledPath: List<CompiledPath>) : CompiledPath {
-    override fun eval(solution: SolutionMapping, graph: Graph): Iterable<SolutionMapping> {
-        return compiledPath.fold(listOf(solution).asIterable()) {
+    override fun eval(solution: SolutionMapping, graph: Graph): Sequence<SolutionMapping> {
+        return compiledPath.fold(sequenceOf(solution)) {
                 solutions, path ->
             path.eval(solutions, graph)
         }
     }
 
-    override fun eval(solutions: Iterable<SolutionMapping>, graph: Graph): Iterable<SolutionMapping> {
+    override fun eval(solutions: Sequence<SolutionMapping>, graph: Graph): Sequence<SolutionMapping> {
         return solutions.flatMap { eval(it, graph) }
     }
 

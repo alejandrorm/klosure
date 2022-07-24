@@ -14,9 +14,9 @@ class ZeroOrOnePath(val path: Path) : Path {
         tail: TermOrVariable,
         solutionMapping: SolutionMapping,
         graph: Graph
-    ): Iterable<SolutionMapping> {
+    ): Sequence<SolutionMapping> {
         return if (head.resolve(solutionMapping) == tail.resolve(solutionMapping)) {
-            listOf(solutionMapping)
+            sequenceOf(solutionMapping)
         } else {
             path.eval(head, tail, solutionMapping, graph)
         }

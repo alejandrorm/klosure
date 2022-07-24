@@ -4,15 +4,17 @@ import me.alejandrorm.klosure.model.Graph
 import me.alejandrorm.klosure.sparql.SolutionMapping
 import me.alejandrorm.klosure.sparql.Variable
 
-class BasicGraphPattern(val patterns: List<TriplePattern>) : TriplePattern, GraphPattern {
-    override fun eval(solution: SolutionMapping, graph: Graph): Iterable<SolutionMapping> {
-        return patterns.fold(listOf(solution)) { acc, pattern ->
-            acc.flatMap { pattern.eval(it, graph) }
+class BasicGraphPattern(val patterns: List<TriplePattern>) : TriplePattern, AlgebraOperator {
+    override fun eval(solution: SolutionMapping, graph: Graph): Sequence<SolutionMapping> {
+        return patterns.fold(sequenceOf(solution)) { acc, pattern ->
+            pattern.eval(acc, graph)
         }
     }
 
-    override fun eval(solutions: Iterable<SolutionMapping>, graph: Graph): Iterable<SolutionMapping> {
-        return solutions.flatMap { eval(it, graph) }
+    override fun eval(solutions: Sequence<SolutionMapping>, graph: Graph): Sequence<SolutionMapping> {
+        return patterns.fold(solutions) { acc, pattern ->
+            pattern.eval(acc, graph)
+        }
     }
 
     override fun getVariables(): Set<Variable> {

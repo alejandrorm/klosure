@@ -14,7 +14,7 @@ class ZeroOrMorePath(val path: Path) : Path {
         tail: TermOrVariable,
         solutionMapping: SolutionMapping,
         graph: Graph
-    ): Iterable<SolutionMapping> {
+    ): Sequence<SolutionMapping> {
         TODO("Not yet implemented")
     }
 }

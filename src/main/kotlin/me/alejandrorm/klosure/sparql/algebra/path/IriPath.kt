@@ -16,7 +16,7 @@ class IriPath(val iri: IRI) : Path {
         tail: TermOrVariable,
         solutionMapping: SolutionMapping,
         graph: Graph
-    ): Iterable<SolutionMapping> {
+    ): Sequence<SolutionMapping> {
         return BasicTriplePattern(head, TermOrVariable.NodeOrIriTerm(IriId(iri)), tail).eval(solutionMapping, graph)
     }
 }

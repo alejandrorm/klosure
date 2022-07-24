@@ -15,7 +15,7 @@ class OneOrMorePath(val path: Path) : Path {
         tail: TermOrVariable,
         solutionMapping: SolutionMapping,
         graph: Graph
-    ): Iterable<SolutionMapping> {
+    ): Sequence<SolutionMapping> {
         return compile(head, tail).eval(solutionMapping, graph)
     }
 }

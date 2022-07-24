@@ -22,6 +22,12 @@ import java.util.*;
 
 import me.alejandrorm.klosure.model.*;
 import me.alejandrorm.klosure.sparql.*;
+//import me.alejandrorm.klosure.sparql.algebra.*;
+import me.alejandrorm.klosure.sparql.algebra.operators.*;
+import me.alejandrorm.klosure.sparql.algebra.path.*;
+import me.alejandrorm.klosure.sparql.algebra.filters.*;
+import me.alejandrorm.klosure.sparql.algebra.filters.builtins.*;
+import me.alejandrorm.klosure.sparql.algebra.filters.operators.*;
 
 public class SparqlStarParser {
 
@@ -45,7 +51,7 @@ public class SparqlStarParser {
         public List<TermAndTriples> objectsAndTriples;
 
         public VerbAndObjects(TermOrVariable verb, Path path, List<TermAndTriples> objectsAndTriples) {
-            this.term = term;
+            this.verb = verb;
             this.path = path;
             this.objectsAndTriples = objectsAndTriples;
         }
@@ -452,15 +458,15 @@ void GroupGraphPattern():
   "{" ( SubSelect() | GroupGraphPatternSub()) "}"
 }
 
-GraphPattern GroupGraphPatternSub():
+AlgebraOperator GroupGraphPatternSub():
 {
-  List<GraphPattern> gps = new ArrayList<GraphPattern>();
-  GraphPattern gp = null;
+  List<AlgebraOperator> gps = new ArrayList<AlgebraOperator>();
+  AlgebraOperator gp = null;
   List<TriplePattern> triples;
 }
 {
   (triples = TriplesBlock() { gps.add(new BasicGraphPattern(triples)); })?
-   ( gp = GraphPatternNotTriples() (".")? (triples = TriplesBlock() { gps.add(new BasicGraphPattern(triples)); })? ) * {
+   ( gp = GraphPatternNotTriples() { gps.add(gp); }(".")? (triples = TriplesBlock() { gps.add(new BasicGraphPattern(triples)); })? ) * {
      return new Join(gps);
    }
 }
@@ -468,26 +474,26 @@ GraphPattern GroupGraphPatternSub():
 //TODO: separate groups of triples with the same subject
 List<TriplePattern> TriplesBlock():
 {
-  List<TriplePattern> triples = new List<TriplePattern>();
+  List<TriplePattern> triples = new ArrayList<>();
   List<TriplePattern> t;
 }
 {
   t = TriplesSameSubjectPath() { triples.addAll(t); }
-  ( "." (t = TriplesBlock() { triples.addAll(t); })? ) ?
+  ( "." (t = TriplesBlock() { triples.addAll(t); })? ) ? { return triples; }
 }
 
 //TODO: implement this
-GraphPattern GraphPatternNotTriples():
+AlgebraOperator GraphPatternNotTriples():
 {}
 {
-  GroupOrUnionGraphPattern() | // Union
-  OptionalGraphPattern() | // LeftJoin
-  MinusGraphPattern() | // Minus
-  GraphGraphPattern() |
-  ServiceGraphPattern() |
-  Filter() | // Filter
-  Bind() | // Bind
-  InlineData()
+  GroupOrUnionGraphPattern() { return new Identity(); } | // Union
+  OptionalGraphPattern() { return new Identity(); }| // LeftJoin
+  MinusGraphPattern() { return new Identity(); }| // Minus
+  GraphGraphPattern() { return new Identity(); }|
+  ServiceGraphPattern() { return new Identity(); }|
+  Filter() { return new Identity(); }| // Filter
+  Bind() { return new Identity(); }| // Bind
+  InlineData() { return new Identity(); }
 }
 
 void OptionalGraphPattern():
@@ -612,16 +618,27 @@ void TriplesSameSubject():
   ( VarOrTermOrQuotedTP() PropertyListNotEmpty()) | ( TriplesNode() PropertyList())
 }
 
-void PropertyList():
-{}
+List<VerbAndObjects>  PropertyList():
 {
-  (PropertyListNotEmpty())?
+ List<VerbAndObjects> vos = null;
+}
+{
+  (vos = PropertyListNotEmpty())? { return vos; }
 }
 
-void PropertyListNotEmpty():
-{}
+List<VerbAndObjects> PropertyListNotEmpty():
 {
-  Verb() ObjectList() ( ";" ( Verb() ObjectList()) ? ) *
+  List<VerbAndObjects> vos = new ArrayList<>();
+  List<TermAndTriples> tts = null;
+  TermOrVariable t = null;
+}
+{
+  t = Verb() tts = ObjectList() {
+    vos.add(new VerbAndObjects(t, null, tts)); t = null; tts = null;
+  }
+  ( ";" ( t = Verb() tts = ObjectList() {
+    vos.add(new VerbAndObjects(t, null, tts)); t = null; tts = null;
+  }) ? ) * { return vos; }
 }
 
 TermOrVariable Verb():
@@ -630,7 +647,7 @@ TermOrVariable Verb():
 }
 {
   v = VarOrIri() { return v;}|
-  "a" { return new TermOrVariable.NodeOrTerm(new IriId(IRI.create(NAMESPACE_PREFIX + "type"))); }
+  "a" { return new TermOrVariable.NodeOrIriTerm(new IriId(IRI.create(NAMESPACE_PREFIX + "type"))); }
 }
 
 List<TermAndTriples> ObjectList():
@@ -667,7 +684,8 @@ List<TriplePattern> TriplesSameSubjectPath():
 
 List<VerbAndObjects> PropertyListPath():
 {
- List<VerbAndObjects> vos;}
+ List<VerbAndObjects> vos = null;
+}
 {
   (vos = PropertyListPathNotEmpty())? { return vos; }
 }
@@ -678,13 +696,12 @@ List<VerbAndObjects> PropertyListPathNotEmpty():
   List<TermAndTriples> tts = null;
   Path p = null;
   TermOrVariable t = null;
-
 }
 {
   ( p = VerbPath() | t = VerbSimple()) tts = ObjectListPath() {
-    vos.add(new VerbAndObjects(p, t, tts)); p = null; t = null; tts = null;
+    vos.add(new VerbAndObjects(t, p, tts)); p = null; t = null; tts = null;
   } ( ";" ( ( p = VerbPath() | t = VerbSimple()) tts = ObjectList() {
-    vos.add(new VerbAndObjects(p, t, tts)); p = null; t = null; tts = null;
+    vos.add(new VerbAndObjects(t, p, tts)); p = null; t = null; tts = null;
   }) ? ) * { return vos; }
 }
 
@@ -788,7 +805,7 @@ Path PathEltOrInverse():
 }
 {
   p = PathElt() { return p; }|
-  ( "^" p = PathElt() { return InversePath(p); })
+  ( "^" p = PathElt() { return new InversePath(p); })
 }
 
 int PathMod():
@@ -799,7 +816,7 @@ int PathMod():
   "+" { return 2; }
 }
 
-void PathPrimary():
+Path PathPrimary():
 {
   Path p;
   IRI i;
@@ -823,7 +840,7 @@ Path PathNegatedPropertySet():
   }
 }
 
-void PathOneInPropertySet():
+Path PathOneInPropertySet():
 {
   IRI i;
 }
@@ -851,9 +868,14 @@ TermAndTriples TriplesNode():
 }
 
 TermAndTriples BlankNodePropertyList():
-{}
 {
-  "[" PropertyListNotEmpty() "]"
+  List<VerbAndObjects> l;
+}
+{
+  "[" l = PropertyListNotEmpty() "]" {
+     TermOrVariable t = new TermOrVariable.VariableTerm(new Variable(UUID.randomUUID().toString(), true));
+     return new TermAndTriples(t, getTriples(t, l));
+   }
 }
 
 TermAndTriples TriplesNodePath():
@@ -866,36 +888,55 @@ TermAndTriples TriplesNodePath():
 }
 
 TermAndTriples BlankNodePropertyListPath():
-{}
 {
-  "[" PropertyListPathNotEmpty() "]" {
-    // TODO
+  List<VerbAndObjects> l;
+}
+{
+  "[" l = PropertyListPathNotEmpty() "]" {
+    TermOrVariable t = new TermOrVariable.VariableTerm(new Variable(UUID.randomUUID().toString(), true));
+    return new TermAndTriples(t, getTriples(t, l));
   }
 }
 
 TermAndTriples Collection():
 {
-  List<TermOrVariable> list = new ArrayList<>();
-  TermOrVariable t;
+  List<TermAndTriples> list = new ArrayList<>();
+  TermAndTriples t;
 }
 {
   "(" (t = GraphNode() { list.add(t); })+ ")"
   {
-    ListTerm lt = ListTerm.create(list);
-    return new TermAndTriples(lt.node, lt.list);
+    List<TriplePattern> patterns = new ArrayList<>();
+    List<TermOrVariable> terms = new ArrayList<>();
+    for(TermAndTriples tat : list) {
+      patterns.addAll(tat.patterns);
+      terms.add(tat.term);
+    }
+
+    ListTerm lt = ListTerm.create(terms);
+    patterns.addAll(lt.getListStructure());
+    return new TermAndTriples(lt.getNode(), patterns);
   }
 }
 
 TermAndTriples CollectionPath():
 {
-  List<TermOrVariable> list = new ArrayList<>();
-  TermOrVariable t;
+  List<TermAndTriples> list = new ArrayList<>();
+  TermAndTriples t;
 }
 {
   "(" (t = GraphNodePath() { list.add(t); })+ ")"
   {
-    ListTerm lt = ListTerm.create(list);
-    return new TermAndTriples(lt.node, lt.list);
+    List<TriplePattern> patterns = new ArrayList<>();
+    List<TermOrVariable> terms = new ArrayList<>();
+    for(TermAndTriples tat : list) {
+      patterns.addAll(tat.patterns);
+      terms.add(tat.term);
+    }
+
+    ListTerm lt = ListTerm.create(terms);
+    patterns.addAll(lt.getListStructure());
+    return new TermAndTriples(lt.getNode(), patterns);
   }
 }
 
@@ -940,22 +981,23 @@ Variable Var():
   Token t;
 }
 {
-  t = <VAR1> { return new Variable(t.image.substring(1)); } |
-  t = <VAR2> { return new Variable(t.image.substring(1)); }
+  t = <VAR1> { return new Variable(t.image.substring(1), false); } |
+  t = <VAR2> { return new Variable(t.image.substring(1), false); }
 }
 
 TermOrVariable GraphTerm():
 {
-  LiteralId l;
+  LiteralNode l;
+  LiteralId lid;
   IRI i;
   BlankId b;
 }
 {
-  i = iri() { return new TermOrVariable.NodeOrIdTerm(new IriId(i)); }|
-  l = RDFLiteral() { return TermOrVariable.NodeOrIriTerm(l); }|
-  l = NumericLiteral() { return new TermOrVariable.NodeOrIriTerm(l); }|
-  l = BooleanLiteral() { return new TermOrVariable.NodeOrIriTerm(l); }|
-  b = BlankNode() { return new TermOrVariable(VariableTerm(new Variable(b.name, true))); }|
+  i = iri() { return new TermOrVariable.NodeOrIriTerm(new IriId(i)); }|
+  lid = RDFLiteral() { return new TermOrVariable.NodeOrIriTerm(lid); }|
+  l = NumericLiteral() { return new TermOrVariable.NodeOrIriTerm(l.getId()); }|
+  l = BooleanLiteral() { return new TermOrVariable.NodeOrIriTerm(l.getId()); }|
+  b = BlankNode() { return new TermOrVariable.VariableTerm(new Variable(b.getName(), true)); }|
   <NIL> { return null;}
 }
 
@@ -1168,15 +1210,16 @@ LiteralId RDFLiteral():
   IRI i = null;
 }
 {
-  s = String() ( t = <LANGTAG> { lang = t.image; }| ( "^^" i = iri()) ) ? { return new LiteralId(s, lang, i); }
+  s = String() ( t = <LANGTAG> { lang = t.image; }| ( "^^" i = iri()) ) ? { return new LiteralId(s, i); }
 }
 
-void NumericLiteral():
+//FIXME
+NumberLiteral NumericLiteral():
 {}
 {
-  NumericLiteralUnsigned() |
-  NumericLiteralPositive() |
-  NumericLiteralNegative()
+  NumericLiteralUnsigned() { return NumberLiteral.createLong("0"); }|
+  NumericLiteralPositive() { return NumberLiteral.createLong("0"); }|
+  NumericLiteralNegative() { return NumberLiteral.createLong("0"); }
 }
 
 void NumericLiteralUnsigned():
@@ -1204,17 +1247,21 @@ void NumericLiteralNegative():
 BooleanLiteral BooleanLiteral():
 {}
 {
-  "true" { return TrueLiteral; }|
-  "false" { return FalseLiteral; }
+  "true" { return TrueLiteral.INSTANCE; }|
+  "false" { return FalseLiteral.INSTANCE; }
 }
 
-void String():
-{}
+String String():
 {
-  <STRING_LITERAL1> |
-  <STRING_LITERAL2> |
-  <STRING_LITERAL_LONG1> |
-  <STRING_LITERAL_LONG2>
+  Token t;
+  String s;
+}
+{
+ //TODO you might have to add 1 to the length
+  t = <STRING_LITERAL1> { s = t.image; return s.substring(1, s.length() - 1); }|
+  t = <STRING_LITERAL2> { s = t.image; return s.substring(1, s.length() - 1); }|
+  t = <STRING_LITERAL_LONG1> { s = t.image; return s.substring(3, s.length() - 3); }|
+  t = <STRING_LITERAL_LONG2> { { s = t.image; return s.substring(3, s.length() - 3); }}
 }
 
 IRI iri():
@@ -1268,17 +1315,18 @@ TermOrVariable qtSubjectOrObject():
   Variable v;
   BlankId n;
   IRI i;
-  LiteralId l;
-  QuotedTriple t;
+  LiteralId lid;
+  LiteralNode l;
+  TermOrVariable.QuotedTriple t;
 }
 {
   v = Var() { return new TermOrVariable.VariableTerm(v); }|
   //FIXME blank nodes should be scoped
-  n = BlankNode() { return new TermOrVariable.VariableTerm(new Variable(n.name, true)); }|
+  n = BlankNode() { return new TermOrVariable.VariableTerm(new Variable(n.getName(), true)); }|
   i = iri() { return new TermOrVariable.NodeOrIriTerm(new IriId(i)); }|
-  l = RDFLiteral() { return TermOrVariable.NodeOrIriTerm(l); }|
-  l = NumericLiteral() { return TermOrVariable.NodeOrIriTerm(l); }|
-  l = BooleanLiteral() { return TermOrVariable.NodeOrIriTerm(l); }|
+  lid = RDFLiteral() { return new TermOrVariable.NodeOrIriTerm(lid); }|
+  l = NumericLiteral() { return new TermOrVariable.NodeOrIriTerm(l.getId()); }|
+  l = BooleanLiteral() { return new TermOrVariable.NodeOrIriTerm(l.getId()); }|
   t = QuotedTP() { return t; }
 }
 

@@ -11,7 +11,7 @@ class SolutionSet(
 ) {
     constructor(variables: List<String>, values: String) : this(variables.map { Variable(it) }, values.split("\n"))
 
-    fun toStringList(solutions: Iterable<SolutionMapping>): List<String> {
+    fun toStringList(solutions: Sequence<SolutionMapping>): List<String> {
         return solutions.asSequence().map { solution ->
             variables.joinToString(" ") { variable ->
                 if (solution.boundVariables.containsKey(variable)) solution.boundVariables[variable].toString()
@@ -22,7 +22,7 @@ class SolutionSet(
 
     companion object {
         @JvmStatic
-        fun compareEqualSet(actual: Iterable<SolutionMapping>, expected: String) {
+        fun compareEqualSet(actual: Sequence<SolutionMapping>, expected: String) {
             val parts = expected.split(Regex("\n"), 2)
             val variablePattern = Regex("\\?([a-zA-z0-9]+)")
             val expectedSolution = SolutionSet(variablePattern.findAll(parts[0]).map { it.groups[1]!!.value }.toList(), parts[1])

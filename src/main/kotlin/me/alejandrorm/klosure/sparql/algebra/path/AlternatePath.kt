@@ -13,8 +13,8 @@ class AlternatePath(val paths: List<Path>) : Path {
         tail: TermOrVariable,
         solutionMapping: SolutionMapping,
         graph: Graph
-    ): Iterable<SolutionMapping> {
-        return paths.fold(emptyList()) { acc, path ->
+    ): Sequence<SolutionMapping> {
+        return paths.fold(emptySequence()) { acc, path ->
             acc + path.eval(head, tail, solutionMapping, graph)
         }
     }

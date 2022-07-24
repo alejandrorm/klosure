@@ -16,10 +16,10 @@ class CompiledIriPath(
 
     private val triple = BasicTriplePattern(head, TermOrVariable.NodeOrIriTerm(IriId(iri)), tail)
 
-    override fun eval(solution: SolutionMapping, graph: Graph): Iterable<SolutionMapping> =
+    override fun eval(solution: SolutionMapping, graph: Graph): Sequence<SolutionMapping> =
         triple.eval(solution, graph)
 
-    override fun eval(solutions: Iterable<SolutionMapping>, graph: Graph): Iterable<SolutionMapping> =
+    override fun eval(solutions: Sequence<SolutionMapping>, graph: Graph): Sequence<SolutionMapping> =
         triple.eval(solutions, graph)
 
     override fun getVariables(): Set<Variable> = triple.getVariables()

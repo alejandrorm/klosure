@@ -14,12 +14,12 @@ class CompiledOneOrMorePath(
     val tail: TermOrVariable
 ) : CompiledPath, TriplePattern {
 
-    override fun eval(solution: SolutionMapping, graph: Graph): Iterable<SolutionMapping> {
+    override fun eval(solution: SolutionMapping, graph: Graph): Sequence<SolutionMapping> {
         val s = path.eval(head, tail, solution, graph)
         if (s.count() > 0) return s
 
         val v = TermOrVariable.VariableTerm(Variable(UUID.randomUUID().toString(), true))
-        val solutions = path.eval(head, v, listOf(solution), graph)
+        val solutions = path.eval(head, v, sequenceOf(solution), graph)
         return solutions.flatMap {
             evalHelper(it, v, graph, setOf(head.resolve(it).getTerm()))
         }
@@ -30,7 +30,7 @@ class CompiledOneOrMorePath(
         variable: TermOrVariable.VariableTerm,
         graph: Graph,
         boundValues: Set<NodeId>
-    ): Iterable<SolutionMapping> {
+    ): Sequence<SolutionMapping> {
         val s = path.eval(variable, tail, solution, graph)
         if (s.count() > 0) return s
 
@@ -39,12 +39,12 @@ class CompiledOneOrMorePath(
         val solutions = path.eval(variable, v, solution, graph)
         return solutions.flatMap {
             val boundValue = variable.resolve(it).getTerm()
-            if (boundValues.contains(boundValue)) emptyList()
+            if (boundValues.contains(boundValue)) emptySequence()
             else evalHelper(it, v, graph, boundValues + boundValue)
         }
     }
 
-    override fun eval(solutions: Iterable<SolutionMapping>, graph: Graph): Iterable<SolutionMapping> {
+    override fun eval(solutions: Sequence<SolutionMapping>, graph: Graph): Sequence<SolutionMapping> {
         return solutions.flatMap { eval(it, graph) }
     }
 

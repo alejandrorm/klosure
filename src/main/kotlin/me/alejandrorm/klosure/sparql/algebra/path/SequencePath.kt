@@ -27,22 +27,12 @@ class SequencePath(val paths: List<Path>) : Path {
         tail: TermOrVariable,
         solutionMapping: SolutionMapping,
         graph: Graph
-    ): Iterable<SolutionMapping> {
+    ): Sequence<SolutionMapping> {
         val allVariables = listOf(head) + intermediateVariables + listOf(tail)
 
-        return (0..allVariables.size).fold(listOf(solutionMapping).asIterable()) {
+        return (0..allVariables.size).fold(sequenceOf(solutionMapping)) {
                 solutions, i ->
             paths[i].eval(head, tail, solutions, graph)
         }
     }
-/*
-
-     h p0 v0
-     v0 p1 v1
-     v1 p2 v2
-     v2 p3 v3
-     v3 p4 t
-
-
-     */
 }

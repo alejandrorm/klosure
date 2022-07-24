@@ -13,7 +13,7 @@ class InversePath(val path: Path) : Path {
         tail: TermOrVariable,
         solutionMapping: SolutionMapping,
         graph: Graph
-    ): Iterable<SolutionMapping> {
+    ): Sequence<SolutionMapping> {
         return path.eval(tail, head, solutionMapping, graph)
     }
 }

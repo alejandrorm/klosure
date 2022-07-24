@@ -10,18 +10,18 @@ class CompiledZeroOrOnePath(
     val path: CompiledPath,
     val tail: TermOrVariable
 ) : CompiledPath {
-    override fun eval(solution: SolutionMapping, graph: Graph): Iterable<SolutionMapping> {
+    override fun eval(solution: SolutionMapping, graph: Graph): Sequence<SolutionMapping> {
         val n1 = head.resolve(solution)
         val n2 = head.resolve(solution)
 
         return if (n1.isBound() && n2.isBound() && n1 == n2) {
-            listOf(solution)
+            sequenceOf(solution)
         } else {
             path.eval(solution, graph)
         }
     }
 
-    override fun eval(solutions: Iterable<SolutionMapping>, graph: Graph): Iterable<SolutionMapping> {
+    override fun eval(solutions: Sequence<SolutionMapping>, graph: Graph): Sequence<SolutionMapping> {
         return solutions.flatMap { eval(it, graph) }
     }
 
