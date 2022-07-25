@@ -1,6 +1,14 @@
 package me.alejandrorm.klosure.sparql.algebra.filters
 
-import me.alejandrorm.klosure.model.*
+import me.alejandrorm.klosure.model.BigDecimalLiteral
+import me.alejandrorm.klosure.model.BigIntegerLiteral
+import me.alejandrorm.klosure.model.BooleanLiteral
+import me.alejandrorm.klosure.model.DoubleLiteral
+import me.alejandrorm.klosure.model.FalseLiteral
+import me.alejandrorm.klosure.model.IntegerLiteral
+import me.alejandrorm.klosure.model.Node
+import me.alejandrorm.klosure.model.StringLiteral
+import me.alejandrorm.klosure.model.TrueLiteral
 
 fun getEffectiveBooleanValue(node: Node?): BooleanLiteral? {
     if (node == null) return null

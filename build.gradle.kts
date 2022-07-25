@@ -3,7 +3,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 val ktlint by configurations.creating
 
 plugins {
-    kotlin("jvm") version "1.5.31"
+    kotlin("jvm") version "1.7.10"
+    kotlin("plugin.serialization") version  "1.7.10"
     id("com.intershop.gradle.javacc") version "4.0.1"
     application
 }
@@ -34,7 +35,8 @@ repositories {
 
 dependencies {
     implementation("net.sourceforge.owlapi:owlapi-distribution:5.1.20")
-    testImplementation(kotlin("test"))
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.3.3")
+    testImplementation(kotlin("test:1.7.0"))
     testImplementation("org.hamcrest:hamcrest:2.2")
     ktlint("com.pinterest:ktlint:0.46.1") {
         attributes {
