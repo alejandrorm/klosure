@@ -5,8 +5,10 @@ import me.alejandrorm.klosure.sparql.SolutionMapping
 import me.alejandrorm.klosure.sparql.Variable
 
 class SubjectTriplePattern : TriplePattern {
-    override fun eval(solution: SolutionMapping,
-                      graph: Graph): Sequence<SolutionMapping> {
+    override fun eval(
+        solution: SolutionMapping,
+        graph: Graph
+    ): Sequence<SolutionMapping> {
         TODO("Not yet implemented")
     }
 
@@ -14,8 +16,10 @@ class SubjectTriplePattern : TriplePattern {
         TODO("Not yet implemented")
     }
 
-    override fun eval(solutions: Sequence<SolutionMapping>,
-                      graph: Graph): Sequence<SolutionMapping> {
+    override fun eval(
+        solutions: Sequence<SolutionMapping>,
+        graph: Graph
+    ): Sequence<SolutionMapping> {
         TODO("Not yet implemented")
     }
 }

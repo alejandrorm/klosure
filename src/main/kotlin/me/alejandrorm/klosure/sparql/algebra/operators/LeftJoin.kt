@@ -8,8 +8,10 @@ class LeftJoin(val operator: AlgebraOperator) : AlgebraOperator {
         return "LeftJoin($operator)"
     }
 
-    override fun eval(solutions: Sequence<SolutionMapping>,
-                      graph: Graph): Sequence<SolutionMapping> {
+    override fun eval(
+        solutions: Sequence<SolutionMapping>,
+        graph: Graph
+    ): Sequence<SolutionMapping> {
         return solutions.flatMap { solution ->
             operator.eval(sequenceOf(solution), graph).ifEmpty { sequenceOf(solution) }
         }

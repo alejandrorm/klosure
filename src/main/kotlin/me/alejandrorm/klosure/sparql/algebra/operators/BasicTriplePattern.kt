@@ -23,7 +23,9 @@ class BasicTriplePattern(
         solutions: Sequence<SolutionMapping>,
         graph: Graph
     ): Sequence<SolutionMapping> {
-        return solutions.flatMap { eval(it, graph) }
+        return solutions.flatMap {
+            eval(it, graph)
+        }
     }
 
     override fun eval(solution: SolutionMapping, graph: Graph): Sequence<SolutionMapping> {
@@ -124,32 +126,15 @@ class BasicTriplePattern(
         graph: Graph
     ): Sequence<SolutionMapping> {
         val concretePre = (triple.predicate.getTerm() as IriId).iri
-
         val it = graph.getPredicateNodes(concretePre)
 
-        val objVariable = (obj as TermOrVariable.VariableTerm).variable
-        val subjectVariable = (subject as TermOrVariable.VariableTerm).variable
+        return it.asSequence().map { edge ->
+            val tripleId = edge.id as TripleId
 
-        // TODO change with 'match'
-        return if (objVariable == subjectVariable) {
-            it.asSequence().filter { edge ->
-                val tripleId = edge.id as TripleId
-                tripleId.obj == tripleId.subject
-            }.map {
-                currentSolution.bind(objVariable, (it.id as TripleId).obj)
+            triple.obj.match(currentSolution, tripleId.obj)?.let {
+                triple.subject.resolve(it).match(it, tripleId.subject)
             }
-        } else {
-            it.map { edge ->
-                currentSolution.bind(
-                    subjectVariable,
-                    (edge.id as TripleId).subject
-                )
-                    .bind(
-                        objVariable,
-                        edge.id.obj
-                    )
-            }.asSequence()
-        }
+        }.filterNotNull()
     }
 
     private fun getO(
@@ -161,24 +146,13 @@ class BasicTriplePattern(
         val it = graph.getNode(concreteObj)?.getIncomingEdges()
         it ?: return emptySequence()
 
-        val subjectVariable = (subject as TermOrVariable.VariableTerm).variable
-        val predicateVariable = (predicate as TermOrVariable.VariableTerm).variable
-        // TODO change with 'match'
+        return it.asSequence().map { edge ->
+            val tripleId = edge.id as TripleId
 
-        return if (subjectVariable == predicateVariable) {
-            it.asSequence().filter { edge ->
-                val tripleId = edge.id as TripleId
-                tripleId.subject == IriId(tripleId.predicate)
-            }.map {
-                currentSolution.bind(subjectVariable, (it.id as TripleId).subject)
+            triple.subject.match(currentSolution, tripleId.subject)?.let {
+                triple.predicate.resolve(it).match(it, IriId(tripleId.predicate))
             }
-        } else {
-            it.asSequence().map { edge ->
-                val tripleId = edge.id as TripleId
-                currentSolution.bind(subjectVariable, tripleId.subject)
-                    .bind(predicateVariable, IriId(tripleId.predicate))
-            }
-        }
+        }.filterNotNull()
     }
 
     private fun getSO(

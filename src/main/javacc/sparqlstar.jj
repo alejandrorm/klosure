@@ -130,16 +130,23 @@ SKIP :
 | "\r"
 }
 
-void QueryUnit():
-{}
+<DEFAULT> SKIP : { <COMMENT : "#" (~["\n"])* ("\n") > : DEFAULT }
+
+Query QueryUnit():
 {
-  Query()
+  Query q;
+}
+{
+  q = Query() { return q;}
 }
 
-void Query():
-{}
+// TODO
+Query Query():
 {
-  Prologue() ( SelectQuery() | ConstructQuery() | DescribeQuery() | AskQuery()) ValuesClause()
+  Query q = null;
+}
+{
+  Prologue() ( q = SelectQuery() | ConstructQuery() | DescribeQuery() | AskQuery()) ValuesClause() { return q;}
 }
 
 void UpdateUnit():
@@ -159,7 +166,7 @@ void BaseDecl():
  Token t;
 }
 {
-  "BASE" t = <IRIREF> { prefixes.put(":", t.image); }
+  "BASE" t = <IRIREF> { prefixes.put(":", t.image.substring(1, t.image.length()-1)); }
 }
 
 void PrefixDecl():
@@ -167,19 +174,24 @@ void PrefixDecl():
  Token t1, t2;
 }
 {
-  "PREFIX" t1 = <PNAME_NS> t2 = <IRIREF> { prefixes.put(t1.image, t2.image); }
+  "PREFIX" t1 = <PNAME_NS> t2 = <IRIREF> { prefixes.put(t1.image, t2.image.substring(1, t2.image.length()-1)); }
 }
 
-void SelectQuery():
-{}
+Query SelectQuery():
 {
-  SelectClause() (DatasetClause()) * WhereClause() SolutionModifier()
+  AlgebraOperator a;
+}
+{
+  SelectClause() (DatasetClause()) * a = WhereClause() SolutionModifier() { return new SelectQuery(a); }
 }
 
-void SubSelect():
-{}
+// TODO
+AlgebraOperator SubSelect():
 {
-  SelectClause() WhereClause() SolutionModifier() ValuesClause()
+  AlgebraOperator a;
+}
+{
+  SelectClause() a = WhereClause() SolutionModifier() ValuesClause() { return a; }
 }
 
 void SelectClause():
@@ -231,10 +243,12 @@ void SourceSelector():
   iri()
 }
 
-void WhereClause():
-{}
+AlgebraOperator WhereClause():
 {
-  ("WHERE")? GroupGraphPattern()
+  AlgebraOperator a;
+}
+{
+  ("WHERE")? a = GroupGraphPattern() { return a; }
 }
 
 void SolutionModifier():
@@ -452,10 +466,12 @@ void TriplesTemplate():
   TriplesSameSubject() ( "." (TriplesTemplate())? ) ?
 }
 
-void GroupGraphPattern():
-{}
+AlgebraOperator GroupGraphPattern():
 {
-  "{" ( SubSelect() | GroupGraphPatternSub()) "}"
+  AlgebraOperator algebraOperator;
+}
+{
+  "{" ( algebraOperator = SubSelect() | algebraOperator = GroupGraphPatternSub()) "}" { return algebraOperator; }
 }
 
 AlgebraOperator GroupGraphPatternSub():
@@ -1270,7 +1286,7 @@ IRI iri():
  String s;
 }
 {
-  t = <IRIREF> { return IRI.create(t.image); } |
+  t = <IRIREF> { return IRI.create(t.image.substring(1, t.image.length()-1)); } |
   s = PrefixedName() { return IRI.create(s); }
 }
 

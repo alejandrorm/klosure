@@ -11,8 +11,10 @@ class BasicGraphPattern(val patterns: List<TriplePattern>) : TriplePattern, Alge
         }
     }
 
-    override fun eval(solutions: Sequence<SolutionMapping>,
-                      graph: Graph): Sequence<SolutionMapping> {
+    override fun eval(
+        solutions: Sequence<SolutionMapping>,
+        graph: Graph
+    ): Sequence<SolutionMapping> {
         return patterns.fold(solutions) { acc, pattern ->
             pattern.eval(acc, graph)
         }

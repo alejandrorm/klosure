@@ -8,8 +8,10 @@ class Identity : AlgebraOperator {
         return "Identity"
     }
 
-    override fun eval(solutions: Sequence<SolutionMapping>,
-                      graph: Graph): Sequence<SolutionMapping> {
+    override fun eval(
+        solutions: Sequence<SolutionMapping>,
+        graph: Graph
+    ): Sequence<SolutionMapping> {
         return solutions
     }
 }

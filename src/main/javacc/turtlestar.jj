@@ -64,6 +64,8 @@ public class TurtleStarParser {
 
 PARSER_END(TurtleStarParser)
 
+<DEFAULT> SKIP : { <COMMENT : "#" (~["\n"])* ("\n") > : DEFAULT }
+
 SKIP :
 {
   " "
@@ -320,7 +322,7 @@ IRI iri():
   String s;
 }
 {
-  s = iriRef() { return IRI.create(s);} | s = PrefixedName() { return IRI.create(s);}
+  s = iriRef() { return IRI.create(s);} | s = PrefixedName() { return IRI.create(s); }
 }
 
 String PrefixedName():
@@ -337,7 +339,7 @@ String PrefixedName():
     return prefix + suffix;
   }
  | t = <PNAME_NS> {
-    prefix = prefixes.get(t.image + ":");
+    prefix = prefixes.get(t.image);
     return prefix;
   }
 }

@@ -32,5 +32,24 @@ class SolutionSet(
                 TripleComparator.areEqualTriples(expectedSolution.toStringList(actual).toSet())
             )
         }
+
+        @JvmStatic
+        fun compareEqualSet(actual: Sequence<SolutionMapping>, variables: List<Variable>, expected: Sequence<SolutionMapping>) {
+            val expectedSolution = SolutionSet(
+                variables,
+                expected.map {
+                        solution ->
+                    variables.joinToString(" ") { variable ->
+                        if (solution.boundVariables.containsKey(variable)) solution.boundVariables[variable].toString()
+                        else "null"
+                    }
+                }.toList()
+            )
+
+            MatcherAssert.assertThat(
+                expectedSolution.values.toSet(),
+                TripleComparator.areEqualTriples(expectedSolution.toStringList(actual).toSet())
+            )
+        }
     }
 }
