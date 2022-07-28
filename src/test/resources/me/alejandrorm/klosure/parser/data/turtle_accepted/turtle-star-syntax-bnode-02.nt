@@ -1,2 +1,2 @@
 <http://example/s> <http://example/p> _:a .
-<<<http://example/s> <http://example/p> _:a>> <http://example/q> "456" .
+<<<http://example/s> <http://example/p> _:a>> <http://example/q> 456 .

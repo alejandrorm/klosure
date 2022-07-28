@@ -1,0 +1,166 @@
+{
+  "cases": [
+    {
+      "name": "Non-matching triple pattern",
+      "query": "bgp-no-match.rq",
+      "data": "data-7.ttl",
+      "expected": "bgp-no-match.srx"
+    },
+    {
+      "name": "Prefix name 1",
+      "query": "prefix-name-1.rq",
+      "data": "data-6.ttl",
+      "expected": "prefix-name-1.srx"
+    },
+    {
+      "name": "Basic graph pattern - spoo",
+      "query": "spoo-1.rq",
+      "data": "data-6.ttl",
+      "expected": "spoo-1.srx"
+    },
+    {
+      "name": "Basic - Prefix/Base 1",
+      "query": "base-prefix-1.rq",
+      "data": "data-1.ttl",
+      "expected": "base-prefix-1.srx"
+    },
+    {
+      "name": "Basic - Prefix/Base 2",
+      "query": "base-prefix-2.rq",
+      "data": "data-1.ttl",
+      "expected": "base-prefix-2.srx"
+    },
+    {
+      "name": "Basic - Prefix/Base 3",
+      "query": "base-prefix-3.rq",
+      "data": "data-1.ttl",
+      "expected": "base-prefix-3.srx"
+    },
+    {
+      "name": "Basic - Prefix/Base 4",
+      "query": "base-prefix-4.rq",
+      "data": "data-1.ttl",
+      "expected": "base-prefix-4.srx"
+    },
+    {
+      "name": "Basic - Prefix/Base 5",
+      "query": "base-prefix-5.rq",
+      "data": "data-1.ttl",
+      "expected": "base-prefix-5.srx"
+    },
+    {
+      "name": "Basic - List 1",
+      "query": "list-1.rq",
+      "data": "data-2.ttl",
+      "expected": "list-1.srx"
+    },
+    {
+      "name": "Basic - List 2",
+      "query": "list-2.rq",
+      "data": "data-2.ttl",
+      "expected": "list-2.srx"
+    },
+    {
+      "name": "Basic - List 3",
+      "query": "list-3.rq",
+      "data": "data-2.ttl",
+      "expected": "list-3.srx"
+    },
+    {
+      "name": "Basic - List 4",
+      "query": "list-4.rq",
+      "data": "data-2.ttl",
+      "expected": "list-4.srx"
+    },
+    {
+      "name": "Basic - Quotes 1",
+      "query": "quotes-1.rq",
+      "data": "data-3.ttl",
+      "expected": "quotes-1.srx"
+    },
+    {
+      "name": "Basic - Quotes 2",
+      "query": "quotes-2.rq",
+      "data": "data-3.ttl",
+      "expected": "quotes-2.srx"
+    },
+    {
+      "name": "Basic - Quotes 3",
+      "query": "quotes-3.rq",
+      "data": "data-3.ttl",
+      "expected": "quotes-3.srx"
+    },
+    {
+      "name": "Basic - Quotes 4",
+      "query": "quotes-4.rq",
+      "data": "data-3.ttl",
+      "expected": "quotes-4.srx"
+    },
+    {
+      "name": "Basic - Term 1",
+      "query": "term-1.rq",
+      "data": "data-4.ttl",
+      "expected": "term-1.srx"
+    },
+    {
+      "name": "Basic - Term 2",
+      "query": "term-2.rq",
+      "data": "data-4.ttl",
+      "expected": "term-2.srx"
+    },
+    {
+      "name": "Basic - Term 3",
+      "query": "term-3.rq",
+      "data": "data-4.ttl",
+      "expected": "term-3.srx"
+    },
+    {
+      "name": "Basic - Term 4",
+      "query": "term-4.rq",
+      "data": "data-4.ttl",
+      "expected": "term-4.srx"
+    },
+    {
+      "name": "Basic - Term 5",
+      "query": "term-5.rq",
+      "data": "data-4.ttl",
+      "expected": "term-5.srx"
+    },
+    {
+      "name": "Basic - Term 6",
+      "query": "term-6.rq",
+      "data": "data-4.ttl",
+      "expected": "term-6.srx"
+    },
+    {
+      "name": "Basic - Term 7",
+      "query": "term-7.rq",
+      "data": "data-4.ttl",
+      "expected": "term-7.srx"
+    },
+    {
+      "name": "Basic - Term 8",
+      "query": "term-8.rq",
+      "data": "data-4.ttl",
+      "expected": "term-8.srx"
+    },
+    {
+      "name": "Basic - Term 9",
+      "query": "term-9.rq",
+      "data": "data-4.ttl",
+      "expected": "term-9.srx"
+    },
+    {
+      "name": "Basic - Var 1",
+      "query": "var-1.rq",
+      "data": "data-5.ttl",
+      "expected": "var-1.srx"
+    },
+    {
+      "name": "Basic - Var 2",
+      "query": "var-2.rq",
+      "data": "data-5.ttl",
+      "expected": "var-2.srx"
+    }
+  ]
+}

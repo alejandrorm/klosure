@@ -18,20 +18,20 @@ open class Node(val id: NodeId) {
         outgoingEdges[node.id.predicate]!!.add(node)
     }
 
-    fun getIncomingEdges(): Iterator<PredicateNode> {
-        return incomingEdges.values.flatten().iterator()
+    fun getIncomingEdges(): Sequence<PredicateNode> {
+        return incomingEdges.values.flatten().asSequence()
     }
 
-    fun getOutgoingEdges(): Iterator<PredicateNode> {
-        return outgoingEdges.values.flatten().iterator()
+    fun getOutgoingEdges(): Sequence<PredicateNode> {
+        return outgoingEdges.values.flatten().asSequence()
     }
 
-    fun getIncomingEdges(predicate: IRI): Iterator<PredicateNode> {
-        return incomingEdges[predicate]?.iterator() ?: emptyList<PredicateNode>().iterator()
+    fun getIncomingEdges(predicate: IRI): Sequence<PredicateNode> {
+        return incomingEdges[predicate]?.asSequence() ?: emptyList<PredicateNode>().asSequence()
     }
 
-    fun getOutgoingEdges(predicate: IRI): Iterator<PredicateNode> {
-        return outgoingEdges[predicate]?.iterator() ?: emptyList<PredicateNode>().iterator()
+    fun getOutgoingEdges(predicate: IRI): Sequence<PredicateNode> {
+        return outgoingEdges[predicate]?.asSequence() ?: emptyList<PredicateNode>().asSequence()
     }
 
     override fun toString(): String {

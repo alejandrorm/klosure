@@ -55,8 +55,8 @@ class ParserTest {
         return Pair(turtleFile, tripleFile)
     }
 
-    private fun triplesToNTSet(triples: Iterator<PredicateNode>): Set<String> {
-        return triples.asSequence().map { it.toString() }.toSet()
+    private fun triplesToNTSet(triples: Sequence<PredicateNode>): Set<String> {
+        return triples.map { it.toString() }.toSet()
     }
 
     private fun readTurtleFile(stream: InputStream): Set<String> {

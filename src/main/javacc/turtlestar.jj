@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import me.alejandrorm.klosure.model.*;
-
+import me.alejandrorm.klosure.model.literals.DataTypes;
 
 public class TurtleStarParser {
 
@@ -249,7 +249,7 @@ Node object():
 
 LiteralNode literal():
 {
-  LiteralNode literal;
+  LiteralId literal;
 }
 {
   literal = RDFLiteral() { return graph.getOrPutLiteralNode(literal); }|
@@ -278,15 +278,15 @@ Node collection():
   "(" (rdfObject = object() { nodes.add(rdfObject); })* ")" { return ListNode.create(nodes, graph);}
 }
 
-NumberLiteral NumericLiteral():
+LiteralId NumericLiteral():
 { Token t;}
 {
-  t = <INTEGER> { return NumberLiteral.createLong(t.image); }|
-  t = <DECIMAL> { return NumberLiteral.createDouble(t.image); }|
-  t = <DOUBLE> { return NumberLiteral.createDouble(t.image); }
+  t = <INTEGER> { return DataTypes.getIntegerLiteral(t.image); }|
+  t = <DECIMAL> { return DataTypes.getDecimalLiteral(t.image); }|
+  t = <DOUBLE> { return DataTypes.getDecimalLiteral(t.image); }
 }
 
-LiteralNode RDFLiteral():
+LiteralId RDFLiteral():
 {
  String s;
  Token lang = null;
@@ -294,14 +294,14 @@ LiteralNode RDFLiteral():
 }
 {
   s = String() ( lang = <LANGTAG> | ( "^^" type = iri()) ) ? {
-    return LiteralNode.create(s, lang != null ? lang.image: null, type);
+    return DataTypes.getRdfLiteral(s, type, lang != null ? lang.image: null);
   }
 }
 
-BooleanLiteral BooleanLiteral():
+LiteralId BooleanLiteral():
 {}
 {
-  "true" { return TrueLiteral.INSTANCE; } | "false" { return FalseLiteral.INSTANCE; }
+  "true" { return DataTypes.getTRUE(); } | "false" { return DataTypes.getFALSE(); }
 }
 
 String String():

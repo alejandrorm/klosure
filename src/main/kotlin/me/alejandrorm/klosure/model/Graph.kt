@@ -38,9 +38,8 @@ class Graph {
         return listNode
     }
 
-    // TODO: should receive a LiteralId. LiteralNode constructors should be package private.
-    fun getOrPutLiteralNode(node: LiteralNode): LiteralNode {
-        return terminalNodes.computeIfAbsent(node.nodeId) { node }
+    fun getOrPutLiteralNode(id: LiteralId): LiteralNode {
+        return terminalNodes.computeIfAbsent(id) { LiteralNode(id) }
     }
 
     fun generateAnonId(): NodeId {
@@ -71,11 +70,11 @@ class Graph {
         return predicateNodes[verb] ?: emptySet()
     }
 
-    fun getAllTriples(): Iterator<PredicateNode> {
-        return predicateNodes.values.flatten().iterator()
+    fun getAllTriples(): Sequence<PredicateNode> {
+        return predicateNodes.values.flatten().asSequence()
     }
 
-    fun getAllAssertedTriples(): Iterator<PredicateNode> {
-        return predicateNodes.values.flatten().filter { it.asserted }.iterator()
+    fun getAllAssertedTriples(): Sequence<PredicateNode> {
+        return predicateNodes.values.flatten().filter { it.asserted }.asSequence()
     }
 }

@@ -1,0 +1,82 @@
+{
+  "cases": [
+    {
+      "name": "Join operator with OPTs, BGPs, and UNIONs",
+      "query": "join-combo-1.rq",
+      "data": "join-combo-graph-2.ttl",
+      "expected": "join-combo-1.srx"
+    },
+    {
+      "name": "Nested Optionals - 1",
+      "query": "two-nested-opt.rq",
+      "data": "two-nested-opt.ttl",
+      "expected": "two-nested-opt.srx"
+    },
+    {
+      "name": "Nested Optionals - 2",
+      "query": "two-nested-opt-alt.rq",
+      "data": "two-nested-opt.ttl",
+      "expected": "two-nested-opt-alt.srx"
+    },
+    {
+      "name": "Optional-filter - 1",
+      "query": "opt-filter-1.rq",
+      "data": "opt-filter-1.ttl",
+      "expected": "opt-filter-1.srx"
+    },
+    {
+      "name": "Optional-filter - 2 filters",
+      "query": "opt-filter-2.rq",
+      "data": "opt-filter-2.ttl",
+      "expected": "opt-filter-2.srx"
+    },
+    {
+      "name": "Optional-filter - scope of variable",
+      "query": "opt-filter-3.rq",
+      "data": "opt-filter-3.ttl",
+      "expected": "opt-filter-3.srx"
+    },
+    {
+      "name": "Filter-placement - 1",
+      "query": "filter-placement-1.rq",
+      "data": "data-2.ttl",
+      "expected": "filter-placement-1.srx"
+    },
+    {
+      "name": "Filter-placement - 2",
+      "query": "filter-placement-2.rq",
+      "data": "data-2.ttl",
+      "expected": "filter-placement-2.srx"
+    },
+    {
+      "name": "Filter-placement - 3",
+      "query": "filter-placement-3.rq",
+      "data": "data-2.ttl",
+      "expected": "filter-placement-3.srx"
+    },
+    {
+      "name": "Filter-nested - 1",
+      "query": "filter-nested-1.rq",
+      "data": "data-1.ttl",
+      "expected": "filter-nested-1.srx"
+    },
+    {
+      "name": "Filter-nested - 2",
+      "query": "filter-nested-2.rq",
+      "data": "data-1.ttl",
+      "expected": "filter-nested-2.srx"
+    },
+    {
+      "name": "Filter-scope - 1",
+      "query": "filter-scope-1.rq",
+      "data": "data-2.ttl",
+      "expected": "filter-scope-1.srx"
+    },
+    {
+      "name": "Join scope - 1",
+      "query": "var-scope-join-1.rq",
+      "data": "var-scope-join-1.ttl",
+      "expected": "var-scope-join-1.srx"
+    }
+  ]
+}

@@ -4,9 +4,8 @@ import me.alejandrorm.klosure.model.Graph
 import me.alejandrorm.klosure.sparql.SolutionMapping
 
 class Identity : AlgebraOperator {
-    override fun toString(): String {
-        return "Identity"
-    }
+    override fun toString(): String =
+        "Identity()"
 
     override fun eval(
         solutions: Sequence<SolutionMapping>,

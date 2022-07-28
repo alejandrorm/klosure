@@ -15,7 +15,7 @@ class ListNode(val first: Node, val rest: Node, id: NodeId) : Node(id) {
                 val rest = create(list.drop(1), graph)
                 graph.addListNode(first, rest)
             }
-            // TODO: add type rdf:List to node and properties first and rest
+            // TODO: add type rdf:List to the node
             return node
         }
     }

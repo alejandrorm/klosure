@@ -1,0 +1,190 @@
+{
+  "cases": [
+    {
+      "name": "(pp01) Simple path",
+      "query": "pp01.rq",
+      "data": "pp01.ttl",
+      "expected": "pp01.srx"
+    },
+    {
+      "name": "(pp02) Star path",
+      "query": "pp02.rq",
+      "data": "pp01.ttl",
+      "expected": "pp02.srx"
+    },
+    {
+      "name": "(pp03) Simple path with loop",
+      "query": "pp03.rq",
+      "data": "pp03.ttl",
+      "expected": "pp03.srx"
+    },
+    {
+      "name": "(pp04) Variable length path with loop",
+      "query": "pp04.rq",
+      "data": "pp03.ttl",
+      "expected": "pp04.srx"
+    },
+    {
+      "name": "(pp05) Zero length path",
+      "query": "pp05.rq",
+      "data": "pp05.ttl",
+      "expected": "pp05.srx"
+    },
+    {
+      "name": "(pp07) Path with one graph",
+      "query": "pp06.rq",
+      "data": "pp07.ttl",
+      "expected": "pp07.srx"
+    },
+    {
+      "name": "(pp08) Reverse path",
+      "query": "pp08.rq",
+      "data": "pp08.ttl",
+      "expected": "pp08.srx"
+    },
+    {
+      "name": "(pp09) Reverse sequence path",
+      "query": "pp09.rq",
+      "data": "pp09.ttl",
+      "expected": "pp09.srx"
+    },
+    {
+      "name": "(pp10) Path with negation",
+      "query": "pp10.rq",
+      "data": "pp10.ttl",
+      "expected": "pp10.srx"
+    },
+    {
+      "name": "(pp11) Simple path and two paths to same target node",
+      "query": "pp11.rq",
+      "data": "pp11.ttl",
+      "expected": "pp11.srx"
+    },
+    {
+      "name": "(pp12) Variable length path and two paths to same target node",
+      "query": "pp12.rq",
+      "data": "pp11.ttl",
+      "expected": "pp12.srx"
+    },
+    {
+      "name": "(pp13) Zero Length Paths with Literals",
+      "query": "pp13.rq",
+      "data": "pp13.ttl",
+      "expected": "pp13.srx"
+    },
+    {
+      "name": "(pp14) Star path over foaf:knows",
+      "query": "pp14.rq",
+      "data": "pp14.ttl",
+      "expected": "pp14.srx"
+    },
+    {
+      "name": "(pp15) Zero Length Paths on an empty graph",
+      "query": "pp15.rq",
+      "data": "empty.ttl",
+      "expected": "pp15.srx"
+    },
+    {
+      "name": "(pp16) Duplicate paths and cycles through foaf:knows*",
+      "query": "pp14.rq",
+      "data": "pp16.ttl",
+      "expected": "pp16.srx"
+    },
+    {
+      "name": "(pp20) Diamond -- :p{2}",
+      "query": "path-2-1.rq",
+      "data": "data-diamond.ttl",
+      "expected": "diamond-1.srx"
+    },
+    {
+      "name": "(pp21) Diamond -- :p+",
+      "query": "path-2-2.rq",
+      "data": "data-diamond.ttl",
+      "expected": "diamond-2.srx"
+    },
+    {
+      "name": "(pp22) Diamond, with tail -- :p{3}",
+      "query": "path-2-3.rq",
+      "data": "data-diamond-tail.ttl",
+      "expected": "diamond-tail-1.srx"
+    },
+    {
+      "name": "(pp23) Diamond, with tail -- :p+",
+      "query": "path-2-2.rq",
+      "data": "data-diamond-tail.ttl",
+      "expected": "diamond-tail-2.srx"
+    },
+    {
+      "name": "(pp24) Diamond, with loop -- :p{2}",
+      "query": "path-2-1.rq",
+      "data": "data-diamond-loop.ttl",
+      "expected": "diamond-loop-1.srx"
+    },
+    {
+      "name": "(pp25) Diamond, with loop -- :p+",
+      "query": "path-2-2.rq",
+      "data": "data-diamond-loop.ttl",
+      "expected": "diamond-loop-2.srx"
+    },
+    {
+      "name": "(pp26) Diamond, with loop -- :p{2,4}",
+      "query": "path-3-1.rq",
+      "data": "data-diamond-loop.ttl",
+      "expected": "diamond-loop-3.srx"
+    },
+    {
+      "name": "(pp27) Diamond, with loop -- :p{,3}",
+      "query": "path-3-2.rq",
+      "data": "data-diamond-loop.ttl",
+      "expected": "diamond-loop-4.srx"
+    },
+    {
+      "name": "(pp28a) Diamond, with loop -- (:p/:p)?",
+      "query": "path-3-3.rq",
+      "data": "data-diamond-loop.ttl",
+      "expected": "diamond-loop-5a.srx"
+    },
+    {
+      "name": "(pp29) Diamond, with loop -- :p{2,}",
+      "query": "path-3-4.rq",
+      "data": "data-diamond-loop.ttl",
+      "expected": "diamond-loop-6.srx"
+    },
+    {
+      "name": "(pp30) Operator precedence 1",
+      "query": "path-p1.rq",
+      "data": "path-p1.ttl",
+      "expected": "path-p1.srx"
+    },
+    {
+      "name": "(pp31) Operator precedence 2",
+      "query": "path-p2.rq",
+      "data": "path-p1.ttl",
+      "expected": "path-p2.srx"
+    },
+    {
+      "name": "(pp32) Operator precedence 3",
+      "query": "path-p3.rq",
+      "data": "path-p3.ttl",
+      "expected": "path-p3.srx"
+    },
+    {
+      "name": "(pp33) Operator precedence 4",
+      "query": "path-p4.rq",
+      "data": "path-p3.ttl",
+      "expected": "path-p4.srx"
+    },
+    {
+      "name": "(pp36) Arbitrary path with bound endpoints",
+      "query": "pp36.rq",
+      "data": "clique3.ttl",
+      "expected": "pp36.srx"
+    },
+    {
+      "name": "(pp37) Nested (*)*",
+      "query": "pp37.rq",
+      "data": "pp37.ttl",
+      "expected": "pp37.srx"
+    }
+  ]
+}

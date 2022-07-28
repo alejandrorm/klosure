@@ -1,0 +1,435 @@
+{
+  "cases": [
+    {
+      "name": "RDF inference test",
+      "query": "rdf01.rq",
+      "data": "rdf01.ttl",
+      "result": "rdf01.srx"
+    },
+    {
+      "name": "RDF inference test",
+      "query": "rdf02.rq",
+      "data": "rdf02.ttl",
+      "result": "rdf02.srx"
+    },
+    {
+      "name": "RDF test for blank node cardinalities",
+      "query": "rdf03.rq",
+      "data": "rdf03.ttl",
+      "result": "rdf03.srx"
+    },
+    {
+      "name": "simple triple pattern match",
+      "query": "rdf04.rq",
+      "data": "rdf04.ttl",
+      "result": "rdf04.srx"
+    },
+    {
+      "name": "RDFS inference test rdfs:subPropertyOf",
+      "query": "rdfs01.rq",
+      "data": "rdfs01.ttl",
+      "result": "rdfs01.srx"
+    },
+    {
+      "name": "RDFS inference test rdfs:subPropertyOf",
+      "query": "rdfs02.rq",
+      "data": "rdfs01.ttl",
+      "result": "rdfs02.srx"
+    },
+    {
+      "name": "RDFS inference test combining subPropertyOf and domain",
+      "query": "rdfs03.rq",
+      "data": "rdfs03.ttl",
+      "result": "rdfs03.srx"
+    },
+    {
+      "name": "RDFS inference test subClassOf",
+      "query": "rdfs04.rq",
+      "data": "rdfs04.ttl",
+      "result": "rdfs04.srx"
+    },
+    {
+      "name": "RDFS inference test subClassOf",
+      "query": "rdfs05.rq",
+      "data": "rdfs05.ttl",
+      "result": "rdfs05.srx"
+    },
+    {
+      "name": "RDFS inference test domain",
+      "query": "rdfs06.rq",
+      "data": "rdfs06.ttl",
+      "result": "rdfs06.srx"
+    },
+    {
+      "name": "RDFS inference test range",
+      "query": "rdfs07.rq",
+      "data": "rdfs07.ttl",
+      "result": "rdfs07.srx"
+    },
+    {
+      "name": "RDFS inference test rdf:XMLLiteral",
+      "query": "rdfs08.rq",
+      "data": "rdfs08.ttl",
+      "result": "rdfs08.srx"
+    },
+    {
+      "name": "RDFS inference test transitivity of subClassOf",
+      "query": "rdfs09.rq",
+      "data": "rdfs09.ttl",
+      "result": "rdfs09.srx"
+    },
+    {
+      "name": "RDFS inference test transitivity of subPropertyOf",
+      "query": "rdfs10.rq",
+      "data": "rdfs10.ttl",
+      "result": "rdfs10.srx"
+    },
+    {
+      "name": "RDFS inference test subProperty and instances",
+      "query": "rdfs11.rq",
+      "data": "rdfs11.ttl",
+      "result": "rdfs11.srx>
+      .
+    {
+      "name": "RDFS inference test containers",
+      "query": "rdfs12.rq",
+      "data": "rdfs12.ttl",
+      "result": "rdfs12.srx"
+    },
+    {
+      "name": "RDFS inference test to show that neither literals in subject position nor newly introduced surrogate blank nodes are to be returned in query answers",
+      "query": "rdfs13.rq",
+      "data": "rdfs13.ttl",
+      "result": "rdfs13.srx"
+    },
+    {
+      "name": "D-Entailment test to show that  neither literals in subject position nor newly introduced surrogate blank nodes are to be returned in query answers",
+      "query": "d-ent-01.rq",
+      "data": "d-ent-01.ttl",
+      "result": "d-ent-01.srx"
+    },
+    {
+      "name": "bnodes are not existentials"
+      ;
+      "query": "owlds01.rq",
+      "data": "owlds01.ttl",
+      "result": "owlds01.srx"
+    },
+    {
+      "name": "bnodes are not existentials with answer"
+      ;
+      "query": "owlds02.rq",
+      "data": "owlds02.ttl",
+      "result": "owlds02.srx"
+    },
+    {
+      "name": "Plain literals with language tag are not the same as the same literal without",
+      "query": "plainLit.rq",
+      "data": "plainLit.ttl",
+      "result": "plainLit.srx"
+    },
+    {
+      "name": "paper-sparqldl-Q1"
+      ;
+      "query": "paper-sparqldl-Q1.rq",
+      "data": "paper-sparqldl-data.ttl",
+      "result": "paper-sparqldl-Q1.srx"
+    },
+    {
+      "name": "paper-sparqldl-Q1-rdfs",
+      "query": "paper-sparqldl-Q1.rq",
+      "data": "paper-sparqldl-data.ttl",
+      "result": "paper-sparqldl-Q1-rdfs.srx"
+    },
+    {
+      "name": "paper-sparqldl-Q2"
+      ;
+      "query": "paper-sparqldl-Q2.rq",
+      "data": "paper-sparqldl-data.ttl",
+      "result": "paper-sparqldl-Q2.srx"
+    },
+    {
+      "name": "paper-sparqldl-Q3",
+      "query": "paper-sparqldl-Q3.rq",
+      "data": "paper-sparqldl-data.ttl",
+      "result": "paper-sparqldl-Q3.srx"
+    },
+    {
+      "name": "paper-sparqldl-Q4"
+      ;
+      mf: action
+      "query": "paper-sparqldl-Q4.rq",
+      "data": "paper-sparqldl-data.ttl",
+      "result": "paper-sparqldl-Q4.srx"
+    },
+    {
+      "name": "paper-sparqldl-Q5",
+      "query": "paper-sparqldl-Q5.rq",
+      "data": "paper-sparqldl-data.ttl",
+      "result": "paper-sparqldl-Q5.srx"
+    },
+    {
+      "name": "bind01 - BIND fixed data for OWL DL"
+      ;
+      "query": "bind01.rq",
+      "data": "bind-data.ttl",
+      "result": "bind01.srx"
+    },
+    {
+      "name": "bind02 - BIND fixed data for OWL DL"
+      ;
+      "query": "bind02.rq",
+      "data": "bind-data.ttl",
+      "result": "bind02.srx"
+    },
+    {
+      "name": "bind03 - BIND fixed data for OWL DL"
+      ;
+      "query": "bind03.rq",
+      "data": "bind-data.ttl",
+      "result": "bind03.srx"
+    },
+    {
+      "name": "bind04 - BIND fixed data for OWL DL"
+      ;
+      "query": "bind04.rq",
+      "data": "bind-data.ttl",
+      "result": "bind04.srx"
+    },
+    {
+      "name": "bind05 - BIND fixed data for OWL DL"
+      ;
+      "query": "bind05.rq",
+      "data": "bind-data.ttl",
+      "result": "bind05.srx"
+    },
+    {
+      "name": "bind06 - BIND fixed data for OWL DL"
+      ;
+      "query": "bind06.rq",
+      "data": "bind-data.ttl",
+      "result": "bind06.srx"
+    },
+    {
+      "name": "bind07 - BIND fixed data for OWL DL"
+      ;
+      "query": "bind07.rq",
+      "data": "bind-data.ttl",
+      "result": "bind07.srx"
+    },
+    {
+      "name": "bind08 - BIND fixed data for OWL DL"
+      ;
+      "query": "bind08.rq",
+      "data": "bind-data.ttl>;
+
+      "result": "bind08.srx"
+    },
+    {
+      "name": "sparqldl-01.rq: triple pattern",
+      "query": "sparqldl-01.rq",
+      "data": "data-01.ttl",
+      "result": "sparqldl-01.srx"
+    },
+    {
+      "name": "sparqldl-02.rq: simple combined query",
+      "query": "sparqldl-02.rq",
+      "data": "data-01.ttl",
+      "result": "sparqldl-02.srx"
+    },
+    {
+      "name": "sparqldl-03.rq: combined query with complex class description",
+      "query": "sparqldl-03.rq",
+      "data": "data-02.ttl",
+      "result": "sparqldl-03.srx"
+    },
+    {
+      "name": "sparqldl-04.rq: bug fixing test",
+      "query": "sparqldl-04.rq",
+      "data": "data-03.ttl",
+      "result": "sparqldl-04.srx"
+    },
+    {
+      "name": "sparqldl-05.rq: simple undistinguished variable test.",
+      "query": "sparqldl-05.rq",
+      "data": "data-03.ttl",
+      "result": "sparqldl-05.srx"
+    },
+    {
+      "name": "sparqldl-06.rq: cycle of undistinguished variables",
+      "query": "sparqldl-06.rq",
+      "data": "data-06.ttl",
+      "result": "sparqldl-06.srx"
+    },
+    {
+      "name": "sparqldl-07.rq: two distinguished variables + undist.",
+      "query": "sparqldl-07.rq",
+      "data": "data-06.ttl",
+      "result": "sparqldl-07.srx"
+    },
+    {
+      "name": "sparqldl-08.rq: two distinguished variables + undist.",
+      "query": "sparqldl-08.rq",
+      "data": "data-06.ttl",
+      "result": "sparqldl-08.srx"
+    },
+    {
+      "name": "sparqldl-09.rq: undist vars test",
+      "query": "sparqldl-09.rq",
+      "data": "data-07.ttl",
+      "result": "sparqldl-09.srx"
+    },
+    {
+      "name": "sparqldl-10.rq: undist vars test",
+      "query": "sparqldl-10.rq",
+      "data": "data-07.ttl",
+      "result": "sparqldl-10.srx"
+    },
+    {
+      "name": "sparqldl-11.rq: domain test"
+      ;
+      mf: action
+      "query": "sparqldl-11.rq",
+      "data": "data-11.ttl",
+      "result": "sparqldl-11.srx"
+    },
+    {
+      "name": "sparqldl-12.rq: range test",
+      "query": "sparqldl-12.rq",
+      "data": "data-11.ttl",
+      "result": "sparqldl-12.srx"
+    },
+    rdf
+    :
+    type
+    mf
+    :
+    QueryEvaluationTest
+    ;
+    mf
+    :
+    name
+    "sparqldl-13.rq: sameAs",
+    "query"
+    :
+    "sparqldl-13.rq",
+    "data"
+    :
+    "data-08.ttl",
+    "result"
+    :
+    "sparqldl-13.srx"
+    },
+    {
+      "name": "Literal with language tag test"
+      ;
+      "query": "lang.rq",
+      "data": "lang.ttl",
+      "result": "lang.srx"
+    },
+    {
+      "name": "parent query with distinguished variable",
+      "query": "parent2.rq",
+      "data": "parent.ttl",
+      "result": "parent2.srx"
+    },
+    {
+      "name": "parent query with (hasChild some Thing) restriction",
+      "query": "parent3.rq",
+      "data": "parent.ttl",
+      "result": "parent3.srx"
+    },
+    {
+      "name": "parent query with (hasChild min 1) restriction",
+      "query": "parent4.rq",
+      "data": "parent.ttl",
+      "result": "parent4.srx"
+    },
+    {
+      "name": "parent query with (hasChild some Female) restriction",
+      "query": "parent5.rq",
+      "data": "parent.ttl",
+      "result": "parent5.srx"
+    },
+    {
+      "name": "parent query with (hasChild min 1 Female) restriction",
+      "query": "parent6.rq",
+      "data": "parent.ttl",
+      "result": "parent6.srx"
+    },
+    {
+      "name": "parent query with (hasChild max 1 Female) restriction",
+      "query": "parent7.rq",
+      "data": "parent.ttl",
+      "result": "parent7.srx"
+    },
+    {
+      "name": "parent query with (hasChild exactly 1 Female) restriction"
+      ;
+      mf: action
+      "query": "parent8.rq",
+      "data": "parent.ttl",
+      "result": "parent8.srx"
+    },
+    {
+      "name": "subclass query with (hasChild some Thing) restriction",
+      "query": "parent9.rq",
+      "data": "parent.ttl",
+      "result": "parent9.srx"
+    },
+    {
+      "name": "filtered subclass query with (hasChild some Thing) restriction",
+      "query": "parent10.rq",
+      "data": "parent.ttl",
+      "result": "parent10.srx"
+    },
+    {
+      "name": "simple 1",
+      "query": "simple1.rq",
+      "data": "simple.ttl",
+      "result": "simple1.srx"
+    },
+    {
+      "name": "simple 2",
+      "query": "simple2.rq",
+      "data": "simple.ttl",
+      "result": "simple2.srx"
+    },
+    {
+      "name": "simple 3",
+      "query": "simple3.rq",
+      "data": "simple.ttl",
+      "result": "simple3.srx"
+    },
+    {
+      "name": "simple 4",
+      "query": "simple4.rq",
+      "data": "simple.ttl",
+      "result": "simple4.srx"
+    },
+    {
+      "name": "simple 5",
+      "query": "simple5.rq",
+      "data": "simple.ttl",
+      "result": "simple5.srx"
+    },
+    {
+      "name": "simple 6",
+      "query": "simple6.rq",
+      "data": "simple.ttl",
+      "result": "simple6.srx"
+    },
+    {
+      "name": "simple 7",
+      "query": "simple7.rq",
+      "data": "simple.ttl",
+      "result": "simple7.srx"
+    },
+    {
+      "name": "simple 8",
+      "query": "simple8.rq",
+      "data": "simple.ttl",
+      "result": "simple8.srx"
+    }
+  ]
+}

@@ -5,7 +5,7 @@ options
 
   JAVA_UNICODE_ESCAPE   = true;
   UNICODE_INPUT         = true;
-
+  IGNORE_CASE           = true;
   STATIC                = false;
   //DEBUG_PARSER          = true;
   //DEBUG_TOKEN_MANAGER   = true;
@@ -21,6 +21,7 @@ import org.semanticweb.owlapi.model.IRI;
 import java.util.*;
 
 import me.alejandrorm.klosure.model.*;
+import me.alejandrorm.klosure.model.literals.*;
 import me.alejandrorm.klosure.sparql.*;
 //import me.alejandrorm.klosure.sparql.algebra.*;
 import me.alejandrorm.klosure.sparql.algebra.operators.*;
@@ -180,24 +181,35 @@ void PrefixDecl():
 Query SelectQuery():
 {
   AlgebraOperator a;
+  AlgebraOperator s;
 }
 {
-  SelectClause() (DatasetClause()) * a = WhereClause() SolutionModifier() { return new SelectQuery(a); }
+  s = SelectClause() (DatasetClause()) * a = WhereClause() SolutionModifier() {
+ return new SelectQuery(new Join(Arrays.asList(a, s)));
+ }
 }
 
 // TODO
 AlgebraOperator SubSelect():
 {
   AlgebraOperator a;
+  AlgebraOperator s;
 }
 {
-  SelectClause() a = WhereClause() SolutionModifier() ValuesClause() { return a; }
+  s = SelectClause() a = WhereClause() SolutionModifier() ValuesClause() {
+ return new Join(Arrays.asList(a, s)); }
 }
 
-void SelectClause():
-{}
+// FIXME when distinct/reduced is implemented
+AlgebraOperator SelectClause():
 {
-  "SELECT" ( "DISTINCT" | "REDUCED") ? ( ( Var() | ( "(" Expression() "AS" Var() ")") ) + | "*")
+  Variable v;
+  List<Variable> variables = new ArrayList<>();
+}
+{
+  "SELECT" ( "DISTINCT" | "REDUCED") ? ( ( v = Var() { variables.add(v); } | ( "(" Expression() "AS" Var() ")") ) + | "*") {
+    return new Project(variables);
+  }
 }
 
 void ConstructQuery():
@@ -500,11 +512,13 @@ List<TriplePattern> TriplesBlock():
 
 //TODO: implement this
 AlgebraOperator GraphPatternNotTriples():
-{}
 {
-  GroupOrUnionGraphPattern() { return new Identity(); } | // Union
-  OptionalGraphPattern() { return new Identity(); }| // LeftJoin
-  MinusGraphPattern() { return new Identity(); }| // Minus
+  AlgebraOperator a;
+}
+{
+  a = GroupOrUnionGraphPattern() { return a; } |
+  a = OptionalGraphPattern() { return a; }|
+  a = MinusGraphPattern() { return a; }| // Minus
   GraphGraphPattern() { return new Identity(); }|
   ServiceGraphPattern() { return new Identity(); }|
   Filter() { return new Identity(); }| // Filter
@@ -512,10 +526,12 @@ AlgebraOperator GraphPatternNotTriples():
   InlineData() { return new Identity(); }
 }
 
-void OptionalGraphPattern():
-{}
+AlgebraOperator OptionalGraphPattern():
 {
-  "OPTIONAL" GroupGraphPattern()
+  AlgebraOperator a;
+}
+{
+  "OPTIONAL" a = GroupGraphPattern() { return new LeftJoin(a); }
 }
 
 void GraphGraphPattern():
@@ -572,16 +588,21 @@ void DataBlockValue():
   "UNDEF"
 }
 
-void MinusGraphPattern():
-{}
+AlgebraOperator MinusGraphPattern():
 {
-  "MINUS" GroupGraphPattern()
+  AlgebraOperator a;
+}
+{
+  "MINUS" a = GroupGraphPattern() { return new Minus(a); }
 }
 
-void GroupOrUnionGraphPattern():
-{}
+AlgebraOperator GroupOrUnionGraphPattern():
 {
-  GroupGraphPattern() ( "UNION" GroupGraphPattern()) *
+  AlgebraOperator a;
+  List<AlgebraOperator> ops = new ArrayList<AlgebraOperator>();
+}
+{
+  a = GroupGraphPattern() { ops.add(a); }( "UNION" a = GroupGraphPattern() { ops.add(a); }) * { return new Union(ops); }
 }
 
 void Filter():
@@ -1003,7 +1024,6 @@ Variable Var():
 
 TermOrVariable GraphTerm():
 {
-  LiteralNode l;
   LiteralId lid;
   IRI i;
   BlankId b;
@@ -1011,8 +1031,8 @@ TermOrVariable GraphTerm():
 {
   i = iri() { return new TermOrVariable.NodeOrIriTerm(new IriId(i)); }|
   lid = RDFLiteral() { return new TermOrVariable.NodeOrIriTerm(lid); }|
-  l = NumericLiteral() { return new TermOrVariable.NodeOrIriTerm(l.getId()); }|
-  l = BooleanLiteral() { return new TermOrVariable.NodeOrIriTerm(l.getId()); }|
+  lid = NumericLiteral() { return new TermOrVariable.NodeOrIriTerm(lid); }|
+  lid = BooleanLiteral() { return new TermOrVariable.NodeOrIriTerm(lid); }|
   b = BlankNode() { return new TermOrVariable.VariableTerm(new Variable(b.getName(), true)); }|
   <NIL> { return null;}
 }
@@ -1226,45 +1246,57 @@ LiteralId RDFLiteral():
   IRI i = null;
 }
 {
-  s = String() ( t = <LANGTAG> { lang = t.image; }| ( "^^" i = iri()) ) ? { return new LiteralId(s, i); }
+  s = String() ( t = <LANGTAG> { lang = t.image; }| ( "^^" i = iri()) ) ? { return DataTypes.getRdfLiteral(s, i, lang); }
+}
+
+LiteralId NumericLiteral():
+{
+  LiteralId l;
+}
+{
+  l = NumericLiteralUnsigned() { return l; }|
+  l = NumericLiteralPositive() { return l; }|
+  l = NumericLiteralNegative() { return l; }
 }
 
 //FIXME
-NumberLiteral NumericLiteral():
-{}
+LiteralId NumericLiteralUnsigned():
 {
-  NumericLiteralUnsigned() { return NumberLiteral.createLong("0"); }|
-  NumericLiteralPositive() { return NumberLiteral.createLong("0"); }|
-  NumericLiteralNegative() { return NumberLiteral.createLong("0"); }
+  Token t;
+}
+{
+  t = <INTEGER> { return DataTypes.getIntegerLiteral(t.image); }|
+  t = <DECIMAL> { return DataTypes.getDecimalLiteral(t.image); }|
+  t = <DOUBLE>  { return DataTypes.getDecimalLiteral(t.image); }
 }
 
-void NumericLiteralUnsigned():
-{}
+//FIXME
+LiteralId NumericLiteralPositive():
 {
-  <INTEGER> |
-  <DECIMAL> |
-  <DOUBLE>
+  Token t;
+}
+{
+  t = <INTEGER_POSITIVE> { return DataTypes.getIntegerLiteral(t.image); }|
+  t = <DECIMAL_POSITIVE> { return DataTypes.getDecimalLiteral(t.image); }|
+  t = <DOUBLE_POSITIVE>  { return DataTypes.getDecimalLiteral(t.image);}
 }
 
-void NumericLiteralPositive():
-{}
+//FIXME
+LiteralId NumericLiteralNegative():
 {
-  <INTEGER_POSITIVE> |
-  <DECIMAL_POSITIVE> |
-  <DOUBLE_POSITIVE>
+  Token t;
+}
+{
+  t = <INTEGER_NEGATIVE> { return DataTypes.getIntegerLiteral(t.image); }|
+  t = <DECIMAL_NEGATIVE> { return DataTypes.getDecimalLiteral(t.image); }|
+  t = <DOUBLE_NEGATIVE> { return DataTypes.getDecimalLiteral(t.image);}
 }
 
-void NumericLiteralNegative():
+LiteralId BooleanLiteral():
 {}
 {
-  <INTEGER_NEGATIVE> | <DECIMAL_NEGATIVE> | <DOUBLE_NEGATIVE>
-}
-
-BooleanLiteral BooleanLiteral():
-{}
-{
-  "true" { return TrueLiteral.INSTANCE; }|
-  "false" { return FalseLiteral.INSTANCE; }
+  "true" { return DataTypes.getTRUE(); }|
+  "false" { return DataTypes.getFALSE(); }
 }
 
 String String():
@@ -1273,7 +1305,6 @@ String String():
   String s;
 }
 {
- //TODO you might have to add 1 to the length
   t = <STRING_LITERAL1> { s = t.image; return s.substring(1, s.length() - 1); }|
   t = <STRING_LITERAL2> { s = t.image; return s.substring(1, s.length() - 1); }|
   t = <STRING_LITERAL_LONG1> { s = t.image; return s.substring(3, s.length() - 3); }|
@@ -1341,8 +1372,8 @@ TermOrVariable qtSubjectOrObject():
   n = BlankNode() { return new TermOrVariable.VariableTerm(new Variable(n.getName(), true)); }|
   i = iri() { return new TermOrVariable.NodeOrIriTerm(new IriId(i)); }|
   lid = RDFLiteral() { return new TermOrVariable.NodeOrIriTerm(lid); }|
-  l = NumericLiteral() { return new TermOrVariable.NodeOrIriTerm(l.getId()); }|
-  l = BooleanLiteral() { return new TermOrVariable.NodeOrIriTerm(l.getId()); }|
+  lid = NumericLiteral() { return new TermOrVariable.NodeOrIriTerm(lid); }|
+  lid = BooleanLiteral() { return new TermOrVariable.NodeOrIriTerm(lid); }|
   t = QuotedTP() { return t; }
 }
 
