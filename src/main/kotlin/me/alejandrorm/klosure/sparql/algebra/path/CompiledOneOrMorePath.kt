@@ -16,11 +16,11 @@ class CompiledOneOrMorePath(
 
     override fun eval(solution: SolutionMapping, graph: Graph): Sequence<SolutionMapping> {
         val s = path.eval(head, tail, solution, graph)
-        if (s.count() > 0) return s
+        //if (s.count() > 0) return s
 
         val v = TermOrVariable.VariableTerm(Variable(UUID.randomUUID().toString(), true))
         val solutions = path.eval(head, v, sequenceOf(solution), graph)
-        return solutions.flatMap {
+        return s + solutions.flatMap {
             evalHelper(it, v, graph, setOf(head.resolve(it).getTerm()))
         }
     }
@@ -32,12 +32,12 @@ class CompiledOneOrMorePath(
         boundValues: Set<NodeId>
     ): Sequence<SolutionMapping> {
         val s = path.eval(variable, tail, solution, graph)
-        if (s.count() > 0) return s
+        //if (s.count() > 0) return s
 
         val v = TermOrVariable.VariableTerm(Variable(UUID.randomUUID().toString(), true))
 
         val solutions = path.eval(variable, v, solution, graph)
-        return solutions.flatMap {
+        return s + solutions.flatMap {
             val boundValue = variable.resolve(it).getTerm()
             if (boundValues.contains(boundValue)) emptySequence()
             else evalHelper(it, v, graph, boundValues + boundValue)

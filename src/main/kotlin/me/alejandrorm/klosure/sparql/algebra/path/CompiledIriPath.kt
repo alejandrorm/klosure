@@ -14,6 +14,10 @@ class CompiledIriPath(
     val tail: TermOrVariable
 ) : CompiledPath {
 
+    override fun toString(): String {
+        return "CompiledIriPath($head <$iri> $tail)"
+    }
+
     private val triple = BasicTriplePattern(head, TermOrVariable.NodeOrIriTerm(IriId(iri)), tail)
 
     override fun eval(solution: SolutionMapping, graph: Graph): Sequence<SolutionMapping> =

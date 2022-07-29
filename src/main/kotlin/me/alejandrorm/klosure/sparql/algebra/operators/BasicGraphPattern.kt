@@ -5,6 +5,11 @@ import me.alejandrorm.klosure.sparql.SolutionMapping
 import me.alejandrorm.klosure.sparql.Variable
 
 class BasicGraphPattern(val patterns: List<TriplePattern>) : TriplePattern, AlgebraOperator {
+
+    override fun toString(): String {
+        return "BGP(${patterns.joinToString(", ") { it.toString() }})"
+    }
+
     override fun eval(solution: SolutionMapping, graph: Graph): Sequence<SolutionMapping> {
         return patterns.fold(sequenceOf(solution)) { acc, pattern ->
             pattern.eval(acc, graph)

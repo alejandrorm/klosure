@@ -9,6 +9,7 @@ import me.alejandrorm.klosure.sparql.SolutionMapping
 import me.alejandrorm.klosure.sparql.Variable
 import me.alejandrorm.klosure.sparql.algebra.SolutionSet
 import org.junit.jupiter.api.DynamicTest
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
 import org.semanticweb.owlapi.model.IRI
 import org.w3c.dom.Document
@@ -60,7 +61,8 @@ class ParserTest {
                 val id = when (value.nodeName) {
                     "literal" -> DataTypes.getLiteralId(value.textContent,
                         value.attributes.getNamedItem("datatype")?.let { d -> IRI.create(d.textContent) },
-                        value.attributes.getNamedItem("xml:lang")?.let { l -> l.textContent })
+                        value.attributes.getNamedItem("xml:lang")?.textContent
+                    )
                     "uri" -> IriId(IRI.create(value.textContent))
                     else -> throw IllegalArgumentException("Unsupported value type: ${value.localName}")
                 }
@@ -94,6 +96,31 @@ class ParserTest {
             ParserTest::class.java.getResourceAsStream("/me/alejandrorm/klosure/parser/data/sparql/star/$fileName")!!
         return stream.bufferedReader().use(BufferedReader::readText)
     }
+
+    @Test
+    fun singleTest() {
+        val dataFile = "1.0-w3c/algebra/two-nested-opt.ttl"
+        val queryFile = "1.0-w3c/algebra/two-nested-opt.rq"
+        val expectedFile = "1.0-w3c/algebra/two-nested-opt.srx"
+
+        val expected =
+            xmlToSolutions(ParserTest::class.java.getResourceAsStream("/me/alejandrorm/klosure/parser/data/sparql/${expectedFile}")!!)
+
+        val graph = Graph()
+        val parser =
+            TurtleStarParser(ParserTest::class.java.getResourceAsStream("/me/alejandrorm/klosure/parser/data/sparql/${dataFile}")!!)
+        parser.graph = graph
+        parser.turtleDoc()
+
+        val query =
+            SparqlStarParser(ParserTest::class.java.getResourceAsStream("/me/alejandrorm/klosure/parser/data/sparql/${queryFile}")!!).QueryUnit()
+
+        println(query.toString())
+        val result = query.eval(graph)
+
+        SolutionSet.compareEqualSet(result.bindings, expected.variables, expected.solutions)
+    }
+
 
     @TestFactory
     fun basicSparqlQueryTestSuite(): List<DynamicTest> {

@@ -15,6 +15,10 @@ class BasicTriplePattern(
 
     private val terms = arrayOf(subject, predicate, obj)
 
+    override fun toString(): String {
+        return "BasicTriplePattern(subject=$subject, predicate=$predicate, obj=$obj)"
+    }
+
     override fun getVariables(): Set<Variable> {
         return terms.filterIsInstance<TermOrVariable.VariableTerm>().map { it.variable }.toSet()
     }

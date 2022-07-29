@@ -18,6 +18,10 @@ sealed class TermOrVariable {
 
     class QuotedTriple(val subject: TermOrVariable, val predicate: TermOrVariable, val obj: TermOrVariable) : TermOrVariable() {
 
+        override fun toString(): String {
+            return "<<$subject $predicate $obj>>"
+        }
+
         override fun resolve(solution: SolutionMapping): TermOrVariable {
             return QuotedTriple(subject.resolve(solution), predicate.resolve(solution), obj.resolve(solution))
         }
@@ -63,6 +67,11 @@ sealed class TermOrVariable {
     }
 
     class NodeOrIriTerm(val nodeId: NodeId) : TermOrVariable() {
+
+        override fun toString(): String {
+            return nodeId.toString()
+        }
+
         override fun isBound(): Boolean = true
         override fun resolve(solution: SolutionMapping): TermOrVariable = this
         override fun getTerm() = nodeId
@@ -96,6 +105,10 @@ sealed class TermOrVariable {
             } else {
                 this
             }
+        }
+
+        override fun toString(): String {
+            return "?${variable.name}"
         }
 
         override fun match(solution: SolutionMapping, nodeId: NodeId): SolutionMapping? {
