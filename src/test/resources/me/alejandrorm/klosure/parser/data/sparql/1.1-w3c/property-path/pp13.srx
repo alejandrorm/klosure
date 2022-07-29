@@ -10,14 +10,6 @@
         <uri>http://ex.org/s</uri>
       </binding>
       <binding name="Y">
-        <uri>http://ex.org/s</uri>
-      </binding>
-    </result>
-    <result>
-      <binding name="X">
-        <literal>o</literal>
-      </binding>
-      <binding name="Y">
         <literal>o</literal>
       </binding>
     </result>

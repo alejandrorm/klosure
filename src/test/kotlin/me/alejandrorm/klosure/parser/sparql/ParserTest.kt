@@ -99,9 +99,9 @@ class ParserTest {
 
     @Test
     fun singleTest() {
-        val dataFile = "1.0-w3c/algebra/two-nested-opt.ttl"
-        val queryFile = "1.0-w3c/algebra/two-nested-opt.rq"
-        val expectedFile = "1.0-w3c/algebra/two-nested-opt.srx"
+        val dataFile = "1.0-w3c/basic/data-2.ttl"
+        val queryFile = "1.0-w3c/basic/list-1.rq"
+        val expectedFile = "1.0-w3c/basic/list-1.srx"
 
         val expected =
             xmlToSolutions(ParserTest::class.java.getResourceAsStream("/me/alejandrorm/klosure/parser/data/sparql/${expectedFile}")!!)

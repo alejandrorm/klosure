@@ -10,6 +10,11 @@ class CompiledZeroOrOnePath(
     val path: CompiledPath,
     val tail: TermOrVariable
 ) : CompiledPath {
+
+    override fun toString(): String {
+        return "CompiledZeroOrOnePath($head, $path, $tail)"
+    }
+
     override fun eval(solution: SolutionMapping, graph: Graph): Sequence<SolutionMapping> {
         val n1 = head.resolve(solution)
         val n2 = head.resolve(solution)

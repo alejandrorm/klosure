@@ -16,6 +16,7 @@ class LeftJoin(val operator: AlgebraOperator) : AlgebraOperator {
 
         val j = join(l1, operator, graph).toList()
 
+        // TODO after fixing the join function, don't need the minute here
         return j.asSequence() + minus(l1, j)
 
     //        return solutions.flatMap { solution ->
@@ -33,11 +34,15 @@ class LeftJoin(val operator: AlgebraOperator) : AlgebraOperator {
         val l2 = operator.eval(sequenceOf(SolutionMapping.EmptySolutionMapping), graph).toList()
 
         for(solution1 in l1) {
+            // TODO var yielded = false
             for(solution2 in l2) {
                 if (solution1.isCompatible(solution2)) {
+                    // TODO yielded = true
                     yield(solution1.merge(solution2))
                 }
             }
+            // TODO: if not yielded from the inner look, yield(solution1)
+            // that way you don't need to convert l1 to a list, can keep it as sequence
         }
     }
 }

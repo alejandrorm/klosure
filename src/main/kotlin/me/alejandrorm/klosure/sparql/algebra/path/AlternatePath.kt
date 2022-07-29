@@ -5,6 +5,11 @@ import me.alejandrorm.klosure.sparql.SolutionMapping
 import me.alejandrorm.klosure.sparql.algebra.operators.TermOrVariable
 
 class AlternatePath(val paths: List<Path>) : Path {
+
+    override fun toString(): String {
+        return "AlternatePath(${paths.joinToString(", ")})"
+    }
+
     override fun compile(head: TermOrVariable, tail: TermOrVariable): CompiledPath =
         CompiledAlternatePath(paths.map { it.compile(head, tail) })
 

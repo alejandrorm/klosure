@@ -5,6 +5,11 @@ import me.alejandrorm.klosure.sparql.SolutionMapping
 import me.alejandrorm.klosure.sparql.Variable
 
 class CompiledSequencePath(val compiledPath: List<CompiledPath>) : CompiledPath {
+
+    override fun toString(): String {
+        return "CompiledSequencePath(${compiledPath.joinToString(", ")})"
+    }
+
     override fun eval(solution: SolutionMapping, graph: Graph): Sequence<SolutionMapping> {
         return compiledPath.fold(sequenceOf(solution)) {
                 solutions, path ->

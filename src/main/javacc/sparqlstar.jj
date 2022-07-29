@@ -7,9 +7,10 @@ options
   UNICODE_INPUT         = true;
   IGNORE_CASE           = true;
   STATIC                = false;
-  //DEBUG_PARSER          = true;
-  //DEBUG_TOKEN_MANAGER   = true;
+  DEBUG_PARSER          = true;
+  DEBUG_TOKEN_MANAGER   = true;
   FORCE_LA_CHECK        = true;
+  LOOKAHEAD             = 3;
 }
 
 PARSER_BEGIN(SparqlStarParser)
@@ -862,7 +863,15 @@ Path PathPrimary():
   i = iri() { return new IriPath(i); }|
   "a" { return new IriPath(IRI.create(NAMESPACE_PREFIX + "type")); }|
   ( "!" p = PathNegatedPropertySet() { return new NegatedPath(p); }) |
-  ( "(" p = Path() { return p; }")")
+  p = ParenthesisPath() { return p; } //( "(" p = Path() { return p; }")")
+}
+
+Path ParenthesisPath():
+{
+  Path p;
+}
+{
+  "(" p = Path() ")" { return p; }
 }
 
 Path PathNegatedPropertySet():
@@ -1034,7 +1043,7 @@ TermOrVariable GraphTerm():
   lid = NumericLiteral() { return new TermOrVariable.NodeOrIriTerm(lid); }|
   lid = BooleanLiteral() { return new TermOrVariable.NodeOrIriTerm(lid); }|
   b = BlankNode() { return new TermOrVariable.VariableTerm(new Variable(b.getName(), true)); }|
-  <NIL> { return null;}
+  <NIL> { return ListTerm.getNILL_TERM().getNode(); }
 }
 
 void Expression():

@@ -6,7 +6,7 @@ import me.alejandrorm.klosure.sparql.algebra.operators.TermOrVariable
 
 class ZeroOrMorePath(val path: Path) : Path {
     override fun compile(head: TermOrVariable, tail: TermOrVariable): CompiledPath {
-        TODO("Not yet implemented")
+        return CompiledZeroOrMorePath(head, path, tail)
     }
 
     override fun eval(
@@ -15,6 +15,6 @@ class ZeroOrMorePath(val path: Path) : Path {
         solutionMapping: SolutionMapping,
         graph: Graph
     ): Sequence<SolutionMapping> {
-        TODO("Not yet implemented")
+        return compile(head, tail).eval(solutionMapping, graph)
     }
 }

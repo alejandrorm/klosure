@@ -20,7 +20,6 @@ javacc {
         register("sparqlstar") {
             inputFile = file("src/main/javacc/sparqlstar.jj")
             packageName = "me.alejandrorm.klosure.parser.sparql"
-            lookahead = 1
         }
     }
 }

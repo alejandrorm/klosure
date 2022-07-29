@@ -437,7 +437,7 @@ TOKEN:
 
 TOKEN:
 {
-  <STRING_LITERAL_QUOTE: "\"" ( ~[">", "\\", "\n", "\r"] | <ECHAR> | <UCHAR>)* "\"">
+  <STRING_LITERAL_QUOTE: "\"" ( ~[">", "\\", "\n", "\r", "\""] | <ECHAR> | <UCHAR>)* "\"">
 }
 
 TOKEN:

@@ -5,6 +5,11 @@ import me.alejandrorm.klosure.sparql.SolutionMapping
 import me.alejandrorm.klosure.sparql.algebra.operators.TermOrVariable
 
 class InversePath(val path: Path) : Path {
+
+    override fun toString(): String {
+        return "InversePath($path)"
+    }
+
     override fun compile(head: TermOrVariable, tail: TermOrVariable): CompiledPath =
         CompiledInversePath(path.compile(tail, head))
 

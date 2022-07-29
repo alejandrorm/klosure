@@ -14,6 +14,10 @@ class CompiledOneOrMorePath(
     val tail: TermOrVariable
 ) : CompiledPath, TriplePattern {
 
+    override fun toString(): String {
+        return "CompiledOneOrMorePath($head, $path, $tail)"
+    }
+
     override fun eval(solution: SolutionMapping, graph: Graph): Sequence<SolutionMapping> {
         val s = path.eval(head, tail, solution, graph)
         //if (s.count() > 0) return s
