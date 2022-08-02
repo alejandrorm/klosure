@@ -6,8 +6,8 @@ import me.alejandrorm.klosure.sparql.SolutionMapping
 import me.alejandrorm.klosure.sparql.algebra.filters.Expression
 
 class IsBlank(val expression: Expression) : Expression {
-    override fun eval(solution: SolutionMapping): NodeId? {
-        val v1 = expression.eval(solution) ?: return null
+    override fun eval(solution: SolutionMapping, graph: Graph): NodeId? {
+        val v1 = expression.eval(solution, graph) ?: return null
         if (v1 is BlankId) return DataTypes.TRUE
         return DataTypes.FALSE
     }

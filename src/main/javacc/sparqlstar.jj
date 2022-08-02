@@ -232,24 +232,28 @@ void AskQuery():
   "ASK" (DatasetClause())* WhereClause() ValuesClause()
 }
 
+// TODO
 void DatasetClause():
 {}
 {
   "FROM" ( DefaultGraphClause() | NamedGraphClause())
 }
 
+// TODO
 void DefaultGraphClause():
 {}
 {
   SourceSelector()
 }
 
+// TODO
 void NamedGraphClause():
 {}
 {
   "NAMED" SourceSelector()
 }
 
+// TODO
 void SourceSelector():
 {}
 {
@@ -264,18 +268,22 @@ AlgebraOperator WhereClause():
   ("WHERE")? a = GroupGraphPattern() { return a; }
 }
 
+// TODO
 void SolutionModifier():
 {}
 {
   (GroupClause())? (HavingClause())? (OrderClause())? (LimitOffsetClauses())?
 }
 
+
+// TODO
 void GroupClause():
 {}
 {
   "GROUP" "BY" (GroupCondition())+
 }
 
+// TODO
 void GroupCondition():
 {}
 {
@@ -285,24 +293,28 @@ void GroupCondition():
   Var()
 }
 
+// TODO
 void HavingClause():
 {}
 {
   "HAVING" (HavingCondition())+
 }
 
+// TODO
 void HavingCondition():
 {}
 {
   Constraint()
 }
 
+// TODO
 void OrderClause():
 {}
 {
   "ORDER" "BY" (OrderCondition())+
 }
 
+// TODO
 void OrderCondition():
 {}
 {
@@ -311,28 +323,32 @@ void OrderCondition():
   Var()
 }
 
+// TODO
 void LimitOffsetClauses():
 {}
 {
   ( LimitClause() (OffsetClause())? ) | ( OffsetClause() (LimitClause())? )
 }
 
+// TODO
 void LimitClause():
 {}
 {
   "LIMIT" Integer()
 }
 
+// TODO
 void OffsetClause():
 {}
 {
   "OFFSET" Integer()
 }
 
+// TODO
 void ValuesClause():
 {}
 {
-  ( LOOKAHEAD(3) "VALUES" DataBlock()) ?
+  ("VALUES" DataBlock()) ?
 }
 
 void Update():
@@ -519,7 +535,7 @@ AlgebraOperator GraphPatternNotTriples():
 {
   a = GroupOrUnionGraphPattern() { return a; } |
   a = OptionalGraphPattern() { return a; }|
-  a = MinusGraphPattern() { return a; }| // Minus
+  a = MinusGraphPattern() { return a; }|
   GraphGraphPattern() { return new Identity(); }|
   ServiceGraphPattern() { return new Identity(); }|
   Filter() { return new Identity(); }| // Filter
@@ -535,6 +551,7 @@ AlgebraOperator OptionalGraphPattern():
   "OPTIONAL" a = GroupGraphPattern() { return new LeftJoin(a); }
 }
 
+// TODO: implement this
 void GraphGraphPattern():
 {}
 {
@@ -1046,171 +1063,236 @@ TermOrVariable GraphTerm():
   <NIL> { return ListTerm.getNILL_TERM().getNode(); }
 }
 
-void Expression():
-{}
+Expression Expression():
 {
-  ConditionalOrExpression()
+ Expression e;
+ }
+{
+  e = ConditionalOrExpression() { return e; }
 }
 
-void ConditionalOrExpression():
-{}
+Expression ConditionalOrExpression():
 {
-  ConditionalAndExpression() ( "||" ConditionalAndExpression()) *
+  Expression e;
+  List<Expression> expressions = new ArrayList<>();
+}
+{
+  e = ConditionalAndExpression() { expressions.add(e); } ( "||" e = ConditionalAndExpression() { expressions.add(e); }) *
+  {
+    if (expressions.size() == 1) {
+      return expressions.get(0);
+    } else {
+        OrExpression ae = new OrExpression(expressions.get(0), expressions.get(1));
+        for(int i = 2; i < expressions.size(); i++) {
+          ae = new OrExpression(ae, expressions.get(i));
+        }
+        return ae;
+    }
+  }
 }
 
-void ConditionalAndExpression():
-{}
+Expression ConditionalAndExpression():
 {
-  ValueLogical() ( "&&" ValueLogical()) *
+  Expression e;
+  List<Expression> expressions = new ArrayList<>();
+}
+{
+  e = ValueLogical() { expressions.add(e); }( "&&" e = ValueLogical() { expressions.add(e); }) *
+  {
+    if (expressions.size() == 1) {
+      return expressions.get(0);
+    } else {
+        AndExpression ae = new AndExpression(expressions.get(0), expressions.get(1));
+        for(int i = 2; i < expressions.size(); i++) {
+          ae = new AndExpression(ae, expressions.get(i));
+        }
+        return ae;
+    }
+  }
 }
 
-void ValueLogical():
-{}
+Expression ValueLogical():
 {
-  RelationalExpression()
+  Expression e;
+}
+{
+  e = RelationalExpression() { return e; }
 }
 
-void RelationalExpression():
-{}
+// TODO
+Expression RelationalExpression():
 {
-  NumericExpression()
-( ( "=" NumericExpression())  |
-( "!=" NumericExpression()) |
-( "<" NumericExpression()) |
-( ">" NumericExpression()) |
-( "<=" NumericExpression()) |
-( ">=" NumericExpression()) |
+  Expression e1;
+  Expression e2;
+ }
+{
+  e1 = NumericExpression()
+( ( "=" e2 = NumericExpression() { return new EqualExpression(e1, e2); })  |
+( "!=" e2 = NumericExpression()) |
+( "<" e2 = NumericExpression()) |
+( ">" e2 = NumericExpression()) |
+( "<=" e2 = NumericExpression()) |
+( ">=" e2 = NumericExpression()) |
 ( "IN" ExpressionList()) |
-( "NOT" "IN" ExpressionList()) ) ?
+( "NOT" "IN" ExpressionList()) ) ? { return  e1;}
 }
 
-void NumericExpression():
-{}
+Expression NumericExpression():
 {
-  AdditiveExpression()
+ Expression e;
 }
-
-void AdditiveExpression():
-{}
 {
-  MultiplicativeExpression()
-( ( "+" MultiplicativeExpression()) |
-  ( "-" MultiplicativeExpression()) |
-  ( ( NumericLiteralPositive() | NumericLiteralNegative()) ( ( "*" UnaryExpression()) | ( "/" UnaryExpression()) ) ? ) ) *
+  e = AdditiveExpression() { return e; }
 }
 
-void MultiplicativeExpression():
-{}
+Expression AdditiveExpression():
 {
-  UnaryExpression() ( ( "*" UnaryExpression()) | ( "/" UnaryExpression()) ) *
-}
-
-void UnaryExpression():
-{}
+    Expression e;
+    List<AdditiveOperatorOperand> expressions = new ArrayList<>();
+    LiteralId id;
+ }
 {
-  ( "!" PrimaryExpression()) |
-  ( "+" PrimaryExpression()) |
-  ( "-" PrimaryExpression()) |
-  PrimaryExpression()
+  e = MultiplicativeExpression() { expressions.add(new AdditiveOperatorOperand(AdditiveOperator.PLUS, e)); }
+ ( ( "+" e = MultiplicativeExpression() { expressions.add(new AdditiveOperatorOperand(AdditiveOperator.PLUS, e)); }) |
+  ( "-" e = MultiplicativeExpression()) { expressions.add(new AdditiveOperatorOperand(AdditiveOperator.MINUS, e)); } |
+  ( ( id = NumericLiteralPositive() |id =  NumericLiteralNegative()) ( ( "*" UnaryExpression()) | ( "/" UnaryExpression()) ) ? ) ) *
 }
 
-void PrimaryExpression():
-{}
+Expression MultiplicativeExpression():
 {
-  BrackettedExpression() |
-  BuiltInCall() |
-  iriOrFunction() |
-  RDFLiteral() |
-  NumericLiteral()|
-  BooleanLiteral() |
-  Var() |
-  ExprQuotedTP()
-}
-
-void BrackettedExpression():
-{}
+    Expression e;
+    Expression e1;
+     List<MultiplicativeOperatorOperand> expressions = new ArrayList<>();
+ }
 {
-  "(" Expression() ")"
+  e = UnaryExpression() ( ( "*" e1 = UnaryExpression() { expressions.add(new MultiplicativeOperatorOperand(MultiplicativeOperator.TIMES, e1)); }) |
+   ( "/" e1 = UnaryExpression() { expressions.add(new MultiplicativeOperatorOperand(MultiplicativeOperator.BY, e2)); }) ) *
+   {
+     if (expressions.size() == 1) { return e; }
+     else { return new MultiplicativeExpression(e, expressions); }
+    }
 }
 
-void BuiltInCall():
-{}
+Expression UnaryExpression():
 {
-  Aggregate()
-|	( "STR" "(" Expression() ")")
-|	( "LANG" "(" Expression() ")")
-|	( "LANGMATCHES" "(" Expression() "," Expression() ")")
-|	( "DATATYPE" "(" Expression() ")")
-|	( "BOUND" "(" Var() ")")
-|	( "IRI" "(" Expression() ")")
-|	( "URI" "(" Expression() ")")
-|	( "BNODE" ( ( "(" Expression() ")") | <NIL>) )
-|	( "RAND" <NIL>)
-|	( "ABS" "(" Expression() ")")
-|	( "CEIL" "(" Expression() ")")
-|	( "FLOOR" "(" Expression() ")")
-|	( "ROUND" "(" Expression() ")")
-|	( "CONCAT" ExpressionList())
-|	SubstringExpression()
-|	( "STRLEN" "(" Expression() ")")
-|	StrReplaceExpression()
-|	( "UCASE" "(" Expression() ")")
-|	( "LCASE" "(" Expression() ")")
-|	( "ENCODE_FOR_URI" "(" Expression() ")")
-|	( "CONTAINS" "(" Expression() "," Expression() ")")
-|	( "STRSTARTS" "(" Expression() "," Expression() ")")
-|	( "STRENDS" "(" Expression() "," Expression() ")")
-|	( "STRBEFORE" "(" Expression() "," Expression() ")")
-|	( "STRAFTER" "(" Expression() "," Expression() ")")
-|	( "YEAR" "(" Expression() ")")
-|	( "MONTH" "(" Expression() ")")
-|	( "DAY" "(" Expression() ")")
-|	( "HOURS" "(" Expression() ")")
-|	( "MINUTES" "(" Expression() ")")
-|	( "SECONDS" "(" Expression() ")")
-|	( "TIMEZONE" "(" Expression() ")")
-|	( "TZ" "(" Expression() ")")
-|	( "NOW" <NIL>)
-|	( "UUID" <NIL>)
-|	( "STRUUID" <NIL>)
-|	( "MD5" "(" Expression() ")")
-|	( "SHA1" "(" Expression() ")")
-|	( "SHA224" "(" Expression() ")")
-|	( "SHA256" "(" Expression() ")")
-|	( "SHA384" "(" Expression() ")")
-|	( "SHA512" "(" Expression() ")")
-|	( "COALESCE" ExpressionList())
-|	( "IF" "(" Expression() "," Expression() "," Expression() ")")
-|	( "STRLANG" "(" Expression() "," Expression() ")")
-|	( "STRDT" "(" Expression() "," Expression() ")")
-|	( "sameTerm" "(" Expression() "," Expression() ")")
-|	( "isIRI" "(" Expression() ")")
-|	( "isURI" "(" Expression() ")")
-|	( "isBLANK" "(" Expression() ")")
-|	( "isLITERAL" "(" Expression() ")")
-|	( "isNUMERIC" "(" Expression() ")")
-|	( "TRIPLE" "(" Expression() "," Expression() "," Expression() ")")
-|	( "SUBJECT" "(" Expression() ")")
-|	( "PREDICATE" "(" Expression() ")")
-|	( "OBJECT" "(" Expression() ")")
-|	( "isTRIPLE" "(" Expression() ")")
-|	RegexExpression()
-|	ExistsFunc()
-|	NotExistsFunc()
+  Expression e;
+}
+{
+  "!" e = PrimaryExpression() { return new NotExpression(e); } |
+   "+" e = PrimaryExpression() { return e; }|
+   "-" e = PrimaryExpression() { return MinusExpression(e); }|
+  e = PrimaryExpression() { return e;}
 }
 
+Expression PrimaryExpression():
+{
+  Expression e;
+  LiteralId id;
+  Variable v;
+  Expression e;
+}
+{
+  e = BrackettedExpression() { return e;} |
+  e = BuiltInCall() { return e;}|
+  e = iriOrFunction() { return e;}|
+  id = RDFLiteral() { return new LiteralExpression(id); }|
+  id = NumericLiteral() { return new LiteralExpression(id); }|
+  id = BooleanLiteral() { return new LiteralExpression(id); }|
+  v = Var() { return new VariableExpression(v); }|
+  e = ExprQuotedTP() { return e; }
+}
+
+Expression BrackettedExpression():
+{
+  Expression e;
+}
+{
+  "(" e = Expression() ")" { return e; }
+}
+
+Expression BuiltInCall():
+{
+  Expression e1, e2, e3;
+}
+{
+  Aggregate() { return new UnsupportedBuiltinExpression("aggregate"); }
+|	( "STR" "(" Expression() ")") { return new UnsupportedBuiltinExpression("str"); }
+|	( "LANG" "(" Expression() ")") { return new UnsupportedBuiltinExpression("lang"); }
+|	( "LANGMATCHES" "(" Expression() "," Expression() ")") { return new UnsupportedBuiltinExpression("langmatches"); }
+|	( "DATATYPE" "(" Expression() ")") { return new UnsupportedBuiltinExpression("datatype"); }
+|	( "BOUND" "(" Var() ")") { return new UnsupportedBuiltinExpression("bound"); }
+|	( "IRI" "(" Expression() ")") { return new UnsupportedBuiltinExpression("iri"); }
+|	( "URI" "(" Expression() ")") { return new UnsupportedBuiltinExpression("uri"); }
+|	( "BNODE" ( ( "(" Expression() ")") | <NIL>) ) { return new UnsupportedBuiltinExpression("bnode"); }
+|	( "RAND" <NIL>) { return new UnsupportedBuiltinExpression("rand"); }
+|	( "ABS" "(" Expression() ")") { return new UnsupportedBuiltinExpression("abs"); }
+|	( "CEIL" "(" Expression() ")") { return new UnsupportedBuiltinExpression("ceil"); }
+|	( "FLOOR" "(" Expression() ")") { return new UnsupportedBuiltinExpression("floor"); }
+|	( "ROUND" "(" Expression() ")") { return new UnsupportedBuiltinExpression("round"); }
+|	( "CONCAT" ExpressionList()) { return new UnsupportedBuiltinExpression("concat"); }
+|	SubstringExpression() { return new UnsupportedBuiltinExpression("substring"); }
+|	( "STRLEN" "(" Expression() ")") { return new UnsupportedBuiltinExpression("strlen"); }
+|	StrReplaceExpression() { return new UnsupportedBuiltinExpression("strreplace"); }
+|	( "UCASE" "(" Expression() ")") { return new UnsupportedBuiltinExpression("ucase"); }
+|	( "LCASE" "(" Expression() ")") { return new UnsupportedBuiltinExpression("lcase"); }
+|	( "ENCODE_FOR_URI" "(" Expression() ")") { return new UnsupportedBuiltinExpression("encode_for_uri"); }
+|	( "CONTAINS" "(" Expression() "," Expression() ")") { return new UnsupportedBuiltinExpression("contains"); }
+|	( "STRSTARTS" "(" Expression() "," Expression() ")") { return new UnsupportedBuiltinExpression("strstarts"); }
+|	( "STRENDS" "(" Expression() "," Expression() ")") { return new UnsupportedBuiltinExpression("strends"); }
+|	( "STRBEFORE" "(" Expression() "," Expression() ")") { return new UnsupportedBuiltinExpression("strbefore"); }
+|	( "STRAFTER" "(" Expression() "," Expression() ")")  { return new UnsupportedBuiltinExpression("strafter"); }
+|	( "YEAR" "(" Expression() ")") { return new UnsupportedBuiltinExpression("year"); }
+|	( "MONTH" "(" Expression() ")") { return new UnsupportedBuiltinExpression("month"); }
+|	( "DAY" "(" Expression() ")") { return new UnsupportedBuiltinExpression("day"); }
+|	( "HOURS" "(" Expression() ")") { return new UnsupportedBuiltinExpression("hours"); }
+|	( "MINUTES" "(" Expression() ")") { return new UnsupportedBuiltinExpression("minutes"); }
+|	( "SECONDS" "(" Expression() ")") { return new UnsupportedBuiltinExpression("seconds"); }
+|	( "TIMEZONE" "(" Expression() ")") { return new UnsupportedBuiltinExpression("timezone"); }
+|	( "TZ" "(" Expression() ")") { return new UnsupportedBuiltinExpression("tz"); }
+|	( "NOW" <NIL>) { return new UnsupportedBuiltinExpression("now"); }
+|	( "UUID" <NIL>) { return new UnsupportedBuiltinExpression("uuid"); }
+|	( "STRUUID" <NIL>) { return new UnsupportedBuiltinExpression("struuid"); }
+|	( "MD5" "(" Expression() ")") { return new UnsupportedBuiltinExpression("md5"); }
+|	( "SHA1" "(" Expression() ")") { return new UnsupportedBuiltinExpression("sha1"); }
+|	( "SHA224" "(" Expression() ")") { return new UnsupportedBuiltinExpression("sha224"); }
+|	( "SHA256" "(" Expression() ")") { return new UnsupportedBuiltinExpression("sha256"); }
+|	( "SHA384" "(" Expression() ")") { return new UnsupportedBuiltinExpression("sha384"); }
+|	( "SHA512" "(" Expression() ")") { return new UnsupportedBuiltinExpression("sha512"); }
+|	( "COALESCE" ExpressionList()) { return new UnsupportedBuiltinExpression("coalesce"); }
+|	( "IF" "(" Expression() "," Expression() "," Expression() ")") { return new UnsupportedBuiltinExpression("if"); }
+|	( "STRLANG" "(" Expression() "," Expression() ")") { return new UnsupportedBuiltinExpression("strlang"); }
+|	( "STRDT" "(" Expression() "," Expression() ")") { return new UnsupportedBuiltinExpression("strdt"); }
+|	( "sameTerm" "(" Expression() "," Expression() ")") { return new UnsupportedBuiltinExpression("sameterm"); }
+|	( "isIRI" "(" Expression() ")") { return new UnsupportedBuiltinExpression("isiri"); }
+|	( "isURI" "(" Expression() ")") { return new UnsupportedBuiltinExpression("isuri"); }
+|	( "isBLANK" "(" Expression() ")") { return new UnsupportedBuiltinExpression("isblank"); }
+|	( "isLITERAL" "(" Expression() ")") { return new UnsupportedBuiltinExpression("isliteral"); }
+|	( "isNUMERIC" "(" Expression() ")") { return new UnsupportedBuiltinExpression("isnumeric"); }
+|	( "TRIPLE" "(" Expression() "," Expression() "," Expression() ")") { return new UnsupportedBuiltinExpression("triple"); }
+|	( "SUBJECT" "(" Expression() ")") { return new UnsupportedBuiltinExpression("subject"); }
+|	( "PREDICATE" "(" Expression() ")") { return new UnsupportedBuiltinExpression("predicate"); }
+|	( "OBJECT" "(" Expression() ")") { return new UnsupportedBuiltinExpression("object"); }
+|	( "isTRIPLE" "(" Expression() ")") { return new UnsupportedBuiltinExpression("istriple"); }
+|	RegexExpression() { return new UnsupportedBuiltinExpression("regex"); }
+|	ExistsFunc() { return new UnsupportedBuiltinExpression("exists"); }
+|	NotExistsFunc() { return new UnsupportedBuiltinExpression("notexists"); }
+}
+
+// TODO
 void RegexExpression():
 {}
 {
   "REGEX" "(" Expression() "," Expression() ( "," Expression()) ? ")"
 }
 
+// TODO
 void SubstringExpression():
 {}
 {
   "SUBSTR" "(" Expression() "," Expression() ( "," Expression()) ? ")"
 }
 
+// TODO
 void StrReplaceExpression():
 {}
 {
@@ -1229,6 +1311,7 @@ void NotExistsFunc():
   "NOT" "EXISTS" GroupGraphPattern()
 }
 
+// TODO
 void Aggregate():
 {}
 {
@@ -1241,10 +1324,11 @@ void Aggregate():
   ( "GROUP_CONCAT" "(" ("DISTINCT")? Expression() ( ";" "SEPARATOR" "=" String()) ? ")")
 }
 
-void iriOrFunction():
+// TODO
+Expression iriOrFunction():
 {}
 {
-  iri() (ArgList())?
+  iri() (ArgList())? { return new UnsupportedBuiltinExpression("iriOrFunction"); }
 }
 
 LiteralId RDFLiteral():
@@ -1268,7 +1352,6 @@ LiteralId NumericLiteral():
   l = NumericLiteralNegative() { return l; }
 }
 
-//FIXME
 LiteralId NumericLiteralUnsigned():
 {
   Token t;
@@ -1279,7 +1362,6 @@ LiteralId NumericLiteralUnsigned():
   t = <DOUBLE>  { return DataTypes.getDecimalLiteral(t.image); }
 }
 
-//FIXME
 LiteralId NumericLiteralPositive():
 {
   Token t;
@@ -1290,7 +1372,6 @@ LiteralId NumericLiteralPositive():
   t = <DOUBLE_POSITIVE>  { return DataTypes.getDecimalLiteral(t.image);}
 }
 
-//FIXME
 LiteralId NumericLiteralNegative():
 {
   Token t;
@@ -1386,6 +1467,7 @@ TermOrVariable qtSubjectOrObject():
   t = QuotedTP() { return t; }
 }
 
+// TODO
 void DataValueTerm():
 {}
 {
@@ -1419,21 +1501,30 @@ void AnnotationPatternPath():
   "{|" PropertyListPathNotEmpty() "|}"
 }
 
-void ExprQuotedTP():
-{}
+Expression ExprQuotedTP():
 {
-  "<<" ExprVarOrTerm() Verb() ExprVarOrTerm() ">>"
+  TermOrVariable v;
+  Expression e1;
+  Expression e2;
+}
+{
+  "<<" e1 = ExprVarOrTerm() v = Verb() e2 = ExprVarOrTerm() ">>"
 }
 
-void ExprVarOrTerm():
-{}
+Expression ExprVarOrTerm():
 {
-  iri() |
-  RDFLiteral() |
-  NumericLiteral() |
-  BooleanLiteral() |
-  Var() |
-  ExprQuotedTP()
+ LiteralId lid;
+ IRI i;
+ Variable v;
+ Expression e;
+}
+{
+  i = iri() { return new LiteralExpression(new IriId(i)); }|
+  lid = RDFLiteral() { return new LiteralExpression(lid); }|
+  lid = NumericLiteral() { return new LiteralExpression(lid); }|
+  lid = BooleanLiteral() { return new LiteralExpression(lid); }|
+  v = Var() { return new VariableExpression(e); }|
+  e = ExprQuotedTP() { return e; }
 }
 
 TOKEN:

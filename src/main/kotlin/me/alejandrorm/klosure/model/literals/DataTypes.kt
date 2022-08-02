@@ -89,6 +89,7 @@ class DataTypes {
         @JvmStatic
         fun getIntegerLiteral(v: String): LiteralId {
             val d = v.toBigInteger()
+            // FIXME return bigdecimal
             return try {
                 LiteralId(v, IntValue(d.intValueExact()))
             } catch (e: ArithmeticException) {
