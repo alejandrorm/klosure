@@ -28,6 +28,7 @@ class SequencePath(val paths: List<Path>) : Path {
         solutionMapping: SolutionMapping,
         graph: Graph
     ): Sequence<SolutionMapping> {
+        // FIXME off by one error
         val allVariables = listOf(head) + intermediateVariables + listOf(tail)
 
         return (0..allVariables.size).fold(sequenceOf(solutionMapping)) {

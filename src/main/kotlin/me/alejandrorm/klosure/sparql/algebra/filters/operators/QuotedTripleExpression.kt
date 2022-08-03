@@ -6,8 +6,9 @@ import me.alejandrorm.klosure.model.NodeId
 import me.alejandrorm.klosure.model.TripleId
 import me.alejandrorm.klosure.sparql.SolutionMapping
 import me.alejandrorm.klosure.sparql.algebra.filters.Expression
+import me.alejandrorm.klosure.sparql.algebra.operators.TermOrVariable
 
-class QuotedTripleExpression(val subject: Expression, val verb: Expression, val obj: Expression) : Expression {
+class QuotedTripleExpression(val subject: Expression, val verb: TermOrVariableExpression, val obj: Expression) : Expression {
     override fun toString(): String {
         return "QtExpression($subject $verb $obj)"
     }

@@ -629,18 +629,22 @@ void Filter():
   "FILTER" Constraint()
 }
 
-void Constraint():
-{}
+// TODO expression or aggregate expression
+Expression Constraint():
 {
-  BrackettedExpression() |
-  BuiltInCall() |
-  FunctionCall()
+   Expression e;
+}
+{
+  e = BrackettedExpression() { return e; }|
+  e = BuiltInCall() { return e; }|
+  e = FunctionCall() { return e; }
 }
 
-void FunctionCall():
+// TODO
+Expression FunctionCall():
 {}
 {
-  iri() ArgList()
+  iri() ArgList() { return new UnsupportedBuiltinExpression("casting"); }
 }
 
 void ArgList():
@@ -649,10 +653,14 @@ void ArgList():
   <NIL> | ( "(" ("DISTINCT")? Expression() ( "," Expression()) * ")")
 }
 
-void ExpressionList():
-{}
+List<Expression> ExpressionList():
 {
-  <NIL> | ( "(" Expression() ( "," Expression()) * ")")
+  Expression e;
+  List<Expression> list = new ArrayList<>();
+}
+{
+  <NIL> { return list;} |
+   "(" e = Expression() { list.add(e); }( "," e = Expression() { list.add(e); }) * ")" { return list;}
 }
 
 void ConstructTemplate():
@@ -1119,22 +1127,23 @@ Expression ValueLogical():
   e = RelationalExpression() { return e; }
 }
 
-// TODO
 Expression RelationalExpression():
 {
   Expression e1;
   Expression e2;
+  List<Expression> es;
  }
 {
   e1 = NumericExpression()
-( ( "=" e2 = NumericExpression() { return new EqualExpression(e1, e2); })  |
-( "!=" e2 = NumericExpression()) |
-( "<" e2 = NumericExpression()) |
-( ">" e2 = NumericExpression()) |
-( "<=" e2 = NumericExpression()) |
-( ">=" e2 = NumericExpression()) |
-( "IN" ExpressionList()) |
-( "NOT" "IN" ExpressionList()) ) ? { return  e1;}
+
+(  "=" e2 = NumericExpression() { return new EqualExpression(e1, e2); }  |
+ "!=" e2 = NumericExpression() { return new DifferentExpression(e1, e2); } |
+ "<" e2 = NumericExpression() { return new LessThanExpression(e1, e2); }|
+ ">" e2 = NumericExpression() { return new GreaterThanExpression(e1, e2); }|
+ "<=" e2 = NumericExpression() { return new LessOrEqualThanExpression(e1, e2);}|
+ ">=" e2 = NumericExpression() { return new GreaterOrEqualThanExpression(e1, e2);}|
+ "IN" es = ExpressionList() { return new InExpression(e1, es); }|
+ "NOT" "IN" es = ExpressionList() { return new NotInExpression(e1, es); }) ? { return  e1;}
 }
 
 Expression NumericExpression():
@@ -1150,12 +1159,27 @@ Expression AdditiveExpression():
     Expression e;
     List<AdditiveOperatorOperand> expressions = new ArrayList<>();
     LiteralId id;
+    Expression u1 = null;
+    Expression u2 = null;
  }
 {
   e = MultiplicativeExpression() { expressions.add(new AdditiveOperatorOperand(AdditiveOperator.PLUS, e)); }
- ( ( "+" e = MultiplicativeExpression() { expressions.add(new AdditiveOperatorOperand(AdditiveOperator.PLUS, e)); }) |
-  ( "-" e = MultiplicativeExpression()) { expressions.add(new AdditiveOperatorOperand(AdditiveOperator.MINUS, e)); } |
-  ( ( id = NumericLiteralPositive() |id =  NumericLiteralNegative()) ( ( "*" UnaryExpression()) | ( "/" UnaryExpression()) ) ? ) ) *
+ (  "+" e = MultiplicativeExpression() { expressions.add(new AdditiveOperatorOperand(AdditiveOperator.PLUS, e)); } |
+    "-" e = MultiplicativeExpression() { expressions.add(new AdditiveOperatorOperand(AdditiveOperator.MINUS, e)); } |
+  ( ( id = NumericLiteralPositive() | id =  NumericLiteralNegative())
+   (  "*" u1 = UnaryExpression() |  "/" u2 = UnaryExpression() ) ? {
+   if (u1 != null) {
+     expressions.add(new AdditiveOperatorOperand(AdditiveOperator.PLUS,
+        new MultiplicativeExpression(new LiteralExpression(id), Arrays.asList(new MultiplicativeOperatorOperand(MultiplicativeOperator.TIMES, u1)))));
+   } else if (u2 != null) {
+     expressions.add(new AdditiveOperatorOperand(AdditiveOperator.PLUS,
+        new MultiplicativeExpression(new LiteralExpression(id), Arrays.asList(new MultiplicativeOperatorOperand(MultiplicativeOperator.BY, u2)))));
+   } else {
+     expressions.add(new AdditiveOperatorOperand(AdditiveOperator.PLUS, new LiteralExpression(id)));
+   }
+   u1 = null;
+   u2 = null;
+  } ) ) * { return new AdditiveExpression(expressions); }
 }
 
 Expression MultiplicativeExpression():
@@ -1166,7 +1190,7 @@ Expression MultiplicativeExpression():
  }
 {
   e = UnaryExpression() ( ( "*" e1 = UnaryExpression() { expressions.add(new MultiplicativeOperatorOperand(MultiplicativeOperator.TIMES, e1)); }) |
-   ( "/" e1 = UnaryExpression() { expressions.add(new MultiplicativeOperatorOperand(MultiplicativeOperator.BY, e2)); }) ) *
+   ( "/" e1 = UnaryExpression() { expressions.add(new MultiplicativeOperatorOperand(MultiplicativeOperator.BY, e1)); }) ) *
    {
      if (expressions.size() == 1) { return e; }
      else { return new MultiplicativeExpression(e, expressions); }
@@ -1180,7 +1204,7 @@ Expression UnaryExpression():
 {
   "!" e = PrimaryExpression() { return new NotExpression(e); } |
    "+" e = PrimaryExpression() { return e; }|
-   "-" e = PrimaryExpression() { return MinusExpression(e); }|
+   "-" e = PrimaryExpression() { return new MinusExpression(e); }|
   e = PrimaryExpression() { return e;}
 }
 
@@ -1189,7 +1213,6 @@ Expression PrimaryExpression():
   Expression e;
   LiteralId id;
   Variable v;
-  Expression e;
 }
 {
   e = BrackettedExpression() { return e;} |
@@ -1508,7 +1531,9 @@ Expression ExprQuotedTP():
   Expression e2;
 }
 {
-  "<<" e1 = ExprVarOrTerm() v = Verb() e2 = ExprVarOrTerm() ">>"
+  "<<" e1 = ExprVarOrTerm() v = Verb() e2 = ExprVarOrTerm() ">>" {
+    return new QuotedTripleExpression(e1, new TermOrVariableExpression(v), e2);
+  }
 }
 
 Expression ExprVarOrTerm():
@@ -1523,7 +1548,7 @@ Expression ExprVarOrTerm():
   lid = RDFLiteral() { return new LiteralExpression(lid); }|
   lid = NumericLiteral() { return new LiteralExpression(lid); }|
   lid = BooleanLiteral() { return new LiteralExpression(lid); }|
-  v = Var() { return new VariableExpression(e); }|
+  v = Var() { return new VariableExpression(v); }|
   e = ExprQuotedTP() { return e; }
 }
 
