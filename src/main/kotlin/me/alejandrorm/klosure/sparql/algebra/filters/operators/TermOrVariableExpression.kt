@@ -8,6 +8,7 @@ import me.alejandrorm.klosure.sparql.algebra.operators.TermOrVariable
 
 class TermOrVariableExpression(val termOrVariable: TermOrVariable) : Expression {
     override fun eval(solution: SolutionMapping, graph: Graph): NodeId? {
-        TODO("Not yet implemented")
+        val v = termOrVariable.resolve(solution)
+        return if (v.isBound()) v.getTerm() else null
     }
 }

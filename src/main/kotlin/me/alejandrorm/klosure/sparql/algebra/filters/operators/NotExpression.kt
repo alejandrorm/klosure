@@ -8,6 +8,9 @@ import me.alejandrorm.klosure.sparql.algebra.filters.Expression
 import me.alejandrorm.klosure.sparql.algebra.filters.getEffectiveBooleanValue
 
 class NotExpression(val expression: Expression) : Expression {
+    override fun toString(): String {
+        return "!($expression)"
+    }
     override fun eval(solution: SolutionMapping, graph: Graph): NodeId? {
         return when (getEffectiveBooleanValue(expression.eval(solution, graph))) {
             true -> DataTypes.FALSE

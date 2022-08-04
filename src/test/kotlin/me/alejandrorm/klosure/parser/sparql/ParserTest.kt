@@ -130,7 +130,14 @@ class ParserTest {
             //"1.1-w3c/entailment",
             //"1.1-w3c/bind",
             "1.1-w3c/property-path",
-            //"1.1",
+            "1.1/aggregates",
+            "1.1/bindings",
+            "1.1/bsbm",
+            "1.1/builtin",
+            "1.1/expressions",
+            "1.1/negation",
+            "1.1/property-paths",
+            "1.1/subquery"
             //"1.2"
         )
 
@@ -139,6 +146,8 @@ class ParserTest {
                 ParserTest::class.java.getResourceAsStream("/me/alejandrorm/klosure/parser/data/sparql/$folder/sparql_test_suite.json")!!
             val content = stream.bufferedReader().use(BufferedReader::readText)
             val testCases = Json.parseToJsonElement(content).jsonObject["cases"]!!.jsonArray.map { it.jsonObject }.map {
+                println(folder)
+                println(it.jsonObject)
                 TestCase(
                     it["data"]!!.jsonPrimitive.content,
                     it["query"]!!.jsonPrimitive.content,

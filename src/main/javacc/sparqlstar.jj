@@ -30,6 +30,7 @@ import me.alejandrorm.klosure.sparql.algebra.path.*;
 import me.alejandrorm.klosure.sparql.algebra.filters.*;
 import me.alejandrorm.klosure.sparql.algebra.filters.builtins.*;
 import me.alejandrorm.klosure.sparql.algebra.filters.operators.*;
+import me.alejandrorm.klosure.sparql.algebra.filters.operators.arithmetic.*;
 
 public class SparqlStarParser {
 

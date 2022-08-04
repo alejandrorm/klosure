@@ -20,7 +20,7 @@ class DifferentExpression(val left: Expression, val right: Expression) : Express
         }
         if (l is LiteralId && r is LiteralId) {
             if (l.value is NumberValue && r.value is NumberValue) {
-                // TODO
+                // TODO: casting
                 return if (l.value.value != r.value.value) DataTypes.TRUE else DataTypes.FALSE
             }
             if (l.value is StringValue && r.value is StringValue) {
@@ -30,7 +30,7 @@ class DifferentExpression(val left: Expression, val right: Expression) : Express
                 return if (l.value.value != r.value.value) DataTypes.TRUE else DataTypes.FALSE
             }
             if (l.value is DateTimeValue && r.value is DateTimeValue) {
-                // TODO
+                // TODO: date comparisons, timezone comparisons, etc.
                 return if (l.value.value != r.value.value) DataTypes.TRUE else DataTypes.FALSE
             }
         }
