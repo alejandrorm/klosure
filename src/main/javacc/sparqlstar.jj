@@ -721,7 +721,7 @@ TermOrVariable Verb():
 }
 {
   v = VarOrIri() { return v;}|
-  <A> { return new TermOrVariable.NodeOrIriTerm(new IriId(IRI.create(NAMESPACE_PREFIX + "type"))); }
+  "A" { return new TermOrVariable.NodeOrIriTerm(new IriId(IRI.create(NAMESPACE_PREFIX + "type"))); }
 }
 
 List<TermAndTriples> ObjectList():
@@ -889,7 +889,7 @@ Path PathPrimary():
 }
 {
   i = iri() { return new IriPath(i); }|
-  <A> { return new IriPath(IRI.create(NAMESPACE_PREFIX + "type")); }|
+  "A" { return new IriPath(IRI.create(NAMESPACE_PREFIX + "type")); }|
   ( "!" p = PathNegatedPropertySet() { return new NegatedPath(p); }) |
   p = ParenthesisPath() { return p; } //( "(" p = Path() { return p; }")")
 }
@@ -920,8 +920,8 @@ Path PathOneInPropertySet():
 }
 {
   i = iri() { return new IriPath(i); }|
-  <A> { return new IriPath(IRI.create(NAMESPACE_PREFIX + "type")); }|
-  ( "^" ( i = iri() { return new InversePath(new IriPath(i)); } | <A> { return new InversePath(new IriPath(IRI.create(NAMESPACE_PREFIX + "type")));}) )
+  "A" { return new IriPath(IRI.create(NAMESPACE_PREFIX + "type")); }|
+  ( "^" ( i = iri() { return new InversePath(new IriPath(i)); } | "A" { return new InversePath(new IriPath(IRI.create(NAMESPACE_PREFIX + "type")));}) )
 }
 
 long Integer():
@@ -1343,13 +1343,13 @@ void NotExistsFunc():
 void Aggregate():
 {}
 {
-  ( "COUNT" "(" ("DISTINCT")? "*" Expression() ")") |
-  ( "SUM" "(" ("DISTINCT")? Expression() ")") |
-  ( "MIN" "(" ("DISTINCT")? Expression() ")") |
-  ( "MAX" "(" ("DISTINCT")? Expression() ")") |
-  ( "AVG" "(" ("DISTINCT")? Expression() ")") |
-  ( "SAMPLE" "(" ("DISTINCT")? Expression() ")") |
-  ( "GROUP_CONCAT" "(" ("DISTINCT")? Expression() ( ";" "SEPARATOR" "=" String()) ? ")")
+  "COUNT" "(" ("DISTINCT")? ( "*" | Expression() ) ")" |
+  "SUM" "(" ("DISTINCT")? Expression() ")" |
+  "MIN" "(" ("DISTINCT")? Expression() ")" |
+  "MAX" "(" ("DISTINCT")? Expression() ")" |
+  "AVG" "(" ("DISTINCT")? Expression() ")" |
+  "SAMPLE" "(" ("DISTINCT")? Expression() ")" |
+  "GROUP_CONCAT" "(" ("DISTINCT")? Expression() ( ";" "SEPARATOR" "=" String()) ? ")"
 }
 
 // TODO
@@ -1472,7 +1472,7 @@ TermOrVariable.QuotedTriple QuotedTP():
 void QuotedTriple():
 {}
 {
-  "<<" DataValueTerm() ( iri() | <A>) DataValueTerm() ">>"
+  "<<" DataValueTerm() ( iri() | "A") DataValueTerm() ">>"
 }
 
 TermOrVariable qtSubjectOrObject():
@@ -1555,11 +1555,6 @@ Expression ExprVarOrTerm():
   lid = BooleanLiteral() { return new LiteralExpression(lid); }|
   v = Var() { return new VariableExpression(v); }|
   e = ExprQuotedTP() { return e; }
-}
-
-TOKEN:
-{
-  <A: "a">
 }
 
 TOKEN:

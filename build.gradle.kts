@@ -21,6 +21,10 @@ javacc {
             inputFile = file("src/main/javacc/sparqlstar.jj")
             packageName = "me.alejandrorm.klosure.parser.sparql"
         }
+        register("sparqlstartest") {
+            inputFile = file("src/main/javacc/sparqlstar_noactions.jj")
+            packageName = "me.alejandrorm.klosure.parser.sparql.test"
+        }
     }
 }
 
