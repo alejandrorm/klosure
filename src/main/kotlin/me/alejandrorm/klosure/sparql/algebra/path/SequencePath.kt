@@ -31,7 +31,7 @@ class SequencePath(val paths: List<Path>) : Path {
         // FIXME off by one error
         val allVariables = listOf(head) + intermediateVariables + listOf(tail)
 
-        return (0..allVariables.size).fold(sequenceOf(solutionMapping)) {
+        return (allVariables.indices).fold(sequenceOf(solutionMapping)) {
                 solutions, i ->
             paths[i].eval(head, tail, solutions, graph)
         }
