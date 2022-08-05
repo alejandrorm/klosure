@@ -10,7 +10,7 @@ options
   DEBUG_PARSER          = true;
   DEBUG_TOKEN_MANAGER   = true;
   FORCE_LA_CHECK        = true;
-  LOOKAHEAD             = 3;
+  LOOKAHEAD             = 2;
 }
 
 PARSER_BEGIN(SparqlStarParser)
@@ -202,15 +202,20 @@ AlgebraOperator SubSelect():
  return new Join(Arrays.asList(a, s)); }
 }
 
-// FIXME when distinct/reduced is implemented
 AlgebraOperator SelectClause():
 {
   Variable v;
-  List<Variable> variables = new ArrayList<>();
+  Expression e;
+  List<ExpressionVariableBinding> variables = new ArrayList<>();
+  boolean distinct = false;
 }
 {
-  "SELECT" ( "DISTINCT" | "REDUCED") ? ( ( v = Var() { variables.add(v); } | ( "(" Expression() "AS" Var() ")") ) + | "*") {
-    return new Project(variables);
+  "SELECT" ( "DISTINCT" { distinct = true; } | "REDUCED") ? ( ( v = Var() {
+      variables.add(new ExpressionVariableBinding(new VariableExpression(v), v)); } |
+       ( "(" e = Expression() "AS" v = Var() ")") {
+       variables.add(new ExpressionVariableBinding(e, v));
+       }) + | "*") {
+    return new Project(distinct, variables);
   }
 }
 
@@ -539,8 +544,8 @@ AlgebraOperator GraphPatternNotTriples():
   a = MinusGraphPattern() { return a; }|
   GraphGraphPattern() { return new Identity(); }|
   ServiceGraphPattern() { return new Identity(); }|
-  Filter() { return new Identity(); }| // Filter
-  Bind() { return new Identity(); }| // Bind
+  a = Filter() { return a; }|
+  a = Bind() { return a; }|
   InlineData() { return new Identity(); }
 }
 
@@ -565,10 +570,13 @@ void ServiceGraphPattern():
   "SERVICE" ("SILENT")? VarOrIri() GroupGraphPattern()
 }
 
-void Bind():
-{}
+AlgebraOperator Bind():
 {
-  "BIND" "(" Expression() "AS" Var() ")"
+  Expression e;
+  Variable v;
+}
+{
+  "BIND" "(" e = Expression() "AS" v = Var() ")" { return new Bind(e, v); }
 }
 
 void InlineData():
@@ -624,10 +632,12 @@ AlgebraOperator GroupOrUnionGraphPattern():
   a = GroupGraphPattern() { ops.add(a); }( "UNION" a = GroupGraphPattern() { ops.add(a); }) * { return new Union(ops); }
 }
 
-void Filter():
-{}
+AlgebraOperator Filter():
 {
-  "FILTER" Constraint()
+ Expression e;
+}
+{
+  "FILTER" e = Constraint() { return new Filter(e); }
 }
 
 // TODO expression or aggregate expression
@@ -711,7 +721,7 @@ TermOrVariable Verb():
 }
 {
   v = VarOrIri() { return v;}|
-  "a" { return new TermOrVariable.NodeOrIriTerm(new IriId(IRI.create(NAMESPACE_PREFIX + "type"))); }
+  <A> { return new TermOrVariable.NodeOrIriTerm(new IriId(IRI.create(NAMESPACE_PREFIX + "type"))); }
 }
 
 List<TermAndTriples> ObjectList():
@@ -762,19 +772,11 @@ List<VerbAndObjects> PropertyListPathNotEmpty():
   TermOrVariable t = null;
 }
 {
-  ( p = VerbPath() | t = VerbSimple()) tts = ObjectListPath() {
+  ( p = Path() | t = VerbSimple()) tts = ObjectListPath() {
     vos.add(new VerbAndObjects(t, p, tts)); p = null; t = null; tts = null;
-  } ( ";" ( ( p = VerbPath() | t = VerbSimple()) tts = ObjectList() {
+  } ( ";" ( ( p = Path() | t = VerbSimple()) tts = ObjectList() {
     vos.add(new VerbAndObjects(t, p, tts)); p = null; t = null; tts = null;
   }) ? ) * { return vos; }
-}
-
-Path VerbPath():
-{
-  Path p;
-}
-{
-  p = Path() { return p; }
 }
 
 TermOrVariable VerbSimple():
@@ -887,7 +889,7 @@ Path PathPrimary():
 }
 {
   i = iri() { return new IriPath(i); }|
-  "a" { return new IriPath(IRI.create(NAMESPACE_PREFIX + "type")); }|
+  <A> { return new IriPath(IRI.create(NAMESPACE_PREFIX + "type")); }|
   ( "!" p = PathNegatedPropertySet() { return new NegatedPath(p); }) |
   p = ParenthesisPath() { return p; } //( "(" p = Path() { return p; }")")
 }
@@ -918,8 +920,8 @@ Path PathOneInPropertySet():
 }
 {
   i = iri() { return new IriPath(i); }|
-  "a" { return new IriPath(IRI.create(NAMESPACE_PREFIX + "type")); }|
-  ( "^" ( i = iri() { return new InversePath(new IriPath(i)); } | "a" { return new InversePath(new IriPath(IRI.create(NAMESPACE_PREFIX + "type")));}) )
+  <A> { return new IriPath(IRI.create(NAMESPACE_PREFIX + "type")); }|
+  ( "^" ( i = iri() { return new InversePath(new IriPath(i)); } | <A> { return new InversePath(new IriPath(IRI.create(NAMESPACE_PREFIX + "type")));}) )
 }
 
 long Integer():
@@ -1249,7 +1251,7 @@ Expression BuiltInCall():
 |	( "URI" "(" Expression() ")") { return new UnsupportedBuiltinExpression("uri"); }
 |	( "BNODE" ( ( "(" Expression() ")") | <NIL>) ) { return new UnsupportedBuiltinExpression("bnode"); }
 |	( "RAND" <NIL>) { return new UnsupportedBuiltinExpression("rand"); }
-|	( "ABS" "(" Expression() ")") { return new UnsupportedBuiltinExpression("abs"); }
+|	"ABS" "(" e1 = Expression() ")" { return new Abs(e1); }
 |	( "CEIL" "(" Expression() ")") { return new UnsupportedBuiltinExpression("ceil"); }
 |	( "FLOOR" "(" Expression() ")") { return new UnsupportedBuiltinExpression("floor"); }
 |	( "ROUND" "(" Expression() ")") { return new UnsupportedBuiltinExpression("round"); }
@@ -1283,7 +1285,9 @@ Expression BuiltInCall():
 |	( "SHA384" "(" Expression() ")") { return new UnsupportedBuiltinExpression("sha384"); }
 |	( "SHA512" "(" Expression() ")") { return new UnsupportedBuiltinExpression("sha512"); }
 |	( "COALESCE" ExpressionList()) { return new UnsupportedBuiltinExpression("coalesce"); }
-|	( "IF" "(" Expression() "," Expression() "," Expression() ")") { return new UnsupportedBuiltinExpression("if"); }
+|	"IF" "(" e1 = Expression() "," e2 = Expression() "," e3 = Expression() ")" {
+         return new If(e1, e2, e3);
+    }
 |	( "STRLANG" "(" Expression() "," Expression() ")") { return new UnsupportedBuiltinExpression("strlang"); }
 |	( "STRDT" "(" Expression() "," Expression() ")") { return new UnsupportedBuiltinExpression("strdt"); }
 |	( "sameTerm" "(" Expression() "," Expression() ")") { return new UnsupportedBuiltinExpression("sameterm"); }
@@ -1468,7 +1472,7 @@ TermOrVariable.QuotedTriple QuotedTP():
 void QuotedTriple():
 {}
 {
-  "<<" DataValueTerm() ( iri() | "a") DataValueTerm() ">>"
+  "<<" DataValueTerm() ( iri() | <A>) DataValueTerm() ">>"
 }
 
 TermOrVariable qtSubjectOrObject():
@@ -1551,6 +1555,11 @@ Expression ExprVarOrTerm():
   lid = BooleanLiteral() { return new LiteralExpression(lid); }|
   v = Var() { return new VariableExpression(v); }|
   e = ExprQuotedTP() { return e; }
+}
+
+TOKEN:
+{
+  <A: "a">
 }
 
 TOKEN:
@@ -1711,6 +1720,7 @@ TOKEN:
 {
   <PN_CHARS: <PN_CHARS_U> | "-" | ["0" - "9"] | "\u00B7" | ["\u0300"-"\u036F"] | [ "\u203F"-"\u2040"]>
 }
+
 
 TOKEN:
 {

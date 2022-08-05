@@ -19,7 +19,11 @@ class SolutionMapping(val variables: Set<Variable>, val boundVariables: Map<Vari
     fun getFreeVariables(): Set<Variable> = variables.filter { !boundVariables.containsKey(it) }.toSet()
 
     fun bind(variable: Variable, value: NodeId): SolutionMapping {
-        return SolutionMapping(variables, boundVariables + (variable to value))
+        return SolutionMapping(variables + variable, boundVariables + (variable to value))
+    }
+
+    fun addVariable(variable: Variable): SolutionMapping {
+        return SolutionMapping(variables + variable, boundVariables)
     }
 
     fun isCompatible(solution: SolutionMapping): Boolean =
