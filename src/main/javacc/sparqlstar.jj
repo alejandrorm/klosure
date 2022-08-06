@@ -212,7 +212,7 @@ AlgebraOperator SelectClause():
 {
   "SELECT" ( "DISTINCT" { distinct = true; } | "REDUCED") ? ( ( v = Var() {
       variables.add(new ExpressionVariableBinding(new VariableExpression(v), v)); } |
-       ( "(" e = Expression() "AS" v = Var() ")") {
+       "(" e = Expression() "AS" v = Var() ")" {
        variables.add(new ExpressionVariableBinding(e, v));
        }) + | "*") {
     return new Project(distinct, variables);

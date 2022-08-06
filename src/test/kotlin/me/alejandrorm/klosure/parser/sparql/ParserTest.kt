@@ -102,9 +102,9 @@ class ParserTest {
 
     @Test
     fun singleTest() {
-        val dataFile = "1.0-w3c/algebra/join-combo-graph-2.ttl"
-        val queryFile = "1.0-w3c/algebra/join-combo-1.rq"
-        val expectedFile = "1.0-w3c/algebra/join-combo-1.srx"
+        val dataFile = "1.0-w3c/algebra/opt-filter-1.ttl"
+        val queryFile = "1.0-w3c/algebra/opt-filter-1.rq"
+        val expectedFile = "1.0-w3c/algebra/opt-filter-1.srx"
 
         val expected =
             xmlToSolutions(ParserTest::class.java.getResourceAsStream("/me/alejandrorm/klosure/parser/data/sparql/${expectedFile}")!!)

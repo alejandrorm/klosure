@@ -9,4 +9,8 @@ class LiteralExpression(val id: NodeId): Expression {
     override fun eval(solution: SolutionMapping, graph: Graph): NodeId? {
         return id
     }
+
+    override fun toString(): String {
+        return id.toString()
+    }
 }

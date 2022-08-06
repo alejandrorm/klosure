@@ -1,6 +1,5 @@
 package me.alejandrorm.klosure.sparql.algebra.filters
 
-import me.alejandrorm.klosure.model.Node
 import me.alejandrorm.klosure.model.LiteralId
 import me.alejandrorm.klosure.model.NodeId
 import me.alejandrorm.klosure.model.literals.BooleanValue
@@ -14,7 +13,7 @@ fun getEffectiveBooleanValue(node: NodeId?): Boolean? {
             when (node.value) {
                 is BooleanValue -> node.value.value
                 is StringValue -> node.value.value.isNotEmpty()
-                is NumberValue -> node.value.value != 0.0
+                is NumberValue -> node.value.value.toDouble() != 0.0
                 else -> null
             }
         else -> null

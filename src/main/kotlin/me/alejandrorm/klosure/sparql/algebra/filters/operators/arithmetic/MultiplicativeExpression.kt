@@ -16,12 +16,16 @@ enum class MultiplicativeOperator(val symbol: String) {
     BY("/")
 }
 
-data class MultiplicativeOperatorOperand(val operator: MultiplicativeOperator, val operand: Expression)
+data class MultiplicativeOperatorOperand(val operator: MultiplicativeOperator, val operand: Expression) {
+    override fun toString(): String {
+        return "$operator$operand"
+    }
+}
 
 class MultiplicativeExpression(val firstExpression: Expression, val expressions: List<MultiplicativeOperatorOperand>) :
     Expression {
     override fun toString(): String {
-        return "+${expressions.joinToString(separator = " + ")}"
+        return "${firstExpression}+${expressions.joinToString(separator = " ")}"
     }
 
     override fun eval(solution: SolutionMapping, graph: Graph): NodeId? {

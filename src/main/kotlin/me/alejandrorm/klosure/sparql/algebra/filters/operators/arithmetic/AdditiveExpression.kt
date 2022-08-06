@@ -13,14 +13,22 @@ import java.math.BigInteger
 
 enum class AdditiveOperator(val symbol: String) {
     PLUS("+"),
-    MINUS("-")
+    MINUS("-");
+
+    override fun toString(): String {
+        return symbol
+    }
 }
 
-data class AdditiveOperatorOperand(val operator: AdditiveOperator, val operand: Expression)
+data class AdditiveOperatorOperand(val operator: AdditiveOperator, val operand: Expression) {
+    override fun toString(): String {
+        return "$operator$operand"
+    }
+}
 
 class AdditiveExpression(val expressions: List<AdditiveOperatorOperand>): Expression {
     override fun toString(): String {
-        return "+${expressions.joinToString(separator = " + ")}"
+        return "+${expressions.joinToString(separator = " ")}"
     }
 
     override fun eval(solution: SolutionMapping, graph: Graph): NodeId? {
