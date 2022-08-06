@@ -9,7 +9,7 @@ class GraphTest {
     // basic add node
     @Test
     fun addNode() {
-        val graph = Graph()
+        val graph = Graph(EntailmentTypes.SIMPLE)
 
         // add node by iri
         val nodeId = IriId(IRI.create("http://example.org/node"))

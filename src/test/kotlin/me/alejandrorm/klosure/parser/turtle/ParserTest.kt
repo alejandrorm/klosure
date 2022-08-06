@@ -1,5 +1,6 @@
 package me.alejandrorm.klosure.parser.turtle
 
+import me.alejandrorm.klosure.model.EntailmentTypes
 import me.alejandrorm.klosure.model.Graph
 import me.alejandrorm.klosure.model.PredicateNode
 import me.alejandrorm.klosure.parser.TripleComparator.Companion.areEqualTriples
@@ -61,7 +62,7 @@ class ParserTest {
 
     private fun readTurtleFile(stream: InputStream): Set<String> {
         val parser = TurtleStarParser(stream)
-        parser.graph = Graph()
+        parser.graph = Graph(EntailmentTypes.SIMPLE)
         parser.turtleDoc()
         return triplesToNTSet(parser.graph.getAllAssertedTriples())
     }

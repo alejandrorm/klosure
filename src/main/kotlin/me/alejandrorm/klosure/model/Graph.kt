@@ -1,13 +1,33 @@
 package me.alejandrorm.klosure.model
 
+import me.alejandrorm.klosure.model.literals.RdfConstants
 import org.semanticweb.owlapi.model.IRI
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
-class Graph {
+class Graph(val entailment: EntailmentTypes) {
     private val nonTerminalNodes: ConcurrentHashMap<NodeId, Node> = ConcurrentHashMap()
     private val terminalNodes: ConcurrentHashMap<LiteralId, LiteralNode> = ConcurrentHashMap()
     private val predicateNodes: ConcurrentHashMap<IRI, MutableSet<PredicateNode>> = ConcurrentHashMap()
+
+    init {
+        when(entailment) {
+            EntailmentTypes.RDF -> {
+                val type = getOrCreateNode(RdfConstants.TYPE_ID)
+                val property = getOrCreateNode(RdfConstants.PROPERTY_ID)
+
+                val predicateId = TripleId(type.id, RdfConstants.TYPE, property.id)
+                val predicateNode =
+                    nonTerminalNodes.computeIfAbsent(predicateId) { PredicateNode(predicateId) } as PredicateNode
+                predicateNodes.computeIfAbsent(RdfConstants.TYPE) { ConcurrentHashMap.newKeySet<PredicateNode>() as MutableSet<PredicateNode> }.add(predicateNode)
+
+                type.addOutgoingEdge(predicateNode)
+                property.addIncomingEdge(predicateNode)
+            }
+            else -> {}
+        }
+    }
+
 
     fun getNode(nodeId: NodeId): Node? {
         return if (nodeId is LiteralId) {
@@ -61,6 +81,19 @@ class Graph {
 
         if (assert) {
             predicateNode.asserted = true
+            when(entailment) {
+                EntailmentTypes.RDF -> {
+                    val verbNode = getOrCreateNode(IriId(verb))
+                    if (verbNode.id != RdfConstants.TYPE_ID) {
+                        val propertyNode = getOrCreateNode(RdfConstants.PROPERTY_ID)
+                        getOrCreatePredicate(
+                            verbNode,
+                            RdfConstants.TYPE, propertyNode, true
+                        )
+                    }
+                }
+                else -> {}
+            }
         }
 
         return predicateNode

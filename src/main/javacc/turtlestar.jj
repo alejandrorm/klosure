@@ -33,7 +33,7 @@ public class TurtleStarParser {
 
     private final Map<String, String> prefixes = new HashMap<>();
 
-    private Graph graph = new Graph();
+    private Graph graph = new Graph(EntailmentTypes.SIMPLE);
 
     public void setGraph(Graph graph) {
         this.graph = graph;

@@ -10,4 +10,8 @@ class VariableExpression(val variable: Variable): Expression {
     override fun eval(solution: SolutionMapping, graph: Graph): NodeId? {
         return solution.boundVariables[variable]
     }
+
+    override fun toString(): String {
+        return variable.toString()
+    }
 }

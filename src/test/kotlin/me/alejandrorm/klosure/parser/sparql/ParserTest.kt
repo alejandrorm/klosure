@@ -17,9 +17,12 @@ import org.w3c.dom.Element
 import java.io.BufferedReader
 import java.io.InputStream
 import javax.xml.parsers.DocumentBuilderFactory
+import kotlin.math.E
 
 
-data class TestCase(val data: String, val query: String, val expected: String)
+data class TestCase(val name: String, val data: String, val query: String,
+                    val expected: String, val entailment: EntailmentTypes,
+                    val checkOrder: Boolean)
 
 data class TestCases(val cases: List<TestCase>)
 
@@ -99,14 +102,14 @@ class ParserTest {
 
     @Test
     fun singleTest() {
-        val dataFile = "1.0-w3c/basic/data-2.ttl"
-        val queryFile = "1.0-w3c/basic/list-1.rq"
-        val expectedFile = "1.0-w3c/basic/list-1.srx"
+        val dataFile = "1.0-w3c/algebra/join-combo-graph-2.ttl"
+        val queryFile = "1.0-w3c/algebra/join-combo-1.rq"
+        val expectedFile = "1.0-w3c/algebra/join-combo-1.srx"
 
         val expected =
             xmlToSolutions(ParserTest::class.java.getResourceAsStream("/me/alejandrorm/klosure/parser/data/sparql/${expectedFile}")!!)
 
-        val graph = Graph()
+        val graph = Graph(EntailmentTypes.SIMPLE)
         val parser =
             TurtleStarParser(ParserTest::class.java.getResourceAsStream("/me/alejandrorm/klosure/parser/data/sparql/${dataFile}")!!)
         parser.graph = graph
@@ -149,9 +152,12 @@ class ParserTest {
                 println(folder)
                 println(it.jsonObject)
                 TestCase(
+                    it["name"]?.jsonPrimitive?.content ?: "",
                     it["data"]!!.jsonPrimitive.content,
                     it["query"]!!.jsonPrimitive.content,
-                    it["expected"]!!.jsonPrimitive.content
+                    it["expected"]!!.jsonPrimitive.content,
+                    it["entailment"]?.jsonPrimitive?.content?.let { t -> EntailmentTypes.valueOf(t) } ?: EntailmentTypes.SIMPLE,
+                    it["checkOrder"]?.jsonPrimitive?.content?.let { t -> t == "true" } ?: false
                 )
             }
             testCases.map { testCase ->
@@ -159,7 +165,7 @@ class ParserTest {
                     val expected =
                         xmlToSolutions(ParserTest::class.java.getResourceAsStream("/me/alejandrorm/klosure/parser/data/sparql/$folder/${testCase.expected}")!!)
 
-                    val graph = Graph()
+                    val graph = Graph(testCase.entailment)
                     val parser =
                         TurtleStarParser(ParserTest::class.java.getResourceAsStream("/me/alejandrorm/klosure/parser/data/sparql/$folder/${testCase.data}")!!)
                     parser.graph = graph
@@ -183,16 +189,19 @@ class ParserTest {
         val content = stream.bufferedReader().use(BufferedReader::readText)
         val testCases = Json.parseToJsonElement(content).jsonObject["cases"]!!.jsonArray.map { it.jsonObject }.map {
             TestCase(
+                it["name"]?.jsonPrimitive?.content ?: "",
                 it["data"]!!.jsonPrimitive.content,
                 it["query"]!!.jsonPrimitive.content,
-                it["expected"]!!.jsonPrimitive.content
+                it["expected"]!!.jsonPrimitive.content,
+                it["entailment"]?.jsonPrimitive?.content?.let { t -> EntailmentTypes.valueOf(t) } ?: EntailmentTypes.SIMPLE,
+                it["checkOrder"]?.jsonPrimitive?.content?.let { t -> t == "true" } ?: false
             )
         }
         return testCases.map { testCase ->
             DynamicTest.dynamicTest("when reading $testCase") {
                 val expected = jsonToSolutions(getFileContent(testCase.expected))
 
-                val graph = Graph()
+                val graph = Graph(testCase.entailment)
                 val parser =
                     TurtleStarParser(ParserTest::class.java.getResourceAsStream("/me/alejandrorm/klosure/parser/data/sparql/star/${testCase.data}")!!)
                 parser.graph = graph

@@ -7,8 +7,8 @@ options
   UNICODE_INPUT         = true;
   IGNORE_CASE           = true;
   STATIC                = false;
-  DEBUG_PARSER          = true;
-  DEBUG_TOKEN_MANAGER   = true;
+  DEBUG_PARSER          = false;
+  DEBUG_TOKEN_MANAGER   = false;
   FORCE_LA_CHECK        = true;
   LOOKAHEAD             = 2;
 }
@@ -1239,68 +1239,69 @@ Expression BrackettedExpression():
 Expression BuiltInCall():
 {
   Expression e1, e2, e3;
+  Variable v;
 }
 {
   Aggregate() { return new UnsupportedBuiltinExpression("aggregate"); }
-|	( "STR" "(" Expression() ")") { return new UnsupportedBuiltinExpression("str"); }
-|	( "LANG" "(" Expression() ")") { return new UnsupportedBuiltinExpression("lang"); }
-|	( "LANGMATCHES" "(" Expression() "," Expression() ")") { return new UnsupportedBuiltinExpression("langmatches"); }
-|	( "DATATYPE" "(" Expression() ")") { return new UnsupportedBuiltinExpression("datatype"); }
-|	( "BOUND" "(" Var() ")") { return new UnsupportedBuiltinExpression("bound"); }
-|	( "IRI" "(" Expression() ")") { return new UnsupportedBuiltinExpression("iri"); }
-|	( "URI" "(" Expression() ")") { return new UnsupportedBuiltinExpression("uri"); }
-|	( "BNODE" ( ( "(" Expression() ")") | <NIL>) ) { return new UnsupportedBuiltinExpression("bnode"); }
-|	( "RAND" <NIL>) { return new UnsupportedBuiltinExpression("rand"); }
+|	"STR" "(" Expression() ")" { return new UnsupportedBuiltinExpression("str"); }
+|	"LANG" "(" Expression() ")" { return new UnsupportedBuiltinExpression("lang"); }
+|	"LANGMATCHES" "(" Expression() "," Expression() ")" { return new UnsupportedBuiltinExpression("langmatches"); }
+|	"DATATYPE" "(" e1 = Expression() ")" { return new Datatype(e1); }
+|	"BOUND" "(" v = Var() ")" { return new Bound(v); }
+|   "IRI" "(" Expression() ")" { return new UnsupportedBuiltinExpression("iri"); }
+|	"URI" "(" Expression() ")" { return new UnsupportedBuiltinExpression("uri"); }
+|	"BNODE" ( ( "(" Expression() ")") | <NIL>)  { return new UnsupportedBuiltinExpression("bnode"); }
+|	"RAND" <NIL> { return new UnsupportedBuiltinExpression("rand"); }
 |	"ABS" "(" e1 = Expression() ")" { return new Abs(e1); }
-|	( "CEIL" "(" Expression() ")") { return new UnsupportedBuiltinExpression("ceil"); }
-|	( "FLOOR" "(" Expression() ")") { return new UnsupportedBuiltinExpression("floor"); }
-|	( "ROUND" "(" Expression() ")") { return new UnsupportedBuiltinExpression("round"); }
-|	( "CONCAT" ExpressionList()) { return new UnsupportedBuiltinExpression("concat"); }
+|	"CEIL" "(" Expression() ")" { return new UnsupportedBuiltinExpression("ceil"); }
+|	"FLOOR" "(" Expression() ")" { return new UnsupportedBuiltinExpression("floor"); }
+|	"ROUND" "(" Expression() ")" { return new UnsupportedBuiltinExpression("round"); }
+|	"CONCAT" ExpressionList() { return new UnsupportedBuiltinExpression("concat"); }
 |	SubstringExpression() { return new UnsupportedBuiltinExpression("substring"); }
-|	( "STRLEN" "(" Expression() ")") { return new UnsupportedBuiltinExpression("strlen"); }
+|	"STRLEN" "(" Expression() ")" { return new UnsupportedBuiltinExpression("strlen"); }
 |	StrReplaceExpression() { return new UnsupportedBuiltinExpression("strreplace"); }
-|	( "UCASE" "(" Expression() ")") { return new UnsupportedBuiltinExpression("ucase"); }
-|	( "LCASE" "(" Expression() ")") { return new UnsupportedBuiltinExpression("lcase"); }
-|	( "ENCODE_FOR_URI" "(" Expression() ")") { return new UnsupportedBuiltinExpression("encode_for_uri"); }
-|	( "CONTAINS" "(" Expression() "," Expression() ")") { return new UnsupportedBuiltinExpression("contains"); }
-|	( "STRSTARTS" "(" Expression() "," Expression() ")") { return new UnsupportedBuiltinExpression("strstarts"); }
-|	( "STRENDS" "(" Expression() "," Expression() ")") { return new UnsupportedBuiltinExpression("strends"); }
-|	( "STRBEFORE" "(" Expression() "," Expression() ")") { return new UnsupportedBuiltinExpression("strbefore"); }
-|	( "STRAFTER" "(" Expression() "," Expression() ")")  { return new UnsupportedBuiltinExpression("strafter"); }
-|	( "YEAR" "(" Expression() ")") { return new UnsupportedBuiltinExpression("year"); }
-|	( "MONTH" "(" Expression() ")") { return new UnsupportedBuiltinExpression("month"); }
-|	( "DAY" "(" Expression() ")") { return new UnsupportedBuiltinExpression("day"); }
-|	( "HOURS" "(" Expression() ")") { return new UnsupportedBuiltinExpression("hours"); }
-|	( "MINUTES" "(" Expression() ")") { return new UnsupportedBuiltinExpression("minutes"); }
-|	( "SECONDS" "(" Expression() ")") { return new UnsupportedBuiltinExpression("seconds"); }
-|	( "TIMEZONE" "(" Expression() ")") { return new UnsupportedBuiltinExpression("timezone"); }
-|	( "TZ" "(" Expression() ")") { return new UnsupportedBuiltinExpression("tz"); }
-|	( "NOW" <NIL>) { return new UnsupportedBuiltinExpression("now"); }
-|	( "UUID" <NIL>) { return new UnsupportedBuiltinExpression("uuid"); }
-|	( "STRUUID" <NIL>) { return new UnsupportedBuiltinExpression("struuid"); }
-|	( "MD5" "(" Expression() ")") { return new UnsupportedBuiltinExpression("md5"); }
-|	( "SHA1" "(" Expression() ")") { return new UnsupportedBuiltinExpression("sha1"); }
-|	( "SHA224" "(" Expression() ")") { return new UnsupportedBuiltinExpression("sha224"); }
-|	( "SHA256" "(" Expression() ")") { return new UnsupportedBuiltinExpression("sha256"); }
-|	( "SHA384" "(" Expression() ")") { return new UnsupportedBuiltinExpression("sha384"); }
-|	( "SHA512" "(" Expression() ")") { return new UnsupportedBuiltinExpression("sha512"); }
-|	( "COALESCE" ExpressionList()) { return new UnsupportedBuiltinExpression("coalesce"); }
+|	"UCASE" "(" Expression() ")" { return new UnsupportedBuiltinExpression("ucase"); }
+|	"LCASE" "(" Expression() ")" { return new UnsupportedBuiltinExpression("lcase"); }
+|	"ENCODE_FOR_URI" "(" Expression() ")" { return new UnsupportedBuiltinExpression("encode_for_uri"); }
+|	"CONTAINS" "(" Expression() "," Expression() ")" { return new UnsupportedBuiltinExpression("contains"); }
+|	"STRSTARTS" "(" Expression() "," Expression() ")" { return new UnsupportedBuiltinExpression("strstarts"); }
+|	"STRENDS" "(" Expression() "," Expression() ")" { return new UnsupportedBuiltinExpression("strends"); }
+|	"STRBEFORE" "(" Expression() "," Expression() ")" { return new UnsupportedBuiltinExpression("strbefore"); }
+|	"STRAFTER" "(" Expression() "," Expression() ")"  { return new UnsupportedBuiltinExpression("strafter"); }
+|	"YEAR" "(" Expression() ")" { return new UnsupportedBuiltinExpression("year"); }
+|	"MONTH" "(" Expression() ")" { return new UnsupportedBuiltinExpression("month"); }
+|	"DAY" "(" Expression() ")" { return new UnsupportedBuiltinExpression("day"); }
+|	"HOURS" "(" Expression() ")" { return new UnsupportedBuiltinExpression("hours"); }
+|	"MINUTES" "(" Expression() ")" { return new UnsupportedBuiltinExpression("minutes"); }
+|	"SECONDS" "(" Expression() ")" { return new UnsupportedBuiltinExpression("seconds"); }
+|	"TIMEZONE" "(" Expression() ")" { return new UnsupportedBuiltinExpression("timezone"); }
+|	"TZ" "(" Expression() ")" { return new UnsupportedBuiltinExpression("tz"); }
+|	"NOW" <NIL> { return new UnsupportedBuiltinExpression("now"); }
+|	"UUID" <NIL> { return new UnsupportedBuiltinExpression("uuid"); }
+|	"STRUUID" <NIL> { return new UnsupportedBuiltinExpression("struuid"); }
+|	"MD5" "(" Expression() ")" { return new UnsupportedBuiltinExpression("md5"); }
+|	"SHA1" "(" Expression() ")" { return new UnsupportedBuiltinExpression("sha1"); }
+|	"SHA224" "(" Expression() ")" { return new UnsupportedBuiltinExpression("sha224"); }
+|	"SHA256" "(" Expression() ")" { return new UnsupportedBuiltinExpression("sha256"); }
+|	"SHA384" "(" Expression() ")" { return new UnsupportedBuiltinExpression("sha384"); }
+|	"SHA512" "(" Expression() ")" { return new UnsupportedBuiltinExpression("sha512"); }
+|	"COALESCE" ExpressionList() { return new UnsupportedBuiltinExpression("coalesce"); }
 |	"IF" "(" e1 = Expression() "," e2 = Expression() "," e3 = Expression() ")" {
          return new If(e1, e2, e3);
     }
-|	( "STRLANG" "(" Expression() "," Expression() ")") { return new UnsupportedBuiltinExpression("strlang"); }
-|	( "STRDT" "(" Expression() "," Expression() ")") { return new UnsupportedBuiltinExpression("strdt"); }
-|	( "sameTerm" "(" Expression() "," Expression() ")") { return new UnsupportedBuiltinExpression("sameterm"); }
-|	( "isIRI" "(" Expression() ")") { return new UnsupportedBuiltinExpression("isiri"); }
-|	( "isURI" "(" Expression() ")") { return new UnsupportedBuiltinExpression("isuri"); }
-|	( "isBLANK" "(" Expression() ")") { return new UnsupportedBuiltinExpression("isblank"); }
-|	( "isLITERAL" "(" Expression() ")") { return new UnsupportedBuiltinExpression("isliteral"); }
-|	( "isNUMERIC" "(" Expression() ")") { return new UnsupportedBuiltinExpression("isnumeric"); }
-|	( "TRIPLE" "(" Expression() "," Expression() "," Expression() ")") { return new UnsupportedBuiltinExpression("triple"); }
-|	( "SUBJECT" "(" Expression() ")") { return new UnsupportedBuiltinExpression("subject"); }
-|	( "PREDICATE" "(" Expression() ")") { return new UnsupportedBuiltinExpression("predicate"); }
-|	( "OBJECT" "(" Expression() ")") { return new UnsupportedBuiltinExpression("object"); }
-|	( "isTRIPLE" "(" Expression() ")") { return new UnsupportedBuiltinExpression("istriple"); }
+|	"STRLANG" "(" Expression() "," Expression() ")" { return new UnsupportedBuiltinExpression("strlang"); }
+|	"STRDT" "(" Expression() "," Expression() ")" { return new UnsupportedBuiltinExpression("strdt"); }
+|	"sameTerm" "(" Expression() "," Expression() ")" { return new UnsupportedBuiltinExpression("sameterm"); }
+|	"isIRI" "(" Expression() ")" { return new UnsupportedBuiltinExpression("isiri"); }
+|	"isURI" "(" Expression() ")" { return new UnsupportedBuiltinExpression("isuri"); }
+|	"isBLANK" "(" Expression() ")" { return new UnsupportedBuiltinExpression("isblank"); }
+|	"isLITERAL" "(" Expression() ")" { return new UnsupportedBuiltinExpression("isliteral"); }
+|	"isNUMERIC" "(" Expression() ")" { return new UnsupportedBuiltinExpression("isnumeric"); }
+|	"TRIPLE" "(" Expression() "," Expression() "," Expression() ")" { return new UnsupportedBuiltinExpression("triple"); }
+|	"SUBJECT" "(" Expression() ")" { return new UnsupportedBuiltinExpression("subject"); }
+|	"PREDICATE" "(" Expression() ")" { return new UnsupportedBuiltinExpression("predicate"); }
+|	"OBJECT" "(" Expression() ")" { return new UnsupportedBuiltinExpression("object"); }
+|	"isTRIPLE" "(" Expression() ")" { return new UnsupportedBuiltinExpression("istriple"); }
 |	RegexExpression() { return new UnsupportedBuiltinExpression("regex"); }
 |	ExistsFunc() { return new UnsupportedBuiltinExpression("exists"); }
 |	NotExistsFunc() { return new UnsupportedBuiltinExpression("notexists"); }

@@ -87,24 +87,12 @@ class DataTypes {
         val FALSE: LiteralId = LiteralId("false", BooleanValue(false))
 
         @JvmStatic
-        fun getIntegerLiteral(v: String): LiteralId {
-            val d = v.toBigInteger()
-            // FIXME return bigdecimal
-            return try {
-                LiteralId(v, IntValue(d.intValueExact()))
-            } catch (e: ArithmeticException) {
-                try {
-                    LiteralId(v, LongValue(d.longValueExact()))
-                } catch (e: ArithmeticException) {
-                    LiteralId(v, IntegerValue(d))
-                }
-            }
-        }
+        fun getIntegerLiteral(v: String): LiteralId =
+            LiteralId(v, IntegerValue(v.toBigInteger()))
 
         @JvmStatic
-        fun getDecimalLiteral(v: String): LiteralId {
-            return LiteralId(v, DoubleValue(v.toDouble()))
-        }
+        fun getDecimalLiteral(v: String): LiteralId =
+            LiteralId(v, DecimalValue(v.toBigDecimal()))
 
         @JvmStatic
         fun getRdfLiteral(v: String, type: IRI?, lang: String?): LiteralId {

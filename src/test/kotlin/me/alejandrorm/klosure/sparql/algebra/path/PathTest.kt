@@ -1,5 +1,6 @@
 package me.alejandrorm.klosure.sparql.algebra.path
 
+import me.alejandrorm.klosure.model.EntailmentTypes
 import me.alejandrorm.klosure.model.Graph
 import me.alejandrorm.klosure.model.IriId
 import me.alejandrorm.klosure.parser.turtle.TurtleStarParser
@@ -15,7 +16,7 @@ import kotlin.test.assertEquals
 
 class PathTest {
 
-    private var graph: Graph = Graph()
+    private var graph: Graph = Graph(EntailmentTypes.SIMPLE)
 
     @BeforeEach
     fun setUpGraph() {
@@ -40,7 +41,7 @@ class PathTest {
         """.trimIndent()
 
         val parser = TurtleStarParser(StringReader(ttl))
-        graph = Graph()
+        graph = Graph(EntailmentTypes.SIMPLE)
         parser.graph = graph
         parser.turtleDoc()
     }

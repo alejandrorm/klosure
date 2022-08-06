@@ -25,19 +25,25 @@ class LeftJoin(val operator: AlgebraOperator) : AlgebraOperator {
     }
 
     private fun minus(l1: List<SolutionMapping>, l2: List<SolutionMapping>): Sequence<SolutionMapping> = sequence {
+//        println("LEFT JOIN SECOND PASS")
         for (solution in l1) {
-            if (!l2.any { solution.isCompatible(it) }) yield (solution)
+            if (!l2.any { solution.isCompatible(it) }) {
+//                println("yielding $solution")
+                yield(solution)
+            }
         }
     }
 
     private fun join(l1: List<SolutionMapping>, operator: AlgebraOperator, graph: Graph):Sequence<SolutionMapping>  = sequence {
         val l2 = operator.eval(sequenceOf(SolutionMapping.EmptySolutionMapping), graph).toList()
 
+//        println("LEFT JOIN FIRST PASS")
         for(solution1 in l1) {
             // TODO var yielded = false
             for(solution2 in l2) {
                 if (solution1.isCompatible(solution2)) {
                     // TODO yielded = true
+//                    println("yielding ${solution1.merge(solution2)}")
                     yield(solution1.merge(solution2))
                 }
             }
