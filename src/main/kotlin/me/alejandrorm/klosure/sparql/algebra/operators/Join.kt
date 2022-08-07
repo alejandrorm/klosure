@@ -4,6 +4,10 @@ import me.alejandrorm.klosure.model.Graph
 import me.alejandrorm.klosure.sparql.SolutionMapping
 
 class Join(val operators: List<AlgebraOperator>) : AlgebraOperator {
+
+    private val operatorsReordered: List<AlgebraOperator> = operators.filter { it !is Filter } +
+            operators.filterIsInstance<Filter>()
+
     override fun toString(): String {
         return "Join(${operators.joinToString(", ")})"
     }
@@ -12,6 +16,6 @@ class Join(val operators: List<AlgebraOperator>) : AlgebraOperator {
         solutions: Sequence<SolutionMapping>,
         graph: Graph
     ): Sequence<SolutionMapping> {
-        return operators.fold(solutions) { acc, gp -> gp.eval(acc, graph) }
+        return operatorsReordered.fold(solutions) { acc, gp -> gp.eval(acc, graph) }
     }
 }
