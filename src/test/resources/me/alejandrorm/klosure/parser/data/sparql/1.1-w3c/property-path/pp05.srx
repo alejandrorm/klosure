@@ -5,6 +5,98 @@
     <variable name="y"/>
   </head>
   <results>
+      <result>
+        <binding name="x">
+          <triple>
+             <subject>
+                 <bnode>b0</bnode>
+             </subject>
+             <predicate>
+                  <uri>http://www.w3.org/1999/02/22-rdf-syntax-ns#first</uri>
+             </predicate>
+             <object>
+                 <literal datatype="http://www.w3.org/2001/XMLSchema#integer">1</literal>
+             </object>
+          </triple>
+        </binding>
+        <binding name="y">
+                   <triple>
+                       <subject>
+                           <bnode>b0</bnode>
+                       </subject>
+                       <predicate>
+                            <uri>http://www.w3.org/1999/02/22-rdf-syntax-ns#first</uri>
+                       </predicate>
+                       <object>
+                           <literal datatype="http://www.w3.org/2001/XMLSchema#integer">1</literal>
+                       </object>
+                    </triple>
+        </binding>
+      </result>
+
+
+      <result>
+        <binding name="x">
+          <triple>
+             <subject>
+                 <bnode>b0</bnode>
+             </subject>
+             <predicate>
+                  <uri>http://www.w3.org/1999/02/22-rdf-syntax-ns#rest</uri>
+             </predicate>
+             <object>
+                 <uri>http://www.w3.org/1999/02/22-rdf-syntax-ns#nil</uri>
+             </object>
+          </triple>
+        </binding>
+        <binding name="y">
+                            <triple>
+                               <subject>
+                                   <bnode>b0</bnode>
+                               </subject>
+                               <predicate>
+                                    <uri>http://www.w3.org/1999/02/22-rdf-syntax-ns#rest</uri>
+                               </predicate>
+                               <object>
+                                   <uri>http://www.w3.org/1999/02/22-rdf-syntax-ns#nil</uri>
+                               </object>
+                            </triple>
+
+        </binding>
+      </result>
+
+
+
+      <result>
+        <binding name="x">
+          <triple>
+             <subject>
+                 <bnode>b1</bnode>
+             </subject>
+             <predicate>
+                  <uri>http://www.example.org/schema#prop</uri>
+             </predicate>
+             <object>
+                 <literal datatype="http://www.w3.org/2001/XMLSchema#integer">2</literal>
+             </object>
+          </triple>
+        </binding>
+        <binding name="y">
+             <triple>
+                <subject>
+                    <bnode>b1</bnode>
+                </subject>
+                <predicate>
+                     <uri>http://www.example.org/schema#prop</uri>
+                </predicate>
+                <object>
+                    <literal datatype="http://www.w3.org/2001/XMLSchema#integer">2</literal>
+                </object>
+             </triple>
+        </binding>
+      </result>
+
+
     <result>
       <binding name="x">
         <literal datatype="http://www.w3.org/2001/XMLSchema#integer">1</literal>

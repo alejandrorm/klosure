@@ -20,9 +20,11 @@ import javax.xml.parsers.DocumentBuilderFactory
 import kotlin.math.E
 
 
-data class TestCase(val name: String, val data: String, val query: String,
-                    val expected: String, val entailment: EntailmentTypes,
-                    val checkOrder: Boolean)
+data class TestCase(
+    val name: String, val data: String, val query: String,
+    val expected: String, val entailment: EntailmentTypes,
+    val checkOrder: Boolean
+)
 
 data class TestCases(val cases: List<TestCase>)
 
@@ -61,15 +63,7 @@ class ParserTest {
                 var value = node.firstChild
                 while (value.nodeName == "#text") value = value.nextSibling
 
-                val id = when (value.nodeName) {
-                    "literal" -> DataTypes.getLiteralId(value.textContent,
-                        value.attributes.getNamedItem("datatype")?.let { d -> IRI.create(d.textContent) },
-                        value.attributes.getNamedItem("xml:lang")?.textContent
-                    )
-                    "uri" -> IriId(IRI.create(value.textContent))
-                    "bnode" -> BlankId(value.textContent)
-                    else -> throw IllegalArgumentException("Unsupported value type: ${value.localName}")
-                }
+                val id = parseValue(value)
                 Variable(name) to id
             }
             SolutionMapping(vars.toSet(), bindings)
@@ -77,21 +71,46 @@ class ParserTest {
         return ExpectedResult(vars, solutions.asSequence())
     }
 
+    private fun parseValue(value: org.w3c.dom.Node): NodeId {
+        fun filter(node: org.w3c.dom.Node): org.w3c.dom.Node {
+            var current = node
+            while (current.nodeName == "#text") current = current.nextSibling
+            return current
+        }
+        return when (value.nodeName) {
+            "literal" -> DataTypes.getLiteralId(
+                value.textContent,
+                value.attributes.getNamedItem("datatype")?.let { d -> IRI.create(d.textContent) },
+                value.attributes.getNamedItem("xml:lang")?.textContent
+            )
+            "uri" -> IriId(IRI.create(value.textContent))
+            "bnode" -> BlankId(value.textContent)
+            "triple" -> {
+                val subject = parseValue(filter((value as Element).getElementsByTagName("subject").item(0).firstChild))
+                val predicate = parseValue(filter(value.getElementsByTagName("predicate").item(0).firstChild))
+                val `object` = parseValue(filter(value.getElementsByTagName("object").item(0).firstChild))
+                TripleId(subject, (predicate as IriId).iri, `object`)
+            }
+            else -> throw IllegalArgumentException("Unsupported value type: ${value.nodeName}")
+        }
+    }
+
     private fun parseValue(obj: JsonElement): NodeId {
-        val type = obj.jsonObject["type"]!!.jsonPrimitive.content
-        return if (type == "triple") {
-            val subject = parseValue(obj.jsonObject["value"]!!.jsonObject["subject"]!!)
-            val predicate = parseValue(obj.jsonObject["value"]!!.jsonObject["predicate"]!!)
-            val `object` = parseValue(obj.jsonObject["value"]!!.jsonObject["object"]!!)
-            TripleId(subject, (predicate as IriId).iri, `object`)
-        } else {
-            if (type == "uri" || type == "iri") {
-                IriId(IRI.create(obj.jsonObject["value"]!!.jsonPrimitive.content))
-            } else { // literal
+        return when (obj.jsonObject["type"]!!.jsonPrimitive.content) {
+            "triple" -> {
+                val subject = parseValue(obj.jsonObject["value"]!!.jsonObject["subject"]!!)
+                val predicate = parseValue(obj.jsonObject["value"]!!.jsonObject["predicate"]!!)
+                val `object` = parseValue(obj.jsonObject["value"]!!.jsonObject["object"]!!)
+                TripleId(subject, (predicate as IriId).iri, `object`)
+            }
+            "uri" -> IriId(IRI.create(obj.jsonObject["value"]!!.jsonPrimitive.content))
+            "iri" -> IriId(IRI.create(obj.jsonObject["value"]!!.jsonPrimitive.content))
+            "literal" -> {
                 val datatype = obj.jsonObject["datatype"]?.jsonPrimitive?.content?.let { IRI.create(it) }
                 val lang = obj.jsonObject["lang"]?.jsonPrimitive?.content
                 DataTypes.getLiteralId(obj.jsonObject["value"]!!.jsonPrimitive.content, datatype, lang)
             }
+            else -> throw IllegalArgumentException("Unsupported value type: ${obj.jsonObject["type"]!!.jsonPrimitive.content}")
         }
     }
 
@@ -157,7 +176,8 @@ class ParserTest {
                     it["data"]!!.jsonPrimitive.content,
                     it["query"]!!.jsonPrimitive.content,
                     it["expected"]!!.jsonPrimitive.content,
-                    it["entailment"]?.jsonPrimitive?.content?.let { t -> EntailmentTypes.valueOf(t) } ?: EntailmentTypes.SIMPLE,
+                    it["entailment"]?.jsonPrimitive?.content?.let { t -> EntailmentTypes.valueOf(t) }
+                        ?: EntailmentTypes.SIMPLE,
                     it["checkOrder"]?.jsonPrimitive?.content?.let { t -> t == "true" } ?: false
                 )
             }
@@ -194,7 +214,8 @@ class ParserTest {
                 it["data"]!!.jsonPrimitive.content,
                 it["query"]!!.jsonPrimitive.content,
                 it["expected"]!!.jsonPrimitive.content,
-                it["entailment"]?.jsonPrimitive?.content?.let { t -> EntailmentTypes.valueOf(t) } ?: EntailmentTypes.SIMPLE,
+                it["entailment"]?.jsonPrimitive?.content?.let { t -> EntailmentTypes.valueOf(t) }
+                    ?: EntailmentTypes.SIMPLE,
                 it["checkOrder"]?.jsonPrimitive?.content?.let { t -> t == "true" } ?: false
             )
         }

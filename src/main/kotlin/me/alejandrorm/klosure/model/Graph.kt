@@ -114,4 +114,8 @@ class Graph(val entailment: EntailmentTypes) {
     fun getAllSubjects() : Sequence<NodeId> {
         return nonTerminalNodes.keys().asSequence()
     }
+
+    fun getAllTerminals() : Sequence<LiteralId> {
+        return terminalNodes.keys().asSequence()
+    }
 }

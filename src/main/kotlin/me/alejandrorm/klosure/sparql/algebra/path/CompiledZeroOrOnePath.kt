@@ -12,18 +12,40 @@ class CompiledZeroOrOnePath(
 ) : CompiledPath {
 
     override fun toString(): String {
-        return "CompiledZeroOrOnePath($head, $path, $tail)"
+        return "CompiledZeroOrOnePath($head, ($path), $tail)"
     }
 
     override fun eval(solution: SolutionMapping, graph: Graph): Sequence<SolutionMapping> {
-        val n1 = head.resolve(solution)
-        val n2 = head.resolve(solution)
-
-        return if (n1.isBound() && n2.isBound() && n1 == n2) {
+        val concreteHead = head.resolve(solution)
+        val concreteTail = tail.resolve(solution)
+        val s = if (concreteHead == concreteTail) {
             sequenceOf(solution)
+        } else if (concreteHead.isBound() && !concreteTail.isBound()) {
+            if (concreteTail is TermOrVariable.VariableTerm)
+                sequenceOf(solution.bind(concreteTail.variable, concreteHead.getTerm()))
+            else
+                (concreteTail as TermOrVariable.QuotedTriple).match(solution, concreteHead.getTerm())
+                    ?.let { sequenceOf(it) } ?: emptySequence()
+
+        } else if (concreteTail.isBound() && !concreteHead.isBound()) {
+            if (concreteHead is TermOrVariable.VariableTerm)
+                sequenceOf(solution.bind(concreteHead.variable, concreteTail.getTerm()))
+            else
+                (concreteHead as TermOrVariable.QuotedTriple).match(solution, concreteTail.getTerm())
+                    ?.let { sequenceOf(it) } ?: emptySequence()
+        } else if (!concreteHead.isBound() && !concreteTail.isBound()) {
+            graph.getAllSubjects().map { subject ->
+                solution.bind((concreteHead as TermOrVariable.VariableTerm).variable, subject).
+                bind((concreteTail as TermOrVariable.VariableTerm).variable, subject)
+            } + graph.getAllTerminals().map { subject ->
+                solution.bind((concreteHead as TermOrVariable.VariableTerm).variable, subject).
+                bind((concreteTail as TermOrVariable.VariableTerm).variable, subject)
+            }
         } else {
-            path.eval(solution, graph)
+            emptySequence()
         }
+
+        return s +  path.eval(solution, graph)
     }
 
     override fun eval(solutions: Sequence<SolutionMapping>, graph: Graph): Sequence<SolutionMapping> {

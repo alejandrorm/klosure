@@ -12,13 +12,9 @@ class ZeroOrOnePath(val path: Path) : Path {
     override fun eval(
         head: TermOrVariable,
         tail: TermOrVariable,
-        solutionMapping: SolutionMapping,
+        solution: SolutionMapping,
         graph: Graph
     ): Sequence<SolutionMapping> {
-        return if (head.resolve(solutionMapping) == tail.resolve(solutionMapping)) {
-            sequenceOf(solutionMapping)
-        } else {
-            path.eval(head, tail, solutionMapping, graph)
-        }
+        return compile(head, tail).eval(solution, graph)
     }
 }

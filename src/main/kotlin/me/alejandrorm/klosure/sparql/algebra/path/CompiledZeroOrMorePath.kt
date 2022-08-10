@@ -40,6 +40,9 @@ class CompiledZeroOrMorePath(
             graph.getAllSubjects().map { subject ->
                 solution.bind((concreteHead as TermOrVariable.VariableTerm).variable, subject).
                 bind((concreteTail as TermOrVariable.VariableTerm).variable, subject)
+            } + graph.getAllTerminals().map { subject ->
+                solution.bind((concreteHead as TermOrVariable.VariableTerm).variable, subject).
+                bind((concreteTail as TermOrVariable.VariableTerm).variable, subject)
             }
         } else {
             emptySequence()
