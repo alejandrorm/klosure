@@ -57,6 +57,18 @@ data class DecimalValue(override val value: BigDecimal) : NumberValue(value, DEC
     override fun toString(): String {
         return super.toString()
     }
+
+    override fun equals(other: Any?): Boolean {
+        return if (other is DecimalValue) {
+            value.compareTo(other.value) == 0
+        } else {
+            false
+        }
+    }
+
+    override fun hashCode(): Int {
+        return value.toDouble().hashCode()
+    }
 }
 
 data class IntegerValue(override val value: BigInteger) : NumberValue(value, INTEGER) {

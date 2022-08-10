@@ -168,6 +168,7 @@ class BasicTriplePattern(
         val concreteObj = triple.obj.getTerm()
         val it = graph.getNode(concreteSubject)?.getOutgoingEdges()
         it ?: return emptySequence()
+
         return it.asSequence().filter { predicateNode ->
             (predicateNode.id as TripleId).obj == concreteObj
         }.map { edge ->

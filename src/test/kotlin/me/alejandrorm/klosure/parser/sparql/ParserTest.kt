@@ -102,9 +102,9 @@ class ParserTest {
 
     @Test
     fun singleTest() {
-        val dataFile = "1.0-w3c/basic/data-3.ttl"
-        val queryFile = "1.0-w3c/basic/quotes-2.rq"
-        val expectedFile = "1.0-w3c/basic/quotes-2.srx"
+        val dataFile = "1.0-w3c/basic/data-4.ttl"
+        val queryFile = "1.0-w3c/basic/term-6.rq"
+        val expectedFile = "1.0-w3c/basic/term-6.srx"
 
         val expected =
             xmlToSolutions(ParserTest::class.java.getResourceAsStream("/me/alejandrorm/klosure/parser/data/sparql/${expectedFile}")!!)

@@ -15,7 +15,6 @@ data class BlankId(val name: String) : NodeId() {
     override fun toString(): String = "_:$name"
 }
 
-// FIXME "1."^^xsd:decimal is different from 1.0
 data class LiteralId(val literal: String,
                      val value: TypedValue) : NodeId() {
     override fun toString(): String = value.toString()
