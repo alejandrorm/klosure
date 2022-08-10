@@ -517,7 +517,15 @@ AlgebraOperator GroupGraphPatternSub():
 }
 {
   (triples = TriplesBlock() { gps.add(new BasicGraphPattern(triples)); })?
-   ( gp = GraphPatternNotTriples() { gps.add(gp); }(".")? (triples = TriplesBlock() { gps.add(new BasicGraphPattern(triples)); })? ) * {
+   ( gp = GraphPatternNotTriples() {
+     if (gp instanceof FakeLeftJoin) {
+       AlgebraOperator left = gps.remove(gps.size() - 1);
+       AlgebraOperator right = ((FakeLeftJoin)gp).getOperator();
+       gps.add(new LeftJoin(left, right));
+     } else {
+       gps.add(gp);
+     }
+   }(".")? (triples = TriplesBlock() { gps.add(new BasicGraphPattern(triples)); })? ) * {
      if (gps.size() == 1) {
        return gps.get(0);
      } else {
@@ -558,7 +566,7 @@ AlgebraOperator OptionalGraphPattern():
   AlgebraOperator a;
 }
 {
-  "OPTIONAL" a = GroupGraphPattern() { return new LeftJoin(a); }
+  "OPTIONAL" a = GroupGraphPattern() { return new FakeLeftJoin(a); }
 }
 
 // TODO: implement this

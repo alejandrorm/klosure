@@ -7,22 +7,37 @@ import me.alejandrorm.klosure.sparql.algebra.filters.Expression
 import me.alejandrorm.klosure.sparql.algebra.filters.getEffectiveBooleanValue
 import me.alejandrorm.klosure.sparql.algebra.filters.operators.AndExpression
 
-class LeftJoin(val operator: AlgebraOperator) : AlgebraOperator {
+class FakeLeftJoin(val operator: AlgebraOperator): AlgebraOperator {
+    override fun eval(
+        solutions: Sequence<SolutionMapping>,
+        graph: Graph
+    ): Sequence<SolutionMapping> {
+        throw IllegalStateException("This operator should not be actually called, create a LeftJoin instead")
+    }
+
+    override fun hasFilter(): Boolean {
+        throw IllegalStateException("This operator should not be actually called, create a LeftJoin instead")
+    }
+}
+
+
+
+class LeftJoin(val left: AlgebraOperator, val right: AlgebraOperator) : AlgebraOperator {
 
     private val nonFilterOperator: AlgebraOperator
     private val filterExpression: Expression?
 
     init {
-        when (operator) {
+        when (right) {
             is Join -> {
-                val nonFilterOperations = operator.operators.filter { it !is Filter }
+                val nonFilterOperations = right.operators.filter { it !is Filter }
                 nonFilterOperator =
                     when(nonFilterOperations.size) {
                         0 -> Identity()
                         1 -> nonFilterOperations[0]
                         else -> Join(nonFilterOperations)
                     }
-                val filters = operator.operators.filterIsInstance<Filter>()
+                val filters = right.operators.filterIsInstance<Filter>()
                 filterExpression = when (filters.size) {
                     0 -> null
                     1 -> filters[0].expression
@@ -34,31 +49,31 @@ class LeftJoin(val operator: AlgebraOperator) : AlgebraOperator {
             }
             is Filter -> {
                 nonFilterOperator = Identity()
-                filterExpression = operator.expression
+                filterExpression = right.expression
             }
             else -> {
-                nonFilterOperator = operator
+                nonFilterOperator = right
                 filterExpression = null
             }
         }
     }
 
     override fun toString(): String =
-        "LeftJoin(${nonFilterOperator}, ${filterExpression ?: "true"})"
+        "LeftJoin(${left}, ${nonFilterOperator}, ${filterExpression ?: "true"})"
 
     override fun eval(
         solutions: Sequence<SolutionMapping>,
         graph: Graph
     ): Sequence<SolutionMapping> {
-        return join(solutions, nonFilterOperator, graph)
+        return join(solutions, graph)
     }
 
     private fun join(
-        l1: Sequence<SolutionMapping>,
-        operator: AlgebraOperator,
+        solutions: Sequence<SolutionMapping>,
         graph: Graph
     ): Sequence<SolutionMapping> = sequence {
-        val l2 = operator.eval(sequenceOf(SolutionMapping.EmptySolutionMapping), graph).toList()
+        val l1 = left.eval(solutions, graph)
+        val l2 = nonFilterOperator.eval(sequenceOf(SolutionMapping.EmptySolutionMapping), graph).toList()
 
         for (solution1 in l1) {
             var yielded = false
