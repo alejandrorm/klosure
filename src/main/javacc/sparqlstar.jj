@@ -38,6 +38,8 @@ public class SparqlStarParser {
 
     private final Map<String, String> prefixes = new HashMap<>();
 
+    private String base = "";
+
     private class TermAndTriples {
         public TermOrVariable term;
         public List<TriplePattern> patterns;
@@ -169,7 +171,7 @@ void BaseDecl():
  Token t;
 }
 {
-  "BASE" t = <IRIREF> { prefixes.put(":", t.image.substring(1, t.image.length()-1)); }
+  "BASE" t = <IRIREF> { base = t.image.substring(1, t.image.length()-1); }
 }
 
 void PrefixDecl():
@@ -177,7 +179,7 @@ void PrefixDecl():
  Token t1, t2;
 }
 {
-  "PREFIX" t1 = <PNAME_NS> t2 = <IRIREF> { prefixes.put(t1.image, t2.image.substring(1, t2.image.length()-1)); }
+  "PREFIX" t1 = <PNAME_NS> t2 = <IRIREF> { prefixes.put(t1.image, base + t2.image.substring(1, t2.image.length()-1)); }
 }
 
 Query SelectQuery():
@@ -1448,7 +1450,15 @@ IRI iri():
  String s;
 }
 {
-  t = <IRIREF> { return IRI.create(t.image.substring(1, t.image.length()-1)); } |
+  t = <IRIREF> {
+    if (t.image.contains(":")) {
+      return IRI.create(t.image.substring(1, t.image.length()-1));
+    } else {
+      return IRI.create(base + t.image.substring(1, t.image.length()-1));
+    }
+
+
+  } |
   s = PrefixedName() { return IRI.create(s); }
 }
 
