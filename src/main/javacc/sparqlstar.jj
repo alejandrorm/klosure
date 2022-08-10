@@ -1441,7 +1441,7 @@ String String():
   t = <STRING_LITERAL1> { s = t.image; return s.substring(1, s.length() - 1); }|
   t = <STRING_LITERAL2> { s = t.image; return s.substring(1, s.length() - 1); }|
   t = <STRING_LITERAL_LONG1> { s = t.image; return s.substring(3, s.length() - 3); }|
-  t = <STRING_LITERAL_LONG2> { { s = t.image; return s.substring(3, s.length() - 3); }}
+  t = <STRING_LITERAL_LONG2> { s = t.image; return s.substring(3, s.length() - 3); }
 }
 
 IRI iri():
@@ -1670,7 +1670,7 @@ TOKEN:
 
 TOKEN:
 {
-  <STRING_LITERAL2: "\"" ( ~[">", "\\", "\n", "\r"] | <ECHAR>) * "\"" >
+  <STRING_LITERAL2: "\"" ( ~["\"", ">", "\\", "\n", "\r"] | <ECHAR>) * "\"" >
 }
 
 TOKEN:
