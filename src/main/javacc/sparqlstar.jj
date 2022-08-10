@@ -518,7 +518,11 @@ AlgebraOperator GroupGraphPatternSub():
 {
   (triples = TriplesBlock() { gps.add(new BasicGraphPattern(triples)); })?
    ( gp = GraphPatternNotTriples() { gps.add(gp); }(".")? (triples = TriplesBlock() { gps.add(new BasicGraphPattern(triples)); })? ) * {
-     return new Join(gps);
+     if (gps.size() == 1) {
+       return gps.get(0);
+     } else {
+       return new Join(gps);
+     }
    }
 }
 

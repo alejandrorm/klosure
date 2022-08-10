@@ -13,22 +13,33 @@ class LeftJoin(val operator: AlgebraOperator) : AlgebraOperator {
     private val filterExpression: Expression?
 
     init {
-        if (operator is Join) {
-            nonFilterOperator = Join(operator.operators.filter { it !is Filter })
-            val filters = operator.operators.filterIsInstance<Filter>()
-
-            filterExpression = when (filters.size) {
-                0 -> null
-                1 -> filters[0].expression
-                else ->
-                    // TODO should this be a reduceRight or reduceLeft?
-                    filters.map { it.expression }.reduce { acc, filter ->
-                        AndExpression(acc, filter)
+        when (operator) {
+            is Join -> {
+                val nonFilterOperations = operator.operators.filter { it !is Filter }
+                nonFilterOperator =
+                    when(nonFilterOperations.size) {
+                        0 -> Identity()
+                        1 -> nonFilterOperations[0]
+                        else -> Join(nonFilterOperations)
                     }
+                val filters = operator.operators.filterIsInstance<Filter>()
+                filterExpression = when (filters.size) {
+                    0 -> null
+                    1 -> filters[0].expression
+                    else ->
+                        filters.map { it.expression }.reduce { acc, filter ->
+                            AndExpression(acc, filter)
+                        }
+                }
             }
-        } else {
-            nonFilterOperator = operator
-            filterExpression = null
+            is Filter -> {
+                nonFilterOperator = Identity()
+                filterExpression = operator.expression
+            }
+            else -> {
+                nonFilterOperator = operator
+                filterExpression = null
+            }
         }
     }
 
