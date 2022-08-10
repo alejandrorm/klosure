@@ -20,4 +20,6 @@ class Bind(val expression: Expression, val variable: Variable) : AlgebraOperator
             }
         }
     }
+
+    override fun hasFilter(): Boolean = false
 }

@@ -10,4 +10,6 @@ class Minus(val operator: AlgebraOperator) : AlgebraOperator {
     override fun eval(solutions: Sequence<SolutionMapping>, graph: Graph): Sequence<SolutionMapping> {
         return solutions.minus(operator.eval(sequenceOf(SolutionMapping.EmptySolutionMapping), graph))
     }
+
+    override fun hasFilter(): Boolean = operator.hasFilter()
 }

@@ -12,7 +12,10 @@ class Filter(val expression: Expression) : AlgebraOperator {
 
     override fun eval(solutions: Sequence<SolutionMapping>, graph: Graph): Sequence<SolutionMapping> {
         return solutions.filter {
-            getEffectiveBooleanValue(expression.eval(it, graph)) == true
+            val v = getEffectiveBooleanValue(expression.eval(it, graph)) == true
+            v
         }
     }
+
+    override fun hasFilter(): Boolean = true
 }

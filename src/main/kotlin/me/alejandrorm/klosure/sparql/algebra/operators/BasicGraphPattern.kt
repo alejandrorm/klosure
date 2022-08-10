@@ -28,4 +28,6 @@ class BasicGraphPattern(val patterns: List<TriplePattern>) : TriplePattern, Alge
     override fun getVariables(): Set<Variable> {
         return patterns.flatMap { it.getVariables() }.toSet()
     }
+
+    override fun hasFilter(): Boolean = false
 }

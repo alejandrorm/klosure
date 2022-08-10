@@ -5,4 +5,6 @@ import me.alejandrorm.klosure.sparql.SolutionMapping
 
 interface AlgebraOperator {
     fun eval(solutions: Sequence<SolutionMapping>, graph: Graph): Sequence<SolutionMapping>
+
+    fun hasFilter(): Boolean
 }

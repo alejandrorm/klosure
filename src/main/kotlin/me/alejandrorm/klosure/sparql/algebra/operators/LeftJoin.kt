@@ -33,7 +33,7 @@ class LeftJoin(val operator: AlgebraOperator) : AlgebraOperator {
     }
 
     override fun toString(): String =
-        "LeftJoin($operator)"
+        "LeftJoin(${nonFilterOperator}, ${filterExpression ?: "true"})"
 
     override fun eval(
         solutions: Sequence<SolutionMapping>,
@@ -70,5 +70,9 @@ class LeftJoin(val operator: AlgebraOperator) : AlgebraOperator {
                 yield(solution1)
             }
         }
+    }
+
+    override fun hasFilter(): Boolean {
+        return filterExpression != null
     }
 }

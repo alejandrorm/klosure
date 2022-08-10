@@ -4,32 +4,35 @@ import me.alejandrorm.klosure.model.Graph
 import me.alejandrorm.klosure.sparql.SolutionMapping
 import me.alejandrorm.klosure.sparql.Variable
 
-class Project(val distinct: Boolean, val variables: List<ExpressionVariableBinding>) : AlgebraOperator {
-    private val variablesSet = variables.map { it.variable }.toSet()
+data class ProjectArguments(val distinct: Boolean, val variables: List<ExpressionVariableBinding>)
+
+class Project(val args: ProjectArguments,
+              val op: AlgebraOperator) : AlgebraOperator {
+    private val variablesSet = args.variables.map { it.variable }.toSet()
 
     override fun toString(): String {
-        return "Project(${variables.joinToString(", ")})"
+        return "Project('${if (args.variables.isEmpty()) "*" else args.variables.joinToString(", ")}', $op)"
     }
 
     override fun eval(solutions: Sequence<SolutionMapping>, graph: Graph): Sequence<SolutionMapping> {
-        return if (variables.isEmpty()) {
-            solutions
+        return if (args.variables.isEmpty()) {
+            op.eval(solutions, graph)
         } else {
-            if (distinct) {
-                solutions.map { solution ->
+            if (args.distinct) {
+                op.eval(solutions, graph).map { solution ->
                     SolutionMapping(
                         variablesSet,
-                        variables.flatMap {
+                        args.variables.flatMap {
                             val value = it.expression.eval(solution, graph)
                             if (value == null) emptyList() else listOf(it.variable to value)
                         }.toMap()
                     )
                 }.distinct()
             } else {
-                solutions.map { solution ->
+                op.eval(solutions, graph).map { solution ->
                     SolutionMapping(
                         variablesSet,
-                        variables.flatMap {
+                        args.variables.flatMap {
                             val value = it.expression.eval(solution, graph)
                             if (value == null) emptyList() else listOf(it.variable to value)
                         }.toMap()
@@ -38,4 +41,6 @@ class Project(val distinct: Boolean, val variables: List<ExpressionVariableBindi
             }
         }
     }
+
+    override fun hasFilter(): Boolean = false
 }

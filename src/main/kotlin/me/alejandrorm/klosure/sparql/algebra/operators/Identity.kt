@@ -13,4 +13,6 @@ class Identity : AlgebraOperator {
     ): Sequence<SolutionMapping> {
         return solutions
     }
+
+    override fun hasFilter(): Boolean = false
 }

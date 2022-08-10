@@ -183,11 +183,11 @@ void PrefixDecl():
 Query SelectQuery():
 {
   AlgebraOperator a;
-  AlgebraOperator s;
+  ProjectArguments s;
 }
 {
   s = SelectClause() (DatasetClause()) * a = WhereClause() SolutionModifier() {
- return new SelectQuery(new Join(Arrays.asList(a, s)));
+ return new SelectQuery(new Project(s, a));
  }
 }
 
@@ -195,14 +195,14 @@ Query SelectQuery():
 AlgebraOperator SubSelect():
 {
   AlgebraOperator a;
-  AlgebraOperator s;
+  ProjectArguments s;
 }
 {
   s = SelectClause() a = WhereClause() SolutionModifier() ValuesClause() {
- return new Join(Arrays.asList(a, s)); }
+ return new Project(s, a); }
 }
 
-AlgebraOperator SelectClause():
+ProjectArguments SelectClause():
 {
   Variable v;
   Expression e;
@@ -215,7 +215,7 @@ AlgebraOperator SelectClause():
        "(" e = Expression() "AS" v = Var() ")" {
        variables.add(new ExpressionVariableBinding(e, v));
        }) + | "*") {
-    return new Project(distinct, variables);
+    return new ProjectArguments(distinct, variables);
   }
 }
 

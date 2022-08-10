@@ -5,9 +5,11 @@ import me.alejandrorm.klosure.sparql.SolutionMapping
 
 class Union(val operators: List<AlgebraOperator>) : AlgebraOperator {
     override fun toString(): String =
-        "Union(${operators.toString()}"
+        "Union(${operators.toString()})"
 
     override fun eval(solutions: Sequence<SolutionMapping>, graph: Graph): Sequence<SolutionMapping> {
         return operators.fold(emptySequence()) { acc, op -> acc + op.eval(solutions, graph) }
     }
+
+    override fun hasFilter(): Boolean = operators.any { it.hasFilter() }
 }
