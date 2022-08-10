@@ -13,14 +13,34 @@ class CompiledZeroOrMorePath(
 ) : CompiledPath, TriplePattern {
 
     override fun toString(): String {
-        return "CompiledZeroOrMorePath($head, $path, $tail)"
+        return "CompiledZeroOrMorePath($head, ($path), $tail)"
     }
 
     private val oneOrMorePath = OneOrMorePath(path).compile(head, tail)
 
     override fun eval(solution: SolutionMapping, graph: Graph): Sequence<SolutionMapping> {
-        val s = if (head.resolve(solution) == tail.resolve(solution)) {
+        val concreteHead = head.resolve(solution)
+        val concreteTail = tail.resolve(solution)
+        val s = if (concreteHead == concreteTail) {
             sequenceOf(solution)
+        } else if (concreteHead.isBound() && !concreteTail.isBound()) {
+            if (concreteTail is TermOrVariable.VariableTerm)
+                sequenceOf(solution.bind(concreteTail.variable, concreteHead.getTerm()))
+            else
+                (concreteTail as TermOrVariable.QuotedTriple).match(solution, concreteHead.getTerm())
+                    ?.let { sequenceOf(it) } ?: emptySequence()
+
+        } else if (concreteTail.isBound() && !concreteHead.isBound()) {
+            if (concreteHead is TermOrVariable.VariableTerm)
+                sequenceOf(solution.bind(concreteHead.variable, concreteTail.getTerm()))
+            else
+                (concreteHead as TermOrVariable.QuotedTriple).match(solution, concreteTail.getTerm())
+                    ?.let { sequenceOf(it) } ?: emptySequence()
+        } else if (!concreteHead.isBound() && !concreteTail.isBound()) {
+            graph.getAllSubjects().map { subject ->
+                solution.bind((concreteHead as TermOrVariable.VariableTerm).variable, subject).
+                bind((concreteTail as TermOrVariable.VariableTerm).variable, subject)
+            }
         } else {
             emptySequence()
         }

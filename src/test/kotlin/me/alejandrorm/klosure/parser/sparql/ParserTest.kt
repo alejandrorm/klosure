@@ -67,6 +67,7 @@ class ParserTest {
                         value.attributes.getNamedItem("xml:lang")?.textContent
                     )
                     "uri" -> IriId(IRI.create(value.textContent))
+                    "bnode" -> BlankId(value.textContent)
                     else -> throw IllegalArgumentException("Unsupported value type: ${value.localName}")
                 }
                 Variable(name) to id
@@ -102,9 +103,9 @@ class ParserTest {
 
     @Test
     fun singleTest() {
-        val dataFile = "1.0-w3c/basic/data-4.ttl"
-        val queryFile = "1.0-w3c/basic/term-6.rq"
-        val expectedFile = "1.0-w3c/basic/term-6.srx"
+        val dataFile = "1.1-w3c/property-path/pp05.ttl"
+        val queryFile = "1.1-w3c/property-path/pp05.rq"
+        val expectedFile = "1.1-w3c/property-path/pp05.srx"
 
         val expected =
             xmlToSolutions(ParserTest::class.java.getResourceAsStream("/me/alejandrorm/klosure/parser/data/sparql/${expectedFile}")!!)

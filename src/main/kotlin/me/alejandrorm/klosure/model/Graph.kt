@@ -110,4 +110,8 @@ class Graph(val entailment: EntailmentTypes) {
     fun getAllAssertedTriples(): Sequence<PredicateNode> {
         return predicateNodes.values.flatten().filter { it.asserted }.asSequence()
     }
+
+    fun getAllSubjects() : Sequence<NodeId> {
+        return nonTerminalNodes.keys().asSequence()
+    }
 }

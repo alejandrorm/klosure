@@ -3,5 +3,5 @@ prefix ex:	<http://www.example.org/schema#>
 prefix in:	<http://www.example.org/instance#>
 
 select * where {
-?x rdf:rest{0,1} ?y
+?x rdf:rest? ?y
 }

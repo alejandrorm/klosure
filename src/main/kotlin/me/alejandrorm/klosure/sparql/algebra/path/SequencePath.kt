@@ -13,6 +13,10 @@ class SequencePath(val paths: List<Path>) : Path {
         )
     }
 
+    override fun toString(): String {
+        return paths.joinToString(separator = "; ")
+    }
+
     override fun compile(head: TermOrVariable, tail: TermOrVariable): CompiledPath {
         val compiledPath = listOf(paths[0].compile(head, intermediateVariables.first())) +
             (1 until paths.size - 2).map {
@@ -28,12 +32,11 @@ class SequencePath(val paths: List<Path>) : Path {
         solutionMapping: SolutionMapping,
         graph: Graph
     ): Sequence<SolutionMapping> {
-        // FIXME off by one error
         val allVariables = listOf(head) + intermediateVariables + listOf(tail)
 
-        return (allVariables.indices).fold(sequenceOf(solutionMapping)) {
+        return (paths.indices).fold(sequenceOf(solutionMapping)) {
                 solutions, i ->
-            paths[i].eval(head, tail, solutions, graph)
+            paths[i].eval(allVariables[i], allVariables[i+1], solutions, graph)
         }
     }
 }

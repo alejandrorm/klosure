@@ -8,6 +8,11 @@ import me.alejandrorm.klosure.sparql.algebra.operators.TermOrVariable
 import org.semanticweb.owlapi.model.IRI
 
 class IriPath(val iri: IRI) : Path {
+
+    override fun toString(): String {
+        return "IriPath($iri)"
+    }
+
     override fun compile(head: TermOrVariable, tail: TermOrVariable): CompiledPath =
         CompiledIriPath(head, iri, tail)
 
