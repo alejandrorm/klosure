@@ -4,7 +4,7 @@ import me.alejandrorm.klosure.model.Graph
 import me.alejandrorm.klosure.model.Graphs
 import me.alejandrorm.klosure.sparql.SolutionMapping
 
-class SolutionModifier(val limit: Limit?) : AlgebraOperator {
+class SolutionModifier(val groupBy: GroupBy?, val limit: Limit?) : AlgebraOperator {
     override fun toString(): String {
         return "SolutionModifier(limit=$limit)"
     }

@@ -1,6 +1,5 @@
 package me.alejandrorm.klosure.sparql.algebra.filters.operators.arithmetic
 
-import me.alejandrorm.klosure.model.Graph
 import me.alejandrorm.klosure.model.LiteralId
 import me.alejandrorm.klosure.model.NodeId
 import me.alejandrorm.klosure.model.literals.*
@@ -8,16 +7,14 @@ import me.alejandrorm.klosure.sparql.SolutionMapping
 import me.alejandrorm.klosure.sparql.algebra.filters.Expression
 import me.alejandrorm.klosure.sparql.algebra.filters.operators.arithmetic.NumericTypePromotions.upcastToDecimal
 import me.alejandrorm.klosure.sparql.algebra.filters.operators.arithmetic.NumericTypePromotions.upcastToInteger
-import java.math.BigDecimal
-import java.math.BigInteger
 
 class MinusExpression(val e: Expression): Expression {
     override fun toString(): String {
         return "MINUS($e)"
     }
 
-    override fun eval(solution: SolutionMapping, graph: Graph): NodeId? {
-        val value = e.eval(solution, graph)
+    override fun eval(solution: SolutionMapping): NodeId? {
+        val value = e.eval(solution)
 
         if (value == null || value !is LiteralId || value.value !is NumberValue) {
             return null

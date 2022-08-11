@@ -13,7 +13,7 @@ class Filter(val expression: Expression) : AlgebraOperator {
 
     override fun eval(solutions: Sequence<SolutionMapping>, activeGraph: Graph, graphs: Graphs): Sequence<SolutionMapping> {
         return solutions.filter {
-            val v = getEffectiveBooleanValue(expression.eval(it, activeGraph)) == true
+            val v = getEffectiveBooleanValue(expression.eval(it)) == true
             v
         }
     }

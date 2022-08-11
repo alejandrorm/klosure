@@ -6,5 +6,5 @@ import me.alejandrorm.klosure.model.NodeId
 import me.alejandrorm.klosure.sparql.SolutionMapping
 
 interface Expression {
-    fun eval(solution: SolutionMapping, graph: Graph): NodeId?
+    fun eval(solution: SolutionMapping): NodeId?
 }

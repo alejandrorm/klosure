@@ -13,7 +13,7 @@ class Bind(val expression: Expression, val variable: Variable) : AlgebraOperator
 
     override fun eval(solutions: Sequence<SolutionMapping>, activeGraph: Graph, graphs: Graphs): Sequence<SolutionMapping> {
         return solutions.map {
-            val value = expression.eval(it, activeGraph)
+            val value = expression.eval(it)
             if (value != null) {
                 it.bind(variable, value)
             } else {

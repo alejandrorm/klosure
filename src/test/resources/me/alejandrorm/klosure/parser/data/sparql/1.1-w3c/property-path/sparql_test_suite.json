@@ -79,12 +79,6 @@
       "expected": "pp14.srx"
     },
     {
-      "name": "(pp15) Zero Length Paths on an empty graph",
-      "query": "pp15.rq",
-      "data": "empty.ttl",
-      "expected": "pp15.srx"
-    },
-    {
       "name": "(pp16) Duplicate paths and cycles through foaf:knows*",
       "query": "pp14.rq",
       "data": "pp16.ttl",
@@ -101,12 +95,6 @@
       "query": "path-2-2.rq",
       "data": "data-diamond.ttl",
       "expected": "diamond-2.srx"
-    },
-    {
-      "name": "(pp22) Diamond, with tail -- :p{3}",
-      "query": "path-2-3.rq",
-      "data": "data-diamond-tail.ttl",
-      "expected": "diamond-tail-1.srx"
     },
     {
       "name": "(pp23) Diamond, with tail -- :p+",
@@ -127,28 +115,10 @@
       "expected": "diamond-loop-2.srx"
     },
     {
-      "name": "(pp26) Diamond, with loop -- :p{2,4}",
-      "query": "path-3-1.rq",
-      "data": "data-diamond-loop.ttl",
-      "expected": "diamond-loop-3.srx"
-    },
-    {
-      "name": "(pp27) Diamond, with loop -- :p{,3}",
-      "query": "path-3-2.rq",
-      "data": "data-diamond-loop.ttl",
-      "expected": "diamond-loop-4.srx"
-    },
-    {
       "name": "(pp28a) Diamond, with loop -- (:p/:p)?",
       "query": "path-3-3.rq",
       "data": "data-diamond-loop.ttl",
       "expected": "diamond-loop-5a.srx"
-    },
-    {
-      "name": "(pp29) Diamond, with loop -- :p{2,}",
-      "query": "path-3-4.rq",
-      "data": "data-diamond-loop.ttl",
-      "expected": "diamond-loop-6.srx"
     },
     {
       "name": "(pp30) Operator precedence 1",

@@ -1,6 +1,5 @@
 package me.alejandrorm.klosure.sparql.algebra.filters.operators
 
-import me.alejandrorm.klosure.model.Graph
 import me.alejandrorm.klosure.model.LiteralId
 import me.alejandrorm.klosure.model.NodeId
 import me.alejandrorm.klosure.model.literals.*
@@ -12,9 +11,9 @@ class DifferentExpression(val left: Expression, val right: Expression) : Express
         return "($left != $right)"
     }
 
-    override fun eval(solution: SolutionMapping, graph: Graph): NodeId? {
-        val l = left.eval(solution, graph)
-        val r = right.eval(solution, graph)
+    override fun eval(solution: SolutionMapping): NodeId? {
+        val l = left.eval(solution)
+        val r = right.eval(solution)
         if (l == null || r == null) {
             return null
         }

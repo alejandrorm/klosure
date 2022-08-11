@@ -1,6 +1,5 @@
 package me.alejandrorm.klosure.sparql.algebra.filters.builtins
 
-import me.alejandrorm.klosure.model.Graph
 import me.alejandrorm.klosure.model.LiteralId
 import me.alejandrorm.klosure.model.NodeId
 import me.alejandrorm.klosure.model.literals.*
@@ -17,8 +16,8 @@ class Abs(val e: Expression): Expression
         return "abs($e)"
     }
 
-    override fun eval(solution: SolutionMapping, graph: Graph): NodeId? {
-        val v = e.eval(solution, graph) ?: return null
+    override fun eval(solution: SolutionMapping): NodeId? {
+        val v = e.eval(solution) ?: return null
         if (v !is LiteralId || v.value !is NumberValue) return null
 
         val absV = when(NumericTypePromotions.getNumericType(v.value)) {

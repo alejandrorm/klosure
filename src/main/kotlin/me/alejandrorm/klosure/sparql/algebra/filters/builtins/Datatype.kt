@@ -1,6 +1,5 @@
 package me.alejandrorm.klosure.sparql.algebra.filters.builtins
 
-import me.alejandrorm.klosure.model.Graph
 import me.alejandrorm.klosure.model.IriId
 import me.alejandrorm.klosure.model.LiteralId
 import me.alejandrorm.klosure.model.NodeId
@@ -12,8 +11,8 @@ class Datatype(val e: Expression): Expression {
         return "DATATYPE($e)"
     }
 
-    override fun eval(solution: SolutionMapping, graph: Graph): NodeId? {
-        val v = e.eval(solution, graph) ?: return null
+    override fun eval(solution: SolutionMapping): NodeId? {
+        val v = e.eval(solution) ?: return null
         return if (v is LiteralId) IriId(v.value.type) else null
     }
 }

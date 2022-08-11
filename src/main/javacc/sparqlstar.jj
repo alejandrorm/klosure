@@ -302,27 +302,41 @@ AlgebraOperator WhereClause():
 SolutionModifier SolutionModifier():
 {
   Limit l = null;
+  GroupBy groupBy = null;
+
 }
 {
-  (GroupClause())? (HavingClause())? (OrderClause())? (l = LimitOffsetClauses())? { return new SolutionModifier(l); }
+  (groupBy = GroupClause())? (HavingClause())? (OrderClause())? (l = LimitOffsetClauses())? {
+    return new SolutionModifier(groupBy, l);
+  }
 }
 
 
-// TODO
-void GroupClause():
-{}
+GroupBy GroupClause():
 {
-  "GROUP" "BY" (GroupCondition())+
+  List<GroupCondition> gc = new ArrayList<>();
+  GroupCondition g;
+}
+{
+  "GROUP" "BY" (g = GroupCondition() { gc.add(g); })+ { return new GroupBy(gc); }
 }
 
-// TODO
-void GroupCondition():
-{}
+GroupCondition GroupCondition():
 {
-  BuiltInCall() |
-  FunctionCall() |
-  ( "(" Expression() ( "AS" Var()) ? ")") |
-  Var()
+  Expression e = null;
+  Variable v = null;
+}
+{
+  e = BuiltInCall() { return new BuiltinGroupCondition(e); }|
+  FunctionCall() { throw new IllegalStateException("Not yet implemented"); }|
+  ( "(" e = Expression() ( "AS" v = Var()) ? ")") {
+    if (v == null) {
+      return new BuiltinGroupCondition(e);
+    } else {
+      return new ExpressionGroupCondition(e, v);
+    }
+   }|
+  v = Var() { return new VarGroupCondition(v); }
 }
 
 // TODO

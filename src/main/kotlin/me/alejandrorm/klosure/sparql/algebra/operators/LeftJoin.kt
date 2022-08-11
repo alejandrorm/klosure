@@ -92,8 +92,7 @@ class LeftJoin(val left: AlgebraOperator, val right: AlgebraOperator) : AlgebraO
                     val mergedSolution = solution1.merge(solution2)
                     if (filterExpression == null || getEffectiveBooleanValue(
                             filterExpression.eval(
-                                mergedSolution,
-                                graph
+                                mergedSolution
                             )
                         ) == true
                     ) {

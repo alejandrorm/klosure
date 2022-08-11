@@ -1,6 +1,5 @@
 package me.alejandrorm.klosure.sparql.algebra.filters.operators.arithmetic
 
-import me.alejandrorm.klosure.model.Graph
 import me.alejandrorm.klosure.model.LiteralId
 import me.alejandrorm.klosure.model.NodeId
 import me.alejandrorm.klosure.model.literals.*
@@ -31,8 +30,8 @@ class AdditiveExpression(val expressions: List<AdditiveOperatorOperand>): Expres
         return "+${expressions.joinToString(separator = " ")}"
     }
 
-    override fun eval(solution: SolutionMapping, graph: Graph): NodeId? {
-        val values = expressions.map { it.operand.eval(solution, graph) }
+    override fun eval(solution: SolutionMapping): NodeId? {
+        val values = expressions.map { it.operand.eval(solution) }
 
         if (values.isEmpty()) throw IllegalArgumentException("Additive expression cannot be evaluated without operands")
 

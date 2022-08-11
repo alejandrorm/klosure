@@ -23,7 +23,7 @@ class Project(val args: ProjectArguments,
                     SolutionMapping(
                         variablesSet,
                         args.variables.flatMap {
-                            val value = it.expression.eval(solution, activeGraph)
+                            val value = it.expression.eval(solution)
                             if (value == null) emptyList() else listOf(it.variable to value)
                         }.toMap()
                     )
@@ -33,7 +33,7 @@ class Project(val args: ProjectArguments,
                     SolutionMapping(
                         variablesSet,
                         args.variables.flatMap {
-                            val value = it.expression.eval(solution, activeGraph)
+                            val value = it.expression.eval(solution)
                             if (value == null) emptyList() else listOf(it.variable to value)
                         }.toMap()
                     )
