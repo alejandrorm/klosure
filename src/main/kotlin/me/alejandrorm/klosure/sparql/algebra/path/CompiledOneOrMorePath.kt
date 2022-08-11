@@ -20,8 +20,6 @@ class CompiledOneOrMorePath(
 
     override fun eval(solution: SolutionMapping, graph: Graph): Sequence<SolutionMapping> {
         val s = path.eval(head, tail, solution, graph)
-        //if (s.count() > 0) return s
-
         val v = TermOrVariable.VariableTerm(Variable(UUID.randomUUID().toString(), true))
         val solutions = path.eval(head, v, sequenceOf(solution), graph)
         return s + solutions.flatMap {
@@ -36,8 +34,6 @@ class CompiledOneOrMorePath(
         boundValues: Set<NodeId>
     ): Sequence<SolutionMapping> {
         val s = path.eval(variable, tail, solution, graph)
-        //if (s.count() > 0) return s
-
         val v = TermOrVariable.VariableTerm(Variable(UUID.randomUUID().toString(), true))
 
         val solutions = path.eval(variable, v, solution, graph)

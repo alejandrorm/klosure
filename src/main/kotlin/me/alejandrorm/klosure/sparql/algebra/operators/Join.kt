@@ -1,8 +1,8 @@
 package me.alejandrorm.klosure.sparql.algebra.operators
 
 import me.alejandrorm.klosure.model.Graph
+import me.alejandrorm.klosure.model.Graphs
 import me.alejandrorm.klosure.sparql.SolutionMapping
-import me.alejandrorm.klosure.sparql.algebra.filters.getEffectiveBooleanValue
 
 class Join(val operators: List<AlgebraOperator>) : AlgebraOperator {
 
@@ -15,30 +15,37 @@ class Join(val operators: List<AlgebraOperator>) : AlgebraOperator {
 
     override fun eval(
         solutions: Sequence<SolutionMapping>,
-        graph: Graph
+        activeGraph: Graph,
+        graphs: Graphs
     ): Sequence<SolutionMapping> {
         return operatorsReordered.fold(solutions) { acc, op ->
-            topLevelJoin(acc, op, graph)
+            topLevelJoin(acc, op, activeGraph, graphs)
         }
     }
 
     private fun topLevelJoin(l1: Sequence<SolutionMapping>,
                              operator: AlgebraOperator,
-                             graph: Graph
+                             graph: Graph,
+                             graphs: Graphs
     ): Sequence<SolutionMapping> {
         return if (operator is Filter) {
-            operator.eval(l1, graph)
+            operator.eval(l1, graph, graphs)
         } else {
-            return join(l1, operator, graph)
+            return join(l1, operator, graph, graphs)
         }
     }
 
     private fun join(
         l1: Sequence<SolutionMapping>,
         operator: AlgebraOperator,
-        graph: Graph
+        graph: Graph,
+        graphs: Graphs
     ): Sequence<SolutionMapping> = sequence {
-        val l2 = operator.eval(sequenceOf(SolutionMapping.EmptySolutionMapping), graph).toList()
+        val l2 =
+            if (operator is GraphGraphPattern)
+                operator.specialEval(l1, sequenceOf(SolutionMapping.EmptySolutionMapping), graphs).toList()
+            else
+                operator.eval(sequenceOf(SolutionMapping.EmptySolutionMapping), graph, graphs).toList()
 
         for (solution1 in l1) {
             for (solution2 in l2) {

@@ -188,10 +188,18 @@ Query SelectQuery():
   AlgebraOperator a;
   ProjectArguments s;
   SolutionModifier sm;
+  IRI defaultGraph = null;
+  IRI i;
 }
 {
-  s = SelectClause() (DatasetClause()) * a = WhereClause() sm = SolutionModifier() {
- return new SelectQuery(new Project(s, a), sm);
+  s = SelectClause() (i = DatasetClause() {
+   if (defaultGraph == null) {
+     defaultGraph = i;
+   } else {
+     throw new RuntimeException("Multiple default graphs in query not supported");
+   }
+ }) * a = WhereClause() sm = SolutionModifier() {
+ return new SelectQuery(new Project(s, a), sm, defaultGraph);
  }
 }
 
@@ -239,37 +247,47 @@ void DescribeQuery():
 Query AskQuery():
 {
   AlgebraOperator a;
+  IRI defaultGraph = null;
+  IRI i;
 }
 {
-  "ASK" (DatasetClause())* a = WhereClause() ValuesClause() { return new AskQuery(a); }
+  "ASK" (i = DatasetClause() {
+           if (defaultGraph == null) {
+             defaultGraph = i;
+           } else {
+             throw new RuntimeException("Multiple default graphs in query not supported");
+           }
+         }) * a = WhereClause() ValuesClause() { return new AskQuery(a, defaultGraph); }
 }
 
-// TODO
-void DatasetClause():
-{}
+IRI DatasetClause():
 {
-  "FROM" ( DefaultGraphClause() | NamedGraphClause())
+   IRI from = null;
 }
-
-// TODO
-void DefaultGraphClause():
-{}
 {
-  SourceSelector()
+  "FROM" ( from = DefaultGraphClause() | NamedGraphClause() ) { return from; }
 }
 
-// TODO
+IRI DefaultGraphClause():
+{
+  IRI i;
+}
+{
+  i = SourceSelector() { return i;}
+}
+
 void NamedGraphClause():
 {}
 {
-  "NAMED" SourceSelector()
+  "NAMED" SourceSelector() // ignore
 }
 
-// TODO
-void SourceSelector():
-{}
+IRI SourceSelector():
 {
-  iri()
+  IRI i;
+}
+{
+  i = iri() { return i; }
 }
 
 AlgebraOperator WhereClause():
@@ -571,7 +589,7 @@ AlgebraOperator GraphPatternNotTriples():
   a = GroupOrUnionGraphPattern() { return a; } |
   a = OptionalGraphPattern() { return a; }|
   a = MinusGraphPattern() { return a; }|
-  GraphGraphPattern() { return new Identity(); }|
+  a = GraphGraphPattern() { return a; }|
   ServiceGraphPattern() { return new Identity(); }|
   a = Filter() { return a; }|
   a = Bind() { return a; }|
@@ -586,11 +604,13 @@ AlgebraOperator OptionalGraphPattern():
   "OPTIONAL" a = GroupGraphPattern() { return new FakeLeftJoin(a); }
 }
 
-// TODO: implement this
-void GraphGraphPattern():
-{}
+GraphGraphPattern GraphGraphPattern():
 {
-  "GRAPH" VarOrIri() GroupGraphPattern()
+  TermOrVariable t;
+  AlgebraOperator a;
+}
+{
+  "GRAPH" t = VarOrIri() a = GroupGraphPattern() { return new GraphGraphPattern(t,a );}
 }
 
 void ServiceGraphPattern():

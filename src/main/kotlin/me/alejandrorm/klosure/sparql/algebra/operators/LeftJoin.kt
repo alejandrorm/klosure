@@ -1,16 +1,17 @@
 package me.alejandrorm.klosure.sparql.algebra.operators
 
 import me.alejandrorm.klosure.model.Graph
-import me.alejandrorm.klosure.model.literals.DataTypes
+import me.alejandrorm.klosure.model.Graphs
 import me.alejandrorm.klosure.sparql.SolutionMapping
 import me.alejandrorm.klosure.sparql.algebra.filters.Expression
 import me.alejandrorm.klosure.sparql.algebra.filters.getEffectiveBooleanValue
 import me.alejandrorm.klosure.sparql.algebra.filters.operators.AndExpression
 
-class FakeLeftJoin(val operator: AlgebraOperator): AlgebraOperator {
+class FakeLeftJoin(val operator: AlgebraOperator) : AlgebraOperator {
     override fun eval(
         solutions: Sequence<SolutionMapping>,
-        graph: Graph
+        activeGraph: Graph,
+        graphs: Graphs
     ): Sequence<SolutionMapping> {
         throw IllegalStateException("This operator should not be actually called, create a LeftJoin instead")
     }
@@ -19,7 +20,6 @@ class FakeLeftJoin(val operator: AlgebraOperator): AlgebraOperator {
         throw IllegalStateException("This operator should not be actually called, create a LeftJoin instead")
     }
 }
-
 
 
 class LeftJoin(val left: AlgebraOperator, val right: AlgebraOperator) : AlgebraOperator {
@@ -32,7 +32,7 @@ class LeftJoin(val left: AlgebraOperator, val right: AlgebraOperator) : AlgebraO
             is Join -> {
                 val nonFilterOperations = right.operators.filter { it !is Filter }
                 nonFilterOperator =
-                    when(nonFilterOperations.size) {
+                    when (nonFilterOperations.size) {
                         0 -> Identity()
                         1 -> nonFilterOperations[0]
                         else -> Join(nonFilterOperations)
@@ -63,17 +63,27 @@ class LeftJoin(val left: AlgebraOperator, val right: AlgebraOperator) : AlgebraO
 
     override fun eval(
         solutions: Sequence<SolutionMapping>,
-        graph: Graph
+        activeGraph: Graph,
+        graphs: Graphs
     ): Sequence<SolutionMapping> {
-        return join(solutions, graph)
+        return join(solutions, activeGraph, graphs)
     }
 
     private fun join(
         solutions: Sequence<SolutionMapping>,
-        graph: Graph
+        graph: Graph,
+        graphs: Graphs
     ): Sequence<SolutionMapping> = sequence {
-        val l1 = left.eval(solutions, graph)
-        val l2 = nonFilterOperator.eval(sequenceOf(SolutionMapping.EmptySolutionMapping), graph).toList()
+        val l1 = left.eval(solutions, graph, graphs)
+        val l2 =
+            if (nonFilterOperator is GraphGraphPattern)
+                nonFilterOperator.specialEval(
+                    solutions,
+                    sequenceOf(SolutionMapping.EmptySolutionMapping),
+                    graphs
+                ).toList()
+            else
+                nonFilterOperator.eval(sequenceOf(SolutionMapping.EmptySolutionMapping), graph, graphs).toList()
 
         for (solution1 in l1) {
             var yielded = false

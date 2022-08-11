@@ -141,10 +141,10 @@ class ParserTest {
         val expected =
             xmlToSolutions(ParserTest::class.java.getResourceAsStream("/me/alejandrorm/klosure/parser/data/sparql/${expectedFile}")!!)
 
-        val graph = Graph(EntailmentTypes.SIMPLE)
+        val graphs = Graphs(EntailmentTypes.SIMPLE)
         val parser =
             TurtleStarParser(ParserTest::class.java.getResourceAsStream("/me/alejandrorm/klosure/parser/data/sparql/${dataFile}")!!)
-        parser.graph = graph
+        parser.graph = graphs.getDefaultGraph()
         parser.turtleDoc()
 
         val query =
@@ -152,7 +152,7 @@ class ParserTest {
 
         println(query.toString())
 
-        when(val result = query.eval(graph)) {
+        when(val result = query.eval(graphs)) {
             is SelectQueryResult -> SolutionSet.compareEqualSet(result.results, expected.variables, expected.solutions)
             is AskQueryResult -> assertEquals(result.result, expected.solutions.any())
         }
@@ -201,16 +201,16 @@ class ParserTest {
                     val expected =
                         xmlToSolutions(ParserTest::class.java.getResourceAsStream("/me/alejandrorm/klosure/parser/data/sparql/$folder/${testCase.expected}")!!)
 
-                    val graph = Graph(testCase.entailment)
+                    val graphs = Graphs(testCase.entailment)
                     val parser =
                         TurtleStarParser(ParserTest::class.java.getResourceAsStream("/me/alejandrorm/klosure/parser/data/sparql/$folder/${testCase.data}")!!)
-                    parser.graph = graph
+                    parser.graph = graphs.getDefaultGraph()
                     parser.turtleDoc()
 
                     val query =
                         SparqlStarParser(ParserTest::class.java.getResourceAsStream("/me/alejandrorm/klosure/parser/data/sparql/$folder/${testCase.query}")!!).QueryUnit()
 
-                    when(val result = query.eval(graph)) {
+                    when(val result = query.eval(graphs)) {
                         is SelectQueryResult -> SolutionSet.compareEqualSet(result.results, expected.variables, expected.solutions)
                         is AskQueryResult -> assertEquals(result.result, expected.solutions.any())
                     }
@@ -239,16 +239,16 @@ class ParserTest {
             DynamicTest.dynamicTest("when reading $testCase") {
                 val expected = jsonToSolutions(getFileContent(testCase.expected))
 
-                val graph = Graph(testCase.entailment)
+                val graphs = Graphs(testCase.entailment)
                 val parser =
                     TurtleStarParser(ParserTest::class.java.getResourceAsStream("/me/alejandrorm/klosure/parser/data/sparql/star/${testCase.data}")!!)
-                parser.graph = graph
+                parser.graph = graphs.getDefaultGraph()
                 parser.turtleDoc()
 
                 val query =
                     SparqlStarParser(ParserTest::class.java.getResourceAsStream("/me/alejandrorm/klosure/parser/data/sparql/star/${testCase.query}")!!).QueryUnit()
 
-                when(val result = query.eval(graph)) {
+                when(val result = query.eval(graphs)) {
                     is SelectQueryResult -> SolutionSet.compareEqualSet(result.results, expected.variables, expected.solutions)
                     is AskQueryResult -> assertEquals(result.result, expected.solutions.any())
                 }
