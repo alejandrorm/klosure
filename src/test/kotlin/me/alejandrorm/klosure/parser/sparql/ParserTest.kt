@@ -5,6 +5,8 @@ import me.alejandrorm.klosure.model.*
 import me.alejandrorm.klosure.model.literals.DataTypes
 import me.alejandrorm.klosure.parser.turtle.ParserTest
 import me.alejandrorm.klosure.parser.turtle.TurtleStarParser
+import me.alejandrorm.klosure.sparql.AskQueryResult
+import me.alejandrorm.klosure.sparql.SelectQueryResult
 import me.alejandrorm.klosure.sparql.SolutionMapping
 import me.alejandrorm.klosure.sparql.Variable
 import me.alejandrorm.klosure.sparql.algebra.SolutionSet
@@ -18,6 +20,7 @@ import java.io.BufferedReader
 import java.io.InputStream
 import javax.xml.parsers.DocumentBuilderFactory
 import kotlin.math.E
+import kotlin.test.assertEquals
 
 
 data class TestCase(
@@ -49,6 +52,15 @@ class ParserTest {
     private fun xmlToSolutions(xml: InputStream): ExpectedResult {
         val builder = DocumentBuilderFactory.newInstance().newDocumentBuilder()
         val doc: Document = builder.parse(xml)
+
+        if (doc.getElementsByTagName("boolean").length > 0) {
+            val boolean = doc.getElementsByTagName("boolean").item(0) as Element
+            return if (boolean.firstChild.textContent == "true")
+                ExpectedResult(listOf(), sequenceOf(SolutionMapping(setOf(), mapOf())))
+            else
+                ExpectedResult(listOf(), sequenceOf())
+        }
+
         val variablesNodes = (doc.getElementsByTagName("head").item(0) as Element).getElementsByTagName("variable")
         val vars = (0 until variablesNodes.length).map {
             Variable(variablesNodes.item(it).attributes.getNamedItem("name").textContent)
@@ -139,9 +151,12 @@ class ParserTest {
             SparqlStarParser(ParserTest::class.java.getResourceAsStream("/me/alejandrorm/klosure/parser/data/sparql/${queryFile}")!!).QueryUnit()
 
         println(query.toString())
-        val result = query.eval(graph)
 
-        SolutionSet.compareEqualSet(result.bindings, expected.variables, expected.solutions)
+        when(val result = query.eval(graph)) {
+            is SelectQueryResult -> SolutionSet.compareEqualSet(result.results, expected.variables, expected.solutions)
+            is AskQueryResult -> assertEquals(result.result, expected.solutions.any())
+        }
+
     }
 
 
@@ -195,9 +210,10 @@ class ParserTest {
                     val query =
                         SparqlStarParser(ParserTest::class.java.getResourceAsStream("/me/alejandrorm/klosure/parser/data/sparql/$folder/${testCase.query}")!!).QueryUnit()
 
-                    val result = query.eval(graph)
-
-                    SolutionSet.compareEqualSet(result.bindings, expected.variables, expected.solutions)
+                    when(val result = query.eval(graph)) {
+                        is SelectQueryResult -> SolutionSet.compareEqualSet(result.results, expected.variables, expected.solutions)
+                        is AskQueryResult -> assertEquals(result.result, expected.solutions.any())
+                    }
                 }
             }
         }
@@ -232,9 +248,10 @@ class ParserTest {
                 val query =
                     SparqlStarParser(ParserTest::class.java.getResourceAsStream("/me/alejandrorm/klosure/parser/data/sparql/star/${testCase.query}")!!).QueryUnit()
 
-                val result = query.eval(graph)
-
-                SolutionSet.compareEqualSet(result.bindings, expected.variables, expected.solutions)
+                when(val result = query.eval(graph)) {
+                    is SelectQueryResult -> SolutionSet.compareEqualSet(result.results, expected.variables, expected.solutions)
+                    is AskQueryResult -> assertEquals(result.result, expected.solutions.any())
+                }
             }
         }
     }

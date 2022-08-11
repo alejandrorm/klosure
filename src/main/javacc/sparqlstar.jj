@@ -125,6 +125,7 @@ public class SparqlStarParser {
      }
 }
 
+
 PARSER_END(SparqlStarParser)
 
 SKIP :
@@ -151,7 +152,7 @@ Query Query():
   Query q = null;
 }
 {
-  Prologue() ( q = SelectQuery() | ConstructQuery() | DescribeQuery() | AskQuery()) ValuesClause() { return q;}
+  Prologue() ( q = SelectQuery() | ConstructQuery() | DescribeQuery() | q = AskQuery()) ValuesClause() { return q;}
 }
 
 void UpdateUnit():
@@ -186,10 +187,11 @@ Query SelectQuery():
 {
   AlgebraOperator a;
   ProjectArguments s;
+  SolutionModifier sm;
 }
 {
-  s = SelectClause() (DatasetClause()) * a = WhereClause() SolutionModifier() {
- return new SelectQuery(new Project(s, a));
+  s = SelectClause() (DatasetClause()) * a = WhereClause() sm = SolutionModifier() {
+ return new SelectQuery(new Project(s, a), sm);
  }
 }
 
@@ -234,10 +236,12 @@ void DescribeQuery():
   "DESCRIBE" ( (VarOrIri())+ | "*") (DatasetClause())* (WhereClause())? SolutionModifier()
 }
 
-void AskQuery():
-{}
+Query AskQuery():
 {
-  "ASK" (DatasetClause())* WhereClause() ValuesClause()
+  AlgebraOperator a;
+}
+{
+  "ASK" (DatasetClause())* a = WhereClause() ValuesClause() { return new AskQuery(a); }
 }
 
 // TODO
@@ -277,10 +281,12 @@ AlgebraOperator WhereClause():
 }
 
 // TODO
-void SolutionModifier():
-{}
+SolutionModifier SolutionModifier():
 {
-  (GroupClause())? (HavingClause())? (OrderClause())? (LimitOffsetClauses())?
+  Limit l = null;
+}
+{
+  (GroupClause())? (HavingClause())? (OrderClause())? (l = LimitOffsetClauses())? { return new SolutionModifier(l); }
 }
 
 
@@ -331,25 +337,34 @@ void OrderCondition():
   Var()
 }
 
-// TODO
-void LimitOffsetClauses():
-{}
+Limit LimitOffsetClauses():
 {
-  ( LimitClause() (OffsetClause())? ) | ( OffsetClause() (LimitClause())? )
+  int limit = 0;
+  int offset = 0;
+}
+{
+  limit = LimitClause() (offset = OffsetClause())? {
+    return new Limit(limit, offset);
+  } |
+  offset = OffsetClause() (limit = LimitClause())? {
+    return new Limit(limit, offset);
+  }
 }
 
-// TODO
-void LimitClause():
-{}
+int LimitClause():
 {
-  "LIMIT" Integer()
+ long limit = 0;
+}
+{
+"LIMIT" limit = Integer() { return (int)limit; }
 }
 
-// TODO
-void OffsetClause():
-{}
+int OffsetClause():
 {
-  "OFFSET" Integer()
+ long offset = 0;
+ }
+{
+  "OFFSET" offset = Integer() { return (int)offset; }
 }
 
 // TODO
