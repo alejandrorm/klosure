@@ -10,8 +10,17 @@ class NotExpression(val expression: Expression) : Expression {
     override fun toString(): String {
         return "!($expression)"
     }
+
     override fun eval(solution: SolutionMapping): NodeId? {
         return when (getEffectiveBooleanValue(expression.eval(solution))) {
+            true -> DataTypes.FALSE
+            false ->DataTypes.TRUE
+            null -> null
+        }
+    }
+
+    override fun evalGroup(solution: SolutionMapping, group: Sequence<SolutionMapping>): NodeId? {
+        return when (getEffectiveBooleanValue(expression.evalGroup(solution, group))) {
             true -> DataTypes.FALSE
             false ->DataTypes.TRUE
             null -> null

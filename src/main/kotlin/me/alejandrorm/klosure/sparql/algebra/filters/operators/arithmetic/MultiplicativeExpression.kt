@@ -28,9 +28,15 @@ class MultiplicativeExpression(val firstExpression: Expression, val expressions:
     }
 
     override fun eval(solution: SolutionMapping): NodeId? {
-        val first = firstExpression.eval(solution)
-        val values = expressions.map { it.operand.eval(solution) }
+        return eval(firstExpression.eval(solution), expressions.map { it.operand.eval(solution) })
+    }
 
+    override fun evalGroup(solution: SolutionMapping, group: Sequence<SolutionMapping>): NodeId? {
+        return eval(firstExpression.evalGroup(solution, group),
+            expressions.map { it.operand.evalGroup(solution, group) })
+    }
+
+    private fun eval(first: NodeId?, values: List<NodeId?>): NodeId? {
         if (values.isEmpty()) {
             return first
         }

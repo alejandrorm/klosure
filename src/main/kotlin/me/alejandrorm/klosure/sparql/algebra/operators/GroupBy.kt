@@ -43,7 +43,7 @@ class GroupBy(val groupConditions: List<GroupCondition>) {
             @Suppress("UNCHECKED_CAST")
             val boundVariables = solution.key.filter { it.second != null }.toMap() as Map<Variable, NodeId>
 
-            GroupedSolutionMapping(variables, boundVariables, solution.value.asSequence())
+            GroupedSolutionMapping(SolutionMapping(variables, boundVariables), solution.value.asSequence())
         }.asSequence()
     }
 }

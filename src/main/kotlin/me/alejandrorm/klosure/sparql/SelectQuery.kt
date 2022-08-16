@@ -1,13 +1,11 @@
 package me.alejandrorm.klosure.sparql
 
-import me.alejandrorm.klosure.model.Graph
 import me.alejandrorm.klosure.model.Graphs
 import me.alejandrorm.klosure.sparql.algebra.operators.AlgebraOperator
-import me.alejandrorm.klosure.sparql.algebra.operators.SolutionModifier
+import me.alejandrorm.klosure.sparql.algebra.operators.SolutionModifiers
 import org.semanticweb.owlapi.model.IRI
 
 class SelectQuery(val algebraOperator: AlgebraOperator,
-                  val solutionModifier: SolutionModifier,
                   val defaultGraph: IRI?) : Query {
     override fun toString(): String {
         return "SELECT($algebraOperator)"
@@ -16,9 +14,7 @@ class SelectQuery(val algebraOperator: AlgebraOperator,
         defaultGraph?.let {
             graphs.setDefaultGraph(graphs.createGraph(it))
         }
-        val basicResult = algebraOperator.eval(sequenceOf(SolutionMapping.EmptySolutionMapping), graphs.getDefaultGraph(),
-        graphs)
-        //val modifiedResult = solutionModifier.limit?.let { it.eval(basicResult, graph) } ?: basicResult
-        return SelectQueryResult(solutionModifier.eval(basicResult, graphs.getDefaultGraph(),graphs))
+        return SelectQueryResult(algebraOperator.eval(sequenceOf(SolutionMapping.EmptySolutionMapping), graphs.getDefaultGraph(),
+            graphs))
     }
 }

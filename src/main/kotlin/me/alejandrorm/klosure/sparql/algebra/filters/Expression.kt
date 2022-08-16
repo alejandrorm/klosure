@@ -7,4 +7,7 @@ import me.alejandrorm.klosure.sparql.SolutionMapping
 
 interface Expression {
     fun eval(solution: SolutionMapping): NodeId?
+
+    fun evalGroup(solution: SolutionMapping, group: Sequence<SolutionMapping>) : NodeId? =
+        eval(solution)
 }

@@ -25,6 +25,7 @@ import me.alejandrorm.klosure.model.*;
 import me.alejandrorm.klosure.model.literals.*;
 import me.alejandrorm.klosure.sparql.*;
 //import me.alejandrorm.klosure.sparql.algebra.*;
+import me.alejandrorm.klosure.sparql.algebra.aggregates.*;
 import me.alejandrorm.klosure.sparql.algebra.operators.*;
 import me.alejandrorm.klosure.sparql.algebra.path.*;
 import me.alejandrorm.klosure.sparql.algebra.filters.*;
@@ -187,7 +188,7 @@ Query SelectQuery():
 {
   AlgebraOperator a;
   ProjectArguments s;
-  SolutionModifier sm;
+  SolutionModifiers sm;
   IRI defaultGraph = null;
   IRI i;
 }
@@ -199,7 +200,7 @@ Query SelectQuery():
      throw new RuntimeException("Multiple default graphs in query not supported");
    }
  }) * a = WhereClause() sm = SolutionModifier() {
- return new SelectQuery(new Project(s, a), sm, defaultGraph);
+ return new SelectQuery(new Project(s, sm, a), defaultGraph);
  }
 }
 
@@ -208,10 +209,11 @@ AlgebraOperator SubSelect():
 {
   AlgebraOperator a;
   ProjectArguments s;
+  SolutionModifiers sm;
 }
 {
-  s = SelectClause() a = WhereClause() SolutionModifier() ValuesClause() {
- return new Project(s, a); }
+  s = SelectClause() a = WhereClause() sm = SolutionModifier() ValuesClause() {
+ return new Project(s, sm, a); }
 }
 
 ProjectArguments SelectClause():
@@ -299,7 +301,7 @@ AlgebraOperator WhereClause():
 }
 
 // TODO
-SolutionModifier SolutionModifier():
+SolutionModifiers SolutionModifier():
 {
   Limit l = null;
   GroupBy groupBy = null;
@@ -307,7 +309,7 @@ SolutionModifier SolutionModifier():
 }
 {
   (groupBy = GroupClause())? (HavingClause())? (OrderClause())? (l = LimitOffsetClauses())? {
-    return new SolutionModifier(groupBy, l);
+    return new SolutionModifiers(groupBy, l);
   }
 }
 
@@ -1305,7 +1307,7 @@ Expression BuiltInCall():
   Variable v;
 }
 {
-  Aggregate() { return new UnsupportedBuiltinExpression("aggregate"); }
+  e1 = Aggregate() { return e1; }
 |	"STR" "(" Expression() ")" { return new UnsupportedBuiltinExpression("str"); }
 |	"LANG" "(" Expression() ")" { return new UnsupportedBuiltinExpression("lang"); }
 |	"LANGMATCHES" "(" Expression() "," Expression() ")" { return new UnsupportedBuiltinExpression("langmatches"); }
@@ -1404,16 +1406,19 @@ void NotExistsFunc():
 }
 
 // TODO
-void Aggregate():
-{}
+AggregateExpression Aggregate():
 {
-  "COUNT" "(" ("DISTINCT")? ( "*" | Expression() ) ")" |
-  "SUM" "(" ("DISTINCT")? Expression() ")" |
-  "MIN" "(" ("DISTINCT")? Expression() ")" |
-  "MAX" "(" ("DISTINCT")? Expression() ")" |
-  "AVG" "(" ("DISTINCT")? Expression() ")" |
-  "SAMPLE" "(" ("DISTINCT")? Expression() ")" |
-  "GROUP_CONCAT" "(" ("DISTINCT")? Expression() ( ";" "SEPARATOR" "=" String()) ? ")"
+  Expression e = null;
+  boolean distinct = false;
+}
+{
+  "COUNT" "(" ("DISTINCT" { distinct = true; })? ( "*" | e = Expression() ) ")" { return new Count(distinct, e); }|
+  "SUM" "(" ("DISTINCT")? Expression() ")" { throw new RuntimeException("Not implemented"); }|
+  "MIN" "(" ("DISTINCT")? Expression() ")" { throw new RuntimeException("Not implemented"); }|
+  "MAX" "(" ("DISTINCT")? Expression() ")" { throw new RuntimeException("Not implemented"); }|
+  "AVG" "(" ("DISTINCT")? Expression() ")" { throw new RuntimeException("Not implemented"); }|
+  "SAMPLE" "(" ("DISTINCT")? Expression() ")" { throw new RuntimeException("Not implemented"); }|
+  "GROUP_CONCAT" "(" ("DISTINCT")? Expression() ( ";" "SEPARATOR" "=" String()) ? ")" { throw new RuntimeException("Not implemented"); }
 }
 
 // TODO

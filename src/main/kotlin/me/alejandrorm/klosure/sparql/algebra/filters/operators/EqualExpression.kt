@@ -14,6 +14,18 @@ class EqualExpression(val left: Expression, val right: Expression) : Expression 
     override fun eval(solution: SolutionMapping): NodeId? {
         val l = left.eval(solution)
         val r = right.eval(solution)
+
+        return eval(l, r)
+    }
+
+    override fun evalGroup(solution: SolutionMapping, group: Sequence<SolutionMapping>): NodeId? {
+        val l = left.evalGroup(solution, group)
+        val r = right.evalGroup(solution, group)
+
+        return eval(l, r)
+    }
+
+    private fun eval(l : NodeId?, r: NodeId?): NodeId? {
         if (l == null || r == null) {
             return null
         }

@@ -31,7 +31,14 @@ class AdditiveExpression(val expressions: List<AdditiveOperatorOperand>): Expres
     }
 
     override fun eval(solution: SolutionMapping): NodeId? {
-        val values = expressions.map { it.operand.eval(solution) }
+        return eval(expressions.map { it.operand.eval(solution) })
+    }
+
+    override fun evalGroup(solution: SolutionMapping, group: Sequence<SolutionMapping>): NodeId? {
+        return eval(expressions.map { it.operand.evalGroup(solution, group) })
+    }
+
+    private fun eval(values: List<NodeId?>): NodeId? {
 
         if (values.isEmpty()) throw IllegalArgumentException("Additive expression cannot be evaluated without operands")
 

@@ -14,7 +14,14 @@ class MinusExpression(val e: Expression): Expression {
     }
 
     override fun eval(solution: SolutionMapping): NodeId? {
-        val value = e.eval(solution)
+        return eval(e.eval(solution))
+    }
+
+    override fun evalGroup(solution: SolutionMapping, group: Sequence<SolutionMapping>): NodeId? {
+        return eval(e.evalGroup(solution, group))
+    }
+
+    private fun eval(value: NodeId?): NodeId? {
 
         if (value == null || value !is LiteralId || value.value !is NumberValue) {
             return null
