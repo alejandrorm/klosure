@@ -18,7 +18,7 @@ import org.semanticweb.owlapi.model.IRI
 import java.math.BigDecimal
 import java.math.BigInteger
 
-sealed class TypedValue(open val value: Any, open val type: IRI) {
+sealed class TypedValue(open val value: Any, open val type: IRI) : Comparable<TypedValue> {
     override fun toString(): String {
         return "\"${value}\"^^<$type>"
     }
@@ -27,6 +27,10 @@ sealed class TypedValue(open val value: Any, open val type: IRI) {
 data class UnknownTypeValue(override val value: Any, override val type: IRI) : TypedValue(value, type) {
     override fun toString(): String {
         return super.toString()
+    }
+
+    override fun compareTo(other: TypedValue): Int {
+        return value.toString().compareTo(other.value.toString())
     }
 }
 
@@ -38,17 +42,36 @@ data class StringValue(override val value: String, val lang: String?) : TypedVal
             "\"${value}\"@$lang"
         }
     }
+
+    override fun compareTo(other: TypedValue): Int {
+        return value.compareTo(other.value.toString())
+    }
 }
 
 data class BooleanValue(override val value: Boolean) : TypedValue(value, BOOLEAN) {
     override fun toString(): String {
         return if (value) "true" else "false"
     }
+
+    override fun compareTo(other: TypedValue): Int {
+        return when (other) {
+            is BooleanValue -> value.compareTo(other.value)
+            else -> value.toString().compareTo(other.value.toString())
+        }
+    }
 }
 
 sealed class NumberValue(override val value: Number, type: IRI) : TypedValue(value, type) {
     override fun toString(): String {
         return value.toString()
+    }
+
+    override fun compareTo(other: TypedValue): Int {
+        return when (other) {
+            // TODO: this is not correct, but it works for now
+            is NumberValue -> value.toDouble().compareTo(other.value.toDouble())
+            else -> value.toString().compareTo(other.value.toString())
+        }
     }
 }
 
@@ -92,11 +115,21 @@ data class DateValue(override val value: String) : TypedValue(value, DATE) {
     override fun toString(): String {
         return super.toString()
     }
+
+    override fun compareTo(other: TypedValue): Int {
+        // TODO
+        return value.compareTo(other.value.toString())
+    }
 }
 
 data class TimeValue(override val value: String) : TypedValue(value, TIME) {
     override fun toString(): String {
         return super.toString()
+    }
+
+    override fun compareTo(other: TypedValue): Int {
+        // TODO
+        return value.compareTo(other.value.toString())
     }
 }
 
@@ -104,11 +137,21 @@ data class DateTimeValue(override val value: String) : TypedValue(value, DATETIM
     override fun toString(): String {
         return super.toString()
     }
+
+    override fun compareTo(other: TypedValue): Int {
+        // TODO
+        return value.compareTo(other.value.toString())
+    }
 }
 
 data class DateTimeStampValue(override val value: String) : TypedValue(value, DATETIMESTAMP) {
     override fun toString(): String {
         return super.toString()
+    }
+
+    override fun compareTo(other: TypedValue): Int {
+        // TODO
+        return value.compareTo(other.value.toString())
     }
 }
 
