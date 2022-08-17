@@ -4,14 +4,15 @@ import me.alejandrorm.klosure.model.LiteralId
 import me.alejandrorm.klosure.model.NodeId
 import me.alejandrorm.klosure.model.literals.*
 import me.alejandrorm.klosure.sparql.SolutionMapping
+import me.alejandrorm.klosure.sparql.algebra.aggregates.CompositeExpression
+import me.alejandrorm.klosure.sparql.algebra.aggregates.NonAggregateExpression
 import me.alejandrorm.klosure.sparql.algebra.filters.Expression
 import me.alejandrorm.klosure.sparql.algebra.filters.operators.arithmetic.NumericTypePromotions
 import java.math.BigDecimal
 import java.math.BigInteger
 import kotlin.math.absoluteValue
 
-class Abs(val e: Expression): Expression
-{
+class Abs(val e: Expression): CompositeExpression(listOf(e)) {
     override fun toString(): String {
         return "abs($e)"
     }

@@ -3,10 +3,12 @@ package me.alejandrorm.klosure.sparql.algebra.filters.operators
 import me.alejandrorm.klosure.model.NodeId
 import me.alejandrorm.klosure.model.literals.DataTypes
 import me.alejandrorm.klosure.sparql.SolutionMapping
+import me.alejandrorm.klosure.sparql.algebra.aggregates.CompositeExpression
 import me.alejandrorm.klosure.sparql.algebra.filters.Expression
 import me.alejandrorm.klosure.sparql.algebra.filters.getEffectiveBooleanValue
 
-class AndExpression(val expression1: Expression, val expression2: Expression) : Expression {
+class AndExpression(val expression1: Expression, val expression2: Expression) :
+    CompositeExpression(listOf(expression1, expression2)) {
     override fun eval(solution: SolutionMapping): NodeId? {
         val v1 = getEffectiveBooleanValue(expression1.eval(solution))
         val v2 = getEffectiveBooleanValue(expression2.eval(solution))

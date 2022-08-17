@@ -4,6 +4,7 @@ import me.alejandrorm.klosure.model.LiteralId
 import me.alejandrorm.klosure.model.NodeId
 import me.alejandrorm.klosure.model.literals.*
 import me.alejandrorm.klosure.sparql.SolutionMapping
+import me.alejandrorm.klosure.sparql.algebra.aggregates.CompositeExpression
 import me.alejandrorm.klosure.sparql.algebra.filters.Expression
 import me.alejandrorm.klosure.sparql.algebra.filters.operators.arithmetic.NumericTypePromotions.getMostGenericType
 import me.alejandrorm.klosure.sparql.algebra.filters.operators.arithmetic.NumericTypePromotions.upcastList
@@ -25,17 +26,18 @@ data class AdditiveOperatorOperand(val operator: AdditiveOperator, val operand: 
     }
 }
 
-class AdditiveExpression(val expressions: List<AdditiveOperatorOperand>): Expression {
+class AdditiveExpression(val expressionOps: List<AdditiveOperatorOperand>) :
+    CompositeExpression(expressionOps.map { it.operand }) {
     override fun toString(): String {
-        return "+${expressions.joinToString(separator = " ")}"
+        return "+${expressionOps.joinToString(separator = " ")}"
     }
 
     override fun eval(solution: SolutionMapping): NodeId? {
-        return eval(expressions.map { it.operand.eval(solution) })
+        return eval(expressionOps.map { it.operand.eval(solution) })
     }
 
     override fun evalGroup(solution: SolutionMapping, group: Sequence<SolutionMapping>): NodeId? {
-        return eval(expressions.map { it.operand.evalGroup(solution, group) })
+        return eval(expressionOps.map { it.operand.evalGroup(solution, group) })
     }
 
     private fun eval(values: List<NodeId?>): NodeId? {
@@ -53,10 +55,10 @@ class AdditiveExpression(val expressions: List<AdditiveOperatorOperand>): Expres
         @Suppress("UNCHECKED_CAST")
         val literalValues = values as List<LiteralId>
 
-        when(val upperBoundType = getMostGenericType(literalValues)) {
+        when (val upperBoundType = getMostGenericType(literalValues)) {
             NumericTypePromotions.NumericType.BYTE -> {
                 val byteValues: List<Byte> = upcastList(literalValues, upperBoundType)
-                val v = byteValues.zip(expressions).fold(0.toByte()) { acc, value ->
+                val v = byteValues.zip(expressionOps).fold(0.toByte()) { acc, value ->
                     if (value.second.operator == AdditiveOperator.PLUS) {
                         (acc + value.first).toByte()
                     } else {
@@ -68,7 +70,7 @@ class AdditiveExpression(val expressions: List<AdditiveOperatorOperand>): Expres
             }
             NumericTypePromotions.NumericType.SHORT -> {
                 val shortValues: List<Short> = upcastList(literalValues, upperBoundType)
-                val v = shortValues.zip(expressions).fold(0.toShort()) { acc, value ->
+                val v = shortValues.zip(expressionOps).fold(0.toShort()) { acc, value ->
                     if (value.second.operator == AdditiveOperator.PLUS) {
                         (acc + value.first).toShort()
                     } else {
@@ -80,7 +82,7 @@ class AdditiveExpression(val expressions: List<AdditiveOperatorOperand>): Expres
             }
             NumericTypePromotions.NumericType.INT -> {
                 val intValues: List<Int> = upcastList(literalValues, upperBoundType)
-                val v = intValues.zip(expressions).fold(0) { acc, value ->
+                val v = intValues.zip(expressionOps).fold(0) { acc, value ->
                     if (value.second.operator == AdditiveOperator.PLUS) {
                         acc + value.first
                     } else {
@@ -91,7 +93,7 @@ class AdditiveExpression(val expressions: List<AdditiveOperatorOperand>): Expres
             }
             NumericTypePromotions.NumericType.LONG -> {
                 val longValues: List<Long> = upcastList(literalValues, upperBoundType)
-                val v = longValues.zip(expressions).fold(0L) { acc, value ->
+                val v = longValues.zip(expressionOps).fold(0L) { acc, value ->
                     if (value.second.operator == AdditiveOperator.PLUS) {
                         acc + value.first
                     } else {
@@ -102,7 +104,7 @@ class AdditiveExpression(val expressions: List<AdditiveOperatorOperand>): Expres
             }
             NumericTypePromotions.NumericType.FLOAT -> {
                 val floatValues: List<Float> = upcastList(literalValues, upperBoundType)
-                val v = floatValues.zip(expressions).fold(0f) { acc, value ->
+                val v = floatValues.zip(expressionOps).fold(0f) { acc, value ->
                     if (value.second.operator == AdditiveOperator.PLUS) {
                         acc + value.first
                     } else {
@@ -113,7 +115,7 @@ class AdditiveExpression(val expressions: List<AdditiveOperatorOperand>): Expres
             }
             NumericTypePromotions.NumericType.DOUBLE -> {
                 val doubleValues: List<Double> = upcastList(literalValues, upperBoundType)
-                val v = doubleValues.zip(expressions).fold(0.0) { acc, value ->
+                val v = doubleValues.zip(expressionOps).fold(0.0) { acc, value ->
                     if (value.second.operator == AdditiveOperator.PLUS) {
                         acc + value.first
                     } else {
@@ -124,7 +126,7 @@ class AdditiveExpression(val expressions: List<AdditiveOperatorOperand>): Expres
             }
             NumericTypePromotions.NumericType.DECIMAL -> {
                 val decimalValues: List<BigDecimal> = upcastList(literalValues, upperBoundType)
-                val v = decimalValues.zip(expressions).fold(0.0.toBigDecimal()) { acc, value ->
+                val v = decimalValues.zip(expressionOps).fold(0.0.toBigDecimal()) { acc, value ->
                     if (value.second.operator == AdditiveOperator.PLUS) {
                         acc + value.first
                     } else {
@@ -135,7 +137,7 @@ class AdditiveExpression(val expressions: List<AdditiveOperatorOperand>): Expres
             }
             NumericTypePromotions.NumericType.INTEGER -> {
                 val integerValues: List<BigInteger> = upcastList(literalValues, upperBoundType)
-                val v = integerValues.zip(expressions).fold(0.toBigInteger()) { acc, value ->
+                val v = integerValues.zip(expressionOps).fold(0.toBigInteger()) { acc, value ->
                     if (value.second.operator == AdditiveOperator.PLUS) {
                         acc + value.first
                     } else {

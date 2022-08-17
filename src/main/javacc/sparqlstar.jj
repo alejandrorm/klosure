@@ -1368,8 +1368,8 @@ Expression BuiltInCall():
 |	"OBJECT" "(" Expression() ")" { return new UnsupportedBuiltinExpression("object"); }
 |	"isTRIPLE" "(" Expression() ")" { return new UnsupportedBuiltinExpression("istriple"); }
 |	RegexExpression() { return new UnsupportedBuiltinExpression("regex"); }
-|	ExistsFunc() { return new UnsupportedBuiltinExpression("exists"); }
-|	NotExistsFunc() { return new UnsupportedBuiltinExpression("notexists"); }
+|	e1 = ExistsFunc() { return e1; }
+|	e1 = NotExistsFunc() { return e1; }
 }
 
 // TODO
@@ -1393,16 +1393,20 @@ void StrReplaceExpression():
   "REPLACE" "(" Expression() "," Expression() "," Expression() ( "," Expression()) ? ")"
 }
 
-void ExistsFunc():
-{}
+Expression ExistsFunc():
 {
-  "EXISTS" GroupGraphPattern()
+  AlgebraOperator a;
+}
+{
+  "EXISTS" a = GroupGraphPattern() { return new Exists(a); }
 }
 
-void NotExistsFunc():
-{}
+Expression NotExistsFunc():
 {
-  "NOT" "EXISTS" GroupGraphPattern()
+  AlgebraOperator a;
+}
+{
+  "NOT" "EXISTS" a = GroupGraphPattern() { return new NotExists(a); }
 }
 
 // TODO

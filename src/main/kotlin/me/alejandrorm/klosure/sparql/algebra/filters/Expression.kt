@@ -10,4 +10,6 @@ interface Expression {
 
     fun evalGroup(solution: SolutionMapping, group: Sequence<SolutionMapping>) : NodeId? =
         eval(solution)
+
+    fun isAggregate(): Boolean
 }

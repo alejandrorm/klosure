@@ -134,9 +134,9 @@ class ParserTest {
 
     @Test
     fun singleTest() {
-        val dataFile = "1.1-w3c/property-path/pp05.ttl"
-        val queryFile = "1.1-w3c/property-path/pp05.rq"
-        val expectedFile = "1.1-w3c/property-path/pp05.srx"
+        val dataFile = "1.1/aggregates/data-01.ttl"
+        val queryFile = "1.1/aggregates/sparql11-count-01.rq"
+        val expectedFile = "1.1/aggregates/sparql11-count-01.srx"
 
         val expected =
             xmlToSolutions(ParserTest::class.java.getResourceAsStream("/me/alejandrorm/klosure/parser/data/sparql/${expectedFile}")!!)

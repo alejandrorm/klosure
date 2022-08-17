@@ -4,6 +4,7 @@ import me.alejandrorm.klosure.model.LiteralId
 import me.alejandrorm.klosure.model.NodeId
 import me.alejandrorm.klosure.model.literals.*
 import me.alejandrorm.klosure.sparql.SolutionMapping
+import me.alejandrorm.klosure.sparql.algebra.aggregates.CompositeExpression
 import me.alejandrorm.klosure.sparql.algebra.filters.Expression
 import me.alejandrorm.klosure.sparql.algebra.filters.operators.arithmetic.NumericTypePromotions.upcastToDecimal
 import me.alejandrorm.klosure.sparql.algebra.filters.operators.arithmetic.NumericTypePromotions.upcastToInteger
@@ -21,19 +22,19 @@ data class MultiplicativeOperatorOperand(val operator: MultiplicativeOperator, v
     }
 }
 
-class MultiplicativeExpression(val firstExpression: Expression, val expressions: List<MultiplicativeOperatorOperand>) :
-    Expression {
+class MultiplicativeExpression(val firstExpression: Expression, val expressionOps: List<MultiplicativeOperatorOperand>) :
+    CompositeExpression(expressionOps.map { it.operand } + firstExpression) {
     override fun toString(): String {
-        return "${firstExpression}+${expressions.joinToString(separator = " ")}"
+        return "${firstExpression}+${expressionOps.joinToString(separator = " ")}"
     }
 
     override fun eval(solution: SolutionMapping): NodeId? {
-        return eval(firstExpression.eval(solution), expressions.map { it.operand.eval(solution) })
+        return eval(firstExpression.eval(solution), expressionOps.map { it.operand.eval(solution) })
     }
 
     override fun evalGroup(solution: SolutionMapping, group: Sequence<SolutionMapping>): NodeId? {
         return eval(firstExpression.evalGroup(solution, group),
-            expressions.map { it.operand.evalGroup(solution, group) })
+            expressionOps.map { it.operand.evalGroup(solution, group) })
     }
 
     private fun eval(first: NodeId?, values: List<NodeId?>): NodeId? {
@@ -55,7 +56,7 @@ class MultiplicativeExpression(val firstExpression: Expression, val expressions:
         when (upperBoundType) {
             NumericTypePromotions.NumericType.BYTE -> {
                 val byteValues: List<Byte> = NumericTypePromotions.upcastList(literalValues, upperBoundType)
-                val v = byteValues.zip(expressions).fold(number.toByte()) { acc, value ->
+                val v = byteValues.zip(expressionOps).fold(number.toByte()) { acc, value ->
                     if (value.second.operator == MultiplicativeOperator.TIMES) {
                         (acc * value.first).toByte()
                     } else {
@@ -67,7 +68,7 @@ class MultiplicativeExpression(val firstExpression: Expression, val expressions:
             }
             NumericTypePromotions.NumericType.SHORT -> {
                 val shortValues: List<Short> = NumericTypePromotions.upcastList(literalValues, upperBoundType)
-                val v = shortValues.zip(expressions).fold(number.toShort()) { acc, value ->
+                val v = shortValues.zip(expressionOps).fold(number.toShort()) { acc, value ->
                     if (value.second.operator == MultiplicativeOperator.TIMES) {
                         (acc * value.first).toShort()
                     } else {
@@ -79,7 +80,7 @@ class MultiplicativeExpression(val firstExpression: Expression, val expressions:
             }
             NumericTypePromotions.NumericType.INT -> {
                 val intValues: List<Int> = NumericTypePromotions.upcastList(literalValues, upperBoundType)
-                val v = intValues.zip(expressions).fold(number.toInt()) { acc, value ->
+                val v = intValues.zip(expressionOps).fold(number.toInt()) { acc, value ->
                     if (value.second.operator == MultiplicativeOperator.TIMES) {
                         acc + value.first
                     } else {
@@ -90,7 +91,7 @@ class MultiplicativeExpression(val firstExpression: Expression, val expressions:
             }
             NumericTypePromotions.NumericType.LONG -> {
                 val longValues: List<Long> = NumericTypePromotions.upcastList(literalValues, upperBoundType)
-                val v = longValues.zip(expressions).fold(number.toLong()) { acc, value ->
+                val v = longValues.zip(expressionOps).fold(number.toLong()) { acc, value ->
                     if (value.second.operator == MultiplicativeOperator.TIMES) {
                         acc * value.first
                     } else {
@@ -101,7 +102,7 @@ class MultiplicativeExpression(val firstExpression: Expression, val expressions:
             }
             NumericTypePromotions.NumericType.FLOAT -> {
                 val floatValues: List<Float> = NumericTypePromotions.upcastList(literalValues, upperBoundType)
-                val v = floatValues.zip(expressions).fold(number.toFloat()) { acc, value ->
+                val v = floatValues.zip(expressionOps).fold(number.toFloat()) { acc, value ->
                     if (value.second.operator == MultiplicativeOperator.TIMES) {
                         acc * value.first
                     } else {
@@ -112,7 +113,7 @@ class MultiplicativeExpression(val firstExpression: Expression, val expressions:
             }
             NumericTypePromotions.NumericType.DOUBLE -> {
                 val doubleValues: List<Double> = NumericTypePromotions.upcastList(literalValues, upperBoundType)
-                val v = doubleValues.zip(expressions).fold(number.toDouble()) { acc, value ->
+                val v = doubleValues.zip(expressionOps).fold(number.toDouble()) { acc, value ->
                     if (value.second.operator == MultiplicativeOperator.TIMES) {
                         acc * value.first
                     } else {
@@ -123,7 +124,7 @@ class MultiplicativeExpression(val firstExpression: Expression, val expressions:
             }
             NumericTypePromotions.NumericType.DECIMAL -> {
                 val decimalValues: List<BigDecimal> = NumericTypePromotions.upcastList(literalValues, upperBoundType)
-                val v = decimalValues.zip(expressions).fold(upcastToDecimal(first.value)) { acc, value ->
+                val v = decimalValues.zip(expressionOps).fold(upcastToDecimal(first.value)) { acc, value ->
                     if (value.second.operator == MultiplicativeOperator.TIMES) {
                         acc * value.first
                     } else {
@@ -134,7 +135,7 @@ class MultiplicativeExpression(val firstExpression: Expression, val expressions:
             }
             NumericTypePromotions.NumericType.INTEGER -> {
                 val integerValues: List<BigInteger> = NumericTypePromotions.upcastList(literalValues, upperBoundType)
-                val v = integerValues.zip(expressions).fold(upcastToInteger(first.value)) { acc, value ->
+                val v = integerValues.zip(expressionOps).fold(upcastToInteger(first.value)) { acc, value ->
                     if (value.second.operator == MultiplicativeOperator.TIMES) {
                         acc * value.first
                     } else {

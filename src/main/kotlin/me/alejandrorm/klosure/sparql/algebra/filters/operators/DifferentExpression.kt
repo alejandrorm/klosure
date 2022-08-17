@@ -4,9 +4,10 @@ import me.alejandrorm.klosure.model.LiteralId
 import me.alejandrorm.klosure.model.NodeId
 import me.alejandrorm.klosure.model.literals.*
 import me.alejandrorm.klosure.sparql.SolutionMapping
+import me.alejandrorm.klosure.sparql.algebra.aggregates.CompositeExpression
 import me.alejandrorm.klosure.sparql.algebra.filters.Expression
 
-class DifferentExpression(val left: Expression, val right: Expression) : Expression {
+class DifferentExpression(val left: Expression, val right: Expression) : CompositeExpression(listOf(left, right)) {
     override fun toString(): String {
         return "($left != $right)"
     }
