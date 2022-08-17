@@ -6,7 +6,7 @@ import me.alejandrorm.klosure.sparql.SolutionMapping
 
 class Union(val operators: List<AlgebraOperator>) : AlgebraOperator {
     override fun toString(): String =
-        "Union(${operators.toString()})"
+        "Union($operators)"
 
     override fun eval(solutions: Sequence<SolutionMapping>, activeGraph: Graph, graphs: Graphs): Sequence<SolutionMapping> {
         return operators.fold(emptySequence()) { acc, op -> acc + op.eval(solutions, activeGraph, graphs) }

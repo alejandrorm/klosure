@@ -21,31 +21,32 @@ class CompiledZeroOrOnePath(
         val s = if (concreteHead == concreteTail) {
             sequenceOf(solution)
         } else if (concreteHead.isBound() && !concreteTail.isBound()) {
-            if (concreteTail is TermOrVariable.VariableTerm)
+            if (concreteTail is TermOrVariable.VariableTerm) {
                 sequenceOf(solution.bind(concreteTail.variable, concreteHead.getTerm()))
-            else
+            } else {
                 (concreteTail as TermOrVariable.QuotedTriple).match(solution, concreteHead.getTerm())
                     ?.let { sequenceOf(it) } ?: emptySequence()
-
+            }
         } else if (concreteTail.isBound() && !concreteHead.isBound()) {
-            if (concreteHead is TermOrVariable.VariableTerm)
+            if (concreteHead is TermOrVariable.VariableTerm) {
                 sequenceOf(solution.bind(concreteHead.variable, concreteTail.getTerm()))
-            else
+            } else {
                 (concreteHead as TermOrVariable.QuotedTriple).match(solution, concreteTail.getTerm())
                     ?.let { sequenceOf(it) } ?: emptySequence()
+            }
         } else if (!concreteHead.isBound() && !concreteTail.isBound()) {
             graph.getAllSubjects().map { subject ->
-                solution.bind((concreteHead as TermOrVariable.VariableTerm).variable, subject).
-                bind((concreteTail as TermOrVariable.VariableTerm).variable, subject)
+                solution.bind((concreteHead as TermOrVariable.VariableTerm).variable, subject)
+                    .bind((concreteTail as TermOrVariable.VariableTerm).variable, subject)
             } + graph.getAllTerminals().map { subject ->
-                solution.bind((concreteHead as TermOrVariable.VariableTerm).variable, subject).
-                bind((concreteTail as TermOrVariable.VariableTerm).variable, subject)
+                solution.bind((concreteHead as TermOrVariable.VariableTerm).variable, subject)
+                    .bind((concreteTail as TermOrVariable.VariableTerm).variable, subject)
             }
         } else {
             emptySequence()
         }
 
-        return s +  path.eval(solution, graph)
+        return s + path.eval(solution, graph)
     }
 
     override fun eval(solutions: Sequence<SolutionMapping>, graph: Graph): Sequence<SolutionMapping> {

@@ -2,17 +2,24 @@ package me.alejandrorm.klosure.sparql.algebra.filters.builtins
 
 import me.alejandrorm.klosure.model.LiteralId
 import me.alejandrorm.klosure.model.NodeId
-import me.alejandrorm.klosure.model.literals.*
+import me.alejandrorm.klosure.model.literals.ByteValue
+import me.alejandrorm.klosure.model.literals.DecimalValue
+import me.alejandrorm.klosure.model.literals.DoubleValue
+import me.alejandrorm.klosure.model.literals.FloatValue
+import me.alejandrorm.klosure.model.literals.IntValue
+import me.alejandrorm.klosure.model.literals.IntegerValue
+import me.alejandrorm.klosure.model.literals.LongValue
+import me.alejandrorm.klosure.model.literals.NumberValue
+import me.alejandrorm.klosure.model.literals.ShortValue
 import me.alejandrorm.klosure.sparql.SolutionMapping
 import me.alejandrorm.klosure.sparql.algebra.aggregates.CompositeExpression
-import me.alejandrorm.klosure.sparql.algebra.aggregates.NonAggregateExpression
 import me.alejandrorm.klosure.sparql.algebra.filters.Expression
 import me.alejandrorm.klosure.sparql.algebra.filters.operators.arithmetic.NumericTypePromotions
 import java.math.BigDecimal
 import java.math.BigInteger
 import kotlin.math.absoluteValue
 
-class Abs(val e: Expression): CompositeExpression(listOf(e)) {
+class Abs(val e: Expression) : CompositeExpression(listOf(e)) {
     override fun toString(): String {
         return "abs($e)"
     }
@@ -21,7 +28,7 @@ class Abs(val e: Expression): CompositeExpression(listOf(e)) {
         val v = e.eval(solution) ?: return null
         if (v !is LiteralId || v.value !is NumberValue) return null
 
-        val absV = when(NumericTypePromotions.getNumericType(v.value)) {
+        val absV = when (NumericTypePromotions.getNumericType(v.value)) {
             NumericTypePromotions.NumericType.BYTE -> {
                 val x = (v.value.value as Byte)
                 if (x >= 0) return v else ByteValue((-x).toByte())

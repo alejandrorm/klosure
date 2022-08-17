@@ -1,7 +1,15 @@
 package me.alejandrorm.klosure.sparql.algebra.filters.operators.arithmetic
 
 import me.alejandrorm.klosure.model.LiteralId
-import me.alejandrorm.klosure.model.literals.*
+import me.alejandrorm.klosure.model.literals.ByteValue
+import me.alejandrorm.klosure.model.literals.DecimalValue
+import me.alejandrorm.klosure.model.literals.DoubleValue
+import me.alejandrorm.klosure.model.literals.FloatValue
+import me.alejandrorm.klosure.model.literals.IntValue
+import me.alejandrorm.klosure.model.literals.IntegerValue
+import me.alejandrorm.klosure.model.literals.LongValue
+import me.alejandrorm.klosure.model.literals.NumberValue
+import me.alejandrorm.klosure.model.literals.ShortValue
 import java.math.BigDecimal
 import java.math.BigInteger
 
@@ -74,7 +82,6 @@ object NumericTypePromotions {
         values.fold(NumericType.BYTE) { acc, value ->
             getMostGeneralType(acc, getNumericType(value.value as NumberValue))
         }
-
 
     fun upcastToDecimal(value: NumberValue): BigDecimal {
         return when (value) {

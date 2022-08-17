@@ -24,7 +24,6 @@ class OrExpression(val expression1: Expression, val expression2: Expression) :
         return eval(v1, v2)
     }
 
-
     private fun eval(v1: Boolean?, v2: Boolean?): NodeId? {
         if (v1 == null && v2 == false) return null
         if (v2 == null && v1 == false) return null

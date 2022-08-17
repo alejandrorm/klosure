@@ -1,7 +1,16 @@
 package me.alejandrorm.klosure.parser.sparql
 
-import kotlinx.serialization.json.*
-import me.alejandrorm.klosure.model.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import me.alejandrorm.klosure.model.BlankId
+import me.alejandrorm.klosure.model.EntailmentTypes
+import me.alejandrorm.klosure.model.Graphs
+import me.alejandrorm.klosure.model.IriId
+import me.alejandrorm.klosure.model.NodeId
+import me.alejandrorm.klosure.model.TripleId
 import me.alejandrorm.klosure.model.literals.DataTypes
 import me.alejandrorm.klosure.parser.turtle.ParserTest
 import me.alejandrorm.klosure.parser.turtle.TurtleStarParser
@@ -19,17 +28,16 @@ import org.w3c.dom.Element
 import java.io.BufferedReader
 import java.io.InputStream
 import javax.xml.parsers.DocumentBuilderFactory
-import kotlin.math.E
 import kotlin.test.assertEquals
 
-
 data class TestCase(
-    val name: String, val data: String, val query: String,
-    val expected: String, val entailment: EntailmentTypes,
+    val name: String,
+    val data: String,
+    val query: String,
+    val expected: String,
+    val entailment: EntailmentTypes,
     val checkOrder: Boolean
 )
-
-data class TestCases(val cases: List<TestCase>)
 
 data class ExpectedResult(val variables: List<Variable>, val solutions: Sequence<SolutionMapping>)
 
@@ -55,10 +63,11 @@ class ParserTest {
 
         if (doc.getElementsByTagName("boolean").length > 0) {
             val boolean = doc.getElementsByTagName("boolean").item(0) as Element
-            return if (boolean.firstChild.textContent == "true")
+            return if (boolean.firstChild.textContent == "true") {
                 ExpectedResult(listOf(), sequenceOf(SolutionMapping(setOf(), mapOf())))
-            else
+            } else {
                 ExpectedResult(listOf(), sequenceOf())
+            }
         }
 
         val variablesNodes = (doc.getElementsByTagName("head").item(0) as Element).getElementsByTagName("variable")
@@ -139,34 +148,32 @@ class ParserTest {
         val expectedFile = "1.1/aggregates/sparql11-count-01.srx"
 
         val expected =
-            xmlToSolutions(ParserTest::class.java.getResourceAsStream("/me/alejandrorm/klosure/parser/data/sparql/${expectedFile}")!!)
+            xmlToSolutions(ParserTest::class.java.getResourceAsStream("/me/alejandrorm/klosure/parser/data/sparql/$expectedFile")!!)
 
         val graphs = Graphs(EntailmentTypes.SIMPLE)
         val parser =
-            TurtleStarParser(ParserTest::class.java.getResourceAsStream("/me/alejandrorm/klosure/parser/data/sparql/${dataFile}")!!)
+            TurtleStarParser(ParserTest::class.java.getResourceAsStream("/me/alejandrorm/klosure/parser/data/sparql/$dataFile")!!)
         parser.graph = graphs.getDefaultGraph()
         parser.turtleDoc()
 
         val query =
-            SparqlStarParser(ParserTest::class.java.getResourceAsStream("/me/alejandrorm/klosure/parser/data/sparql/${queryFile}")!!).QueryUnit()
+            SparqlStarParser(ParserTest::class.java.getResourceAsStream("/me/alejandrorm/klosure/parser/data/sparql/$queryFile")!!).QueryUnit()
 
         println(query.toString())
 
-        when(val result = query.eval(graphs)) {
+        when (val result = query.eval(graphs)) {
             is SelectQueryResult -> SolutionSet.compareEqualSet(result.results, expected.variables, expected.solutions)
             is AskQueryResult -> assertEquals(result.result, expected.solutions.any())
         }
-
     }
-
 
     @TestFactory
     fun basicSparqlQueryTestSuite(): List<DynamicTest> {
         val folders = listOf(
             "1.0-w3c/algebra",
             "1.0-w3c/basic",
-            //"1.1-w3c/entailment",
-            //"1.1-w3c/bind",
+            // "1.1-w3c/entailment",
+            // "1.1-w3c/bind",
             "1.1-w3c/property-path",
             "1.1/aggregates",
             "1.1/bindings",
@@ -176,7 +183,7 @@ class ParserTest {
             "1.1/negation",
             "1.1/property-paths",
             "1.1/subquery"
-            //"1.2"
+            // "1.2"
         )
 
         return folders.flatMap { folder ->
@@ -210,7 +217,7 @@ class ParserTest {
                     val query =
                         SparqlStarParser(ParserTest::class.java.getResourceAsStream("/me/alejandrorm/klosure/parser/data/sparql/$folder/${testCase.query}")!!).QueryUnit()
 
-                    when(val result = query.eval(graphs)) {
+                    when (val result = query.eval(graphs)) {
                         is SelectQueryResult -> SolutionSet.compareEqualSet(result.results, expected.variables, expected.solutions)
                         is AskQueryResult -> assertEquals(result.result, expected.solutions.any())
                     }
@@ -248,7 +255,7 @@ class ParserTest {
                 val query =
                     SparqlStarParser(ParserTest::class.java.getResourceAsStream("/me/alejandrorm/klosure/parser/data/sparql/star/${testCase.query}")!!).QueryUnit()
 
-                when(val result = query.eval(graphs)) {
+                when (val result = query.eval(graphs)) {
                     is SelectQueryResult -> SolutionSet.compareEqualSet(result.results, expected.variables, expected.solutions)
                     is AskQueryResult -> assertEquals(result.result, expected.solutions.any())
                 }

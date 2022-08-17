@@ -1,82 +1,103 @@
 package me.alejandrorm.klosure.model.literals
 
 import me.alejandrorm.klosure.model.LiteralId
-import me.alejandrorm.klosure.model.LiteralNode
 import org.semanticweb.owlapi.model.IRI
-import java.lang.ArithmeticException
-import java.math.BigDecimal
-import java.math.BigInteger
 
 class DataTypes {
     companion object {
         @JvmStatic
         val STRING: IRI = IRI.create("http://www.w3.org/2001/XMLSchema#string")
+
         @JvmStatic
         val BOOLEAN: IRI = IRI.create("http://www.w3.org/2001/XMLSchema#boolean")
+
         @JvmStatic
         val DECIMAL: IRI = IRI.create("http://www.w3.org/2001/XMLSchema#decimal")
+
         @JvmStatic
         val INTEGER: IRI = IRI.create("http://www.w3.org/2001/XMLSchema#integer")
 
         @JvmStatic
         val FLOAT: IRI = IRI.create("http://www.w3.org/2001/XMLSchema#float")
+
         @JvmStatic
         val DOUBLE: IRI = IRI.create("http://www.w3.org/2001/XMLSchema#double")
 
         @JvmStatic
         val DATE: IRI = IRI.create("http://www.w3.org/2001/XMLSchema#date")
+
         @JvmStatic
         val TIME: IRI = IRI.create("http://www.w3.org/2001/XMLSchema#time")
+
         @JvmStatic
         val DATETIME: IRI = IRI.create("http://www.w3.org/2001/XMLSchema#dateTime")
+
         @JvmStatic
         val DATETIMESTAMP: IRI = IRI.create("http://www.w3.org/2001/XMLSchema#dateTimeStamp")
 
         @JvmStatic
         val GYEAR: IRI = IRI.create("http://www.w3.org/2001/XMLSchema#gYear")
+
         @JvmStatic
         val GMONTH: IRI = IRI.create("http://www.w3.org/2001/XMLSchema#gMonth")
+
         @JvmStatic
         val GDAY: IRI = IRI.create("http://www.w3.org/2001/XMLSchema#gDay")
+
         @JvmStatic
         val GYEARMONTH: IRI = IRI.create("http://www.w3.org/2001/XMLSchema#gYearMonth")
+
         @JvmStatic
         val GMONTHDAY: IRI = IRI.create("http://www.w3.org/2001/XMLSchema#gMonthDay")
+
         @JvmStatic
         val DURATION: IRI = IRI.create("http://www.w3.org/2001/XMLSchema#duration")
+
         @JvmStatic
         val YEARMONTHDURATION: IRI = IRI.create("http://www.w3.org/2001/XMLSchema#yearMonthDuration")
+
         @JvmStatic
         val DAYTIMEDURATION: IRI = IRI.create("http://www.w3.org/2001/XMLSchema#dayTimeDuration")
 
         @JvmStatic
         val BYTE: IRI = IRI.create("http://www.w3.org/2001/XMLSchema#byte")
+
         @JvmStatic
         val SHORT: IRI = IRI.create("http://www.w3.org/2001/XMLSchema#short")
+
         @JvmStatic
         val INT: IRI = IRI.create("http://www.w3.org/2001/XMLSchema#integer")
+
         @JvmStatic
         val LONG: IRI = IRI.create("http://www.w3.org/2001/XMLSchema#long")
 
         @JvmStatic
         val UNSIGNED_BYTE: IRI = IRI.create("http://www.w3.org/2001/XMLSchema#unsignedByte")
+
         @JvmStatic
         val UNSIGNED_SHORT: IRI = IRI.create("http://www.w3.org/2001/XMLSchema#unsignedShort")
+
         @JvmStatic
         val UNSIGNED_INT: IRI = IRI.create("http://www.w3.org/2001/XMLSchema#unsignedInt")
+
         @JvmStatic
         val UNSIGNED_LONG: IRI = IRI.create("http://www.w3.org/2001/XMLSchema#unsignedLong")
+
         @JvmStatic
         val POSITIVE_INTEGER: IRI = IRI.create("http://www.w3.org/2001/XMLSchema#positiveInteger")
+
         @JvmStatic
         val NON_NEGATIVE_INTEGER: IRI = IRI.create("http://www.w3.org/2001/XMLSchema#nonNegativeInteger")
+
         @JvmStatic
         val NEGATIVE_INTEGER: IRI = IRI.create("http://www.w3.org/2001/XMLSchema#negativeInteger")
+
         @JvmStatic
         val NON_POSITIVE_INTEGER: IRI = IRI.create("http://www.w3.org/2001/XMLSchema#nonPositiveInteger")
 
         @JvmStatic
         val HEXBINARY: IRI = IRI.create("http://www.w3.org/2001/XMLSchema#hexBinary")
+
         @JvmStatic
         val BASE64BINARY: IRI = IRI.create("http://www.w3.org/2001/XMLSchema#base64Binary")
 

@@ -14,18 +14,17 @@ import me.alejandrorm.klosure.model.literals.DataTypes.Companion.LONG
 import me.alejandrorm.klosure.model.literals.DataTypes.Companion.SHORT
 import me.alejandrorm.klosure.model.literals.DataTypes.Companion.STRING
 import me.alejandrorm.klosure.model.literals.DataTypes.Companion.TIME
-
 import org.semanticweb.owlapi.model.IRI
 import java.math.BigDecimal
 import java.math.BigInteger
 
 sealed class TypedValue(open val value: Any, open val type: IRI) {
     override fun toString(): String {
-        return "\"${value.toString()}\"^^<${type.toString()}>"
+        return "\"${value}\"^^<$type>"
     }
 }
 
-data class UnknownTypeValue(override val value: Any,override val type: IRI) : TypedValue(value, type) {
+data class UnknownTypeValue(override val value: Any, override val type: IRI) : TypedValue(value, type) {
     override fun toString(): String {
         return super.toString()
     }
@@ -36,7 +35,7 @@ data class StringValue(override val value: String, val lang: String?) : TypedVal
         return if (lang == null) {
             "\"${value}\""
         } else {
-            "\"${value}\"@${lang}"
+            "\"${value}\"@$lang"
         }
     }
 }
@@ -47,7 +46,7 @@ data class BooleanValue(override val value: Boolean) : TypedValue(value, BOOLEAN
     }
 }
 
-sealed class NumberValue(override val value: Number, type: IRI): TypedValue(value, type) {
+sealed class NumberValue(override val value: Number, type: IRI) : TypedValue(value, type) {
     override fun toString(): String {
         return value.toString()
     }
@@ -77,7 +76,6 @@ data class IntegerValue(override val value: BigInteger) : NumberValue(value, INT
     }
 }
 
-
 data class DoubleValue(override val value: Double) : NumberValue(value, DOUBLE) {
     override fun toString(): String {
         return super.toString()
@@ -89,7 +87,6 @@ data class FloatValue(override val value: Float) : NumberValue(value, FLOAT) {
         return super.toString()
     }
 }
-
 
 data class DateValue(override val value: String) : TypedValue(value, DATE) {
     override fun toString(): String {
@@ -114,7 +111,6 @@ data class DateTimeStampValue(override val value: String) : TypedValue(value, DA
         return super.toString()
     }
 }
-
 
 data class ByteValue(override val value: Byte) : NumberValue(value, BYTE) {
     override fun toString(): String {

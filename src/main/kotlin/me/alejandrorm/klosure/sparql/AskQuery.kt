@@ -4,8 +4,10 @@ import me.alejandrorm.klosure.model.Graphs
 import me.alejandrorm.klosure.sparql.algebra.operators.AlgebraOperator
 import org.semanticweb.owlapi.model.IRI
 
-class AskQuery(val algebraOperator: AlgebraOperator,
-              val defaultGraph: IRI?) : Query {
+class AskQuery(
+    val algebraOperator: AlgebraOperator,
+    val defaultGraph: IRI?
+) : Query {
     override fun toString(): String {
         return "ASK($algebraOperator)"
     }
@@ -14,7 +16,12 @@ class AskQuery(val algebraOperator: AlgebraOperator,
             graphs.setDefaultGraph(graphs.createGraph(it))
         }
 
-        return AskQueryResult(algebraOperator.eval(sequenceOf(SolutionMapping.EmptySolutionMapping),
-            graphs.getDefaultGraph(), graphs).any())
+        return AskQueryResult(
+            algebraOperator.eval(
+                sequenceOf(SolutionMapping.EmptySolutionMapping),
+                graphs.getDefaultGraph(),
+                graphs
+            ).any()
+        )
     }
 }

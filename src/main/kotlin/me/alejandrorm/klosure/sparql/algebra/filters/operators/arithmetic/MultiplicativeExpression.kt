@@ -2,7 +2,15 @@ package me.alejandrorm.klosure.sparql.algebra.filters.operators.arithmetic
 
 import me.alejandrorm.klosure.model.LiteralId
 import me.alejandrorm.klosure.model.NodeId
-import me.alejandrorm.klosure.model.literals.*
+import me.alejandrorm.klosure.model.literals.ByteValue
+import me.alejandrorm.klosure.model.literals.DecimalValue
+import me.alejandrorm.klosure.model.literals.DoubleValue
+import me.alejandrorm.klosure.model.literals.FloatValue
+import me.alejandrorm.klosure.model.literals.IntValue
+import me.alejandrorm.klosure.model.literals.IntegerValue
+import me.alejandrorm.klosure.model.literals.LongValue
+import me.alejandrorm.klosure.model.literals.NumberValue
+import me.alejandrorm.klosure.model.literals.ShortValue
 import me.alejandrorm.klosure.sparql.SolutionMapping
 import me.alejandrorm.klosure.sparql.algebra.aggregates.CompositeExpression
 import me.alejandrorm.klosure.sparql.algebra.filters.Expression
@@ -25,7 +33,7 @@ data class MultiplicativeOperatorOperand(val operator: MultiplicativeOperator, v
 class MultiplicativeExpression(val firstExpression: Expression, val expressionOps: List<MultiplicativeOperatorOperand>) :
     CompositeExpression(expressionOps.map { it.operand } + firstExpression) {
     override fun toString(): String {
-        return "${firstExpression}+${expressionOps.joinToString(separator = " ")}"
+        return "$firstExpression+${expressionOps.joinToString(separator = " ")}"
     }
 
     override fun eval(solution: SolutionMapping): NodeId? {
@@ -33,8 +41,10 @@ class MultiplicativeExpression(val firstExpression: Expression, val expressionOp
     }
 
     override fun evalGroup(solution: SolutionMapping, group: Sequence<SolutionMapping>): NodeId? {
-        return eval(firstExpression.evalGroup(solution, group),
-            expressionOps.map { it.operand.evalGroup(solution, group) })
+        return eval(
+            firstExpression.evalGroup(solution, group),
+            expressionOps.map { it.operand.evalGroup(solution, group) }
+        )
     }
 
     private fun eval(first: NodeId?, values: List<NodeId?>): NodeId? {
@@ -43,14 +53,17 @@ class MultiplicativeExpression(val firstExpression: Expression, val expressionOp
         }
 
         if (first == null || first !is LiteralId || first.value !is NumberValue ||
-            values.any { it == null || it !is LiteralId || it.value !is NumberValue }) {
+            values.any { it == null || it !is LiteralId || it.value !is NumberValue }
+        ) {
             return null
         }
 
         @Suppress("UNCHECKED_CAST")
         val literalValues = values as List<LiteralId>
         val upperBoundType = NumericTypePromotions.getMostGeneralType(
-            NumericTypePromotions.getNumericType(first.value), NumericTypePromotions.getMostGenericType(literalValues))
+            NumericTypePromotions.getNumericType(first.value),
+            NumericTypePromotions.getMostGenericType(literalValues)
+        )
         val number = first.value.value
 
         when (upperBoundType) {

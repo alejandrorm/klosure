@@ -2,7 +2,11 @@ package me.alejandrorm.klosure.sparql.algebra.filters.operators
 
 import me.alejandrorm.klosure.model.LiteralId
 import me.alejandrorm.klosure.model.NodeId
-import me.alejandrorm.klosure.model.literals.*
+import me.alejandrorm.klosure.model.literals.BooleanValue
+import me.alejandrorm.klosure.model.literals.DataTypes
+import me.alejandrorm.klosure.model.literals.DateTimeValue
+import me.alejandrorm.klosure.model.literals.NumberValue
+import me.alejandrorm.klosure.model.literals.StringValue
 import me.alejandrorm.klosure.sparql.SolutionMapping
 import me.alejandrorm.klosure.sparql.algebra.aggregates.CompositeExpression
 import me.alejandrorm.klosure.sparql.algebra.filters.Expression
@@ -26,7 +30,7 @@ class EqualExpression(val left: Expression, val right: Expression) : CompositeEx
         return eval(l, r)
     }
 
-    private fun eval(l : NodeId?, r: NodeId?): NodeId? {
+    private fun eval(l: NodeId?, r: NodeId?): NodeId? {
         if (l == null || r == null) {
             return null
         }

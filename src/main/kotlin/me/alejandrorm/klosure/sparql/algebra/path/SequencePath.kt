@@ -36,7 +36,7 @@ class SequencePath(val paths: List<Path>) : Path {
 
         return (paths.indices).fold(sequenceOf(solutionMapping)) {
                 solutions, i ->
-            paths[i].eval(allVariables[i], allVariables[i+1], solutions, graph)
+            paths[i].eval(allVariables[i], allVariables[i + 1], solutions, graph)
         }
     }
 }

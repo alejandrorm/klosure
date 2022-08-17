@@ -21,7 +21,6 @@ class FakeLeftJoin(val operator: AlgebraOperator) : AlgebraOperator {
     }
 }
 
-
 class LeftJoin(val left: AlgebraOperator, val right: AlgebraOperator) : AlgebraOperator {
 
     private val nonFilterOperator: AlgebraOperator
@@ -59,7 +58,7 @@ class LeftJoin(val left: AlgebraOperator, val right: AlgebraOperator) : AlgebraO
     }
 
     override fun toString(): String =
-        "LeftJoin(${left}, ${nonFilterOperator}, ${filterExpression ?: "true"})"
+        "LeftJoin($left, $nonFilterOperator, ${filterExpression ?: "true"})"
 
     override fun eval(
         solutions: Sequence<SolutionMapping>,
@@ -76,14 +75,15 @@ class LeftJoin(val left: AlgebraOperator, val right: AlgebraOperator) : AlgebraO
     ): Sequence<SolutionMapping> = sequence {
         val l1 = left.eval(solutions, graph, graphs)
         val l2 =
-            if (nonFilterOperator is GraphGraphPattern)
+            if (nonFilterOperator is GraphGraphPattern) {
                 nonFilterOperator.specialEval(
                     solutions,
                     sequenceOf(SolutionMapping.EmptySolutionMapping),
                     graphs
                 ).toList()
-            else
+            } else {
                 nonFilterOperator.eval(sequenceOf(SolutionMapping.EmptySolutionMapping), graph, graphs).toList()
+            }
 
         for (solution1 in l1) {
             var yielded = false
@@ -92,8 +92,8 @@ class LeftJoin(val left: AlgebraOperator, val right: AlgebraOperator) : AlgebraO
                     val mergedSolution = solution1.merge(solution2)
                     if (filterExpression == null || getEffectiveBooleanValue(
                             filterExpression.eval(
-                                mergedSolution
-                            )
+                                    mergedSolution
+                                )
                         ) == true
                     ) {
                         yielded = true

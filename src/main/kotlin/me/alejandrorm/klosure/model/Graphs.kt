@@ -13,8 +13,8 @@ class Graphs(private val entailment: EntailmentTypes) {
     }
 
     fun getGraph(name: IRI): Graph? = graphs[name]
-    fun createGraph(name: IRI): Graph = graphs.computeIfAbsent(name) {  Graph(entailment) }
-    fun getDefaultGraph(): Graph =  default
+    fun createGraph(name: IRI): Graph = graphs.computeIfAbsent(name) { Graph(entailment) }
+    fun getDefaultGraph(): Graph = default
     fun setDefaultGraph(graph: Graph) {
         default = graph
     }

@@ -2,7 +2,15 @@ package me.alejandrorm.klosure.sparql.algebra.filters.operators.arithmetic
 
 import me.alejandrorm.klosure.model.LiteralId
 import me.alejandrorm.klosure.model.NodeId
-import me.alejandrorm.klosure.model.literals.*
+import me.alejandrorm.klosure.model.literals.ByteValue
+import me.alejandrorm.klosure.model.literals.DecimalValue
+import me.alejandrorm.klosure.model.literals.DoubleValue
+import me.alejandrorm.klosure.model.literals.FloatValue
+import me.alejandrorm.klosure.model.literals.IntValue
+import me.alejandrorm.klosure.model.literals.IntegerValue
+import me.alejandrorm.klosure.model.literals.LongValue
+import me.alejandrorm.klosure.model.literals.NumberValue
+import me.alejandrorm.klosure.model.literals.ShortValue
 import me.alejandrorm.klosure.sparql.SolutionMapping
 import me.alejandrorm.klosure.sparql.algebra.aggregates.CompositeExpression
 import me.alejandrorm.klosure.sparql.algebra.filters.Expression
@@ -41,7 +49,6 @@ class AdditiveExpression(val expressionOps: List<AdditiveOperatorOperand>) :
     }
 
     private fun eval(values: List<NodeId?>): NodeId? {
-
         if (values.isEmpty()) throw IllegalArgumentException("Additive expression cannot be evaluated without operands")
 
         if (values.size == 1) {

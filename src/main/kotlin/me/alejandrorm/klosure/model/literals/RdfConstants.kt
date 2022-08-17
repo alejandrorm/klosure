@@ -1,7 +1,6 @@
 package me.alejandrorm.klosure.model.literals
 
 import me.alejandrorm.klosure.model.IriId
-import me.alejandrorm.klosure.model.LiteralId
 import org.semanticweb.owlapi.model.IRI
 
 object RdfConstants {

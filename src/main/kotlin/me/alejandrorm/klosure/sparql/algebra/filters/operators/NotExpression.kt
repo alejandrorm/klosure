@@ -15,7 +15,7 @@ class NotExpression(val expression: Expression) : CompositeExpression(listOf(exp
     override fun eval(solution: SolutionMapping): NodeId? {
         return when (getEffectiveBooleanValue(expression.eval(solution))) {
             true -> DataTypes.FALSE
-            false ->DataTypes.TRUE
+            false -> DataTypes.TRUE
             null -> null
         }
     }
@@ -23,7 +23,7 @@ class NotExpression(val expression: Expression) : CompositeExpression(listOf(exp
     override fun evalGroup(solution: SolutionMapping, group: Sequence<SolutionMapping>): NodeId? {
         return when (getEffectiveBooleanValue(expression.evalGroup(solution, group))) {
             true -> DataTypes.FALSE
-            false ->DataTypes.TRUE
+            false -> DataTypes.TRUE
             null -> null
         }
     }

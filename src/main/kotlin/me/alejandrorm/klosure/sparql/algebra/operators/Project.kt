@@ -3,12 +3,14 @@ package me.alejandrorm.klosure.sparql.algebra.operators
 import me.alejandrorm.klosure.model.Graph
 import me.alejandrorm.klosure.model.Graphs
 import me.alejandrorm.klosure.sparql.SolutionMapping
-import me.alejandrorm.klosure.sparql.algebra.aggregates.AggregateExpression
 
 data class ProjectArguments(val distinct: Boolean, val variables: List<ExpressionVariableBinding>)
 
-class Project(val args: ProjectArguments, val sm: SolutionModifiers,
-              val op: AlgebraOperator) : AlgebraOperator {
+class Project(
+    val args: ProjectArguments,
+    val sm: SolutionModifiers,
+    val op: AlgebraOperator
+) : AlgebraOperator {
     private val variablesSet = args.variables.map { it.variable }.toSet()
 
     private val hasAggregates = args.variables.any { it.expression.isAggregate() }
@@ -44,21 +46,28 @@ class Project(val args: ProjectArguments, val sm: SolutionModifiers,
 
     override fun hasFilter(): Boolean = false
 
-    private fun getMultisetSolutions(solutions: Sequence<SolutionMapping>,
-                                     activeGraph: Graph, graphs: Graphs): Sequence<SolutionMapping> {
+    private fun getMultisetSolutions(
+        solutions: Sequence<SolutionMapping>,
+        activeGraph: Graph,
+        graphs: Graphs
+    ): Sequence<SolutionMapping> {
         val results = sm.eval(op.eval(solutions, activeGraph, graphs))
         if (allAggregates && !hasGroups) {
             // FIXME: solution group is being iterated multiple times
             val solutionGroup = results.map { it.boundVariables }
-            return sequenceOf(SolutionMapping(emptySet(),
-                args.variables.flatMap {
-                    val expression = it.expression
-                    // TODO report error if expression on variables not aggregated or grouped by
-                    val value = expression.evalGroup(SolutionMapping.EmptySolutionMapping, solutionGroup)
+            return sequenceOf(
+                SolutionMapping(
+                    emptySet(),
+                    args.variables.flatMap {
+                        val expression = it.expression
+                        // TODO report error if expression on variables not aggregated or grouped by
+                        val value = expression.evalGroup(SolutionMapping.EmptySolutionMapping, solutionGroup)
 
-                    if (value == null) emptyList() else listOf(it.variable to value)
-                }.toMap()))
-        } else
+                        if (value == null) emptyList() else listOf(it.variable to value)
+                    }.toMap()
+                )
+            )
+        } else {
             return results.map { solution ->
                 SolutionMapping(
                     variablesSet,
@@ -71,5 +80,6 @@ class Project(val args: ProjectArguments, val sm: SolutionModifiers,
                     }.toMap()
                 )
             }
+        }
     }
 }

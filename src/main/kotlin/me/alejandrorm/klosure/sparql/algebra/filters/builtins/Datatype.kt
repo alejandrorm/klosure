@@ -7,7 +7,7 @@ import me.alejandrorm.klosure.sparql.SolutionMapping
 import me.alejandrorm.klosure.sparql.algebra.aggregates.CompositeExpression
 import me.alejandrorm.klosure.sparql.algebra.filters.Expression
 
-class Datatype(val e: Expression): CompositeExpression(listOf(e)) {
+class Datatype(val e: Expression) : CompositeExpression(listOf(e)) {
     override fun toString(): String {
         return "DATATYPE($e)"
     }

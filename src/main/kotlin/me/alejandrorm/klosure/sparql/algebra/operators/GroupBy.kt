@@ -18,7 +18,7 @@ class GroupBy(val groupConditions: List<GroupCondition>) {
     private val groupedVariables = groupConditions.indices.map {
         when (val c = groupConditions[it]) {
             is VarGroupCondition -> c.variable to c
-            is BuiltinGroupCondition -> Variable("_col_${it+1})") to c
+            is BuiltinGroupCondition -> Variable("_col_${it + 1})") to c
             is ExpressionGroupCondition -> c.variable to c
         }
     }
@@ -28,7 +28,7 @@ class GroupBy(val groupConditions: List<GroupCondition>) {
     }
 
     fun eval(
-        solutions: Sequence<SolutionMapping>,
+        solutions: Sequence<SolutionMapping>
     ): Sequence<GroupedSolutionMapping> {
         return solutions.groupBy { solution ->
             groupedVariables.map {
@@ -40,6 +40,7 @@ class GroupBy(val groupConditions: List<GroupCondition>) {
             }
         }.entries.map { solution ->
             val variables = solution.key.map { it.first }.toSet()
+
             @Suppress("UNCHECKED_CAST")
             val boundVariables = solution.key.filter { it.second != null }.toMap() as Map<Variable, NodeId>
 

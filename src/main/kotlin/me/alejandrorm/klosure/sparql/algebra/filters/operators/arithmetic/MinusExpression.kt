@@ -2,14 +2,22 @@ package me.alejandrorm.klosure.sparql.algebra.filters.operators.arithmetic
 
 import me.alejandrorm.klosure.model.LiteralId
 import me.alejandrorm.klosure.model.NodeId
-import me.alejandrorm.klosure.model.literals.*
+import me.alejandrorm.klosure.model.literals.ByteValue
+import me.alejandrorm.klosure.model.literals.DecimalValue
+import me.alejandrorm.klosure.model.literals.DoubleValue
+import me.alejandrorm.klosure.model.literals.FloatValue
+import me.alejandrorm.klosure.model.literals.IntValue
+import me.alejandrorm.klosure.model.literals.IntegerValue
+import me.alejandrorm.klosure.model.literals.LongValue
+import me.alejandrorm.klosure.model.literals.NumberValue
+import me.alejandrorm.klosure.model.literals.ShortValue
 import me.alejandrorm.klosure.sparql.SolutionMapping
 import me.alejandrorm.klosure.sparql.algebra.aggregates.CompositeExpression
 import me.alejandrorm.klosure.sparql.algebra.filters.Expression
 import me.alejandrorm.klosure.sparql.algebra.filters.operators.arithmetic.NumericTypePromotions.upcastToDecimal
 import me.alejandrorm.klosure.sparql.algebra.filters.operators.arithmetic.NumericTypePromotions.upcastToInteger
 
-class MinusExpression(val e: Expression): CompositeExpression(listOf(e)) {
+class MinusExpression(val e: Expression) : CompositeExpression(listOf(e)) {
     override fun toString(): String {
         return "MINUS($e)"
     }
@@ -23,12 +31,11 @@ class MinusExpression(val e: Expression): CompositeExpression(listOf(e)) {
     }
 
     private fun eval(value: NodeId?): NodeId? {
-
         if (value == null || value !is LiteralId || value.value !is NumberValue) {
             return null
         }
 
-        when(NumericTypePromotions.getNumericType(value.value)) {
+        when (NumericTypePromotions.getNumericType(value.value)) {
             NumericTypePromotions.NumericType.BYTE -> {
                 val v = (-value.value.value.toByte()).toByte()
                 return LiteralId(v.toString(), ByteValue(v))

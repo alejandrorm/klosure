@@ -11,7 +11,7 @@ class Graph(val entailment: EntailmentTypes) {
     private val predicateNodes: ConcurrentHashMap<IRI, MutableSet<PredicateNode>> = ConcurrentHashMap()
 
     init {
-        when(entailment) {
+        when (entailment) {
             EntailmentTypes.RDF -> {
                 val type = getOrCreateNode(RdfConstants.TYPE_ID)
                 val property = getOrCreateNode(RdfConstants.PROPERTY_ID)
@@ -27,7 +27,6 @@ class Graph(val entailment: EntailmentTypes) {
             else -> {}
         }
     }
-
 
     fun getNode(nodeId: NodeId): Node? {
         return if (nodeId is LiteralId) {
@@ -81,14 +80,16 @@ class Graph(val entailment: EntailmentTypes) {
 
         if (assert) {
             predicateNode.asserted = true
-            when(entailment) {
+            when (entailment) {
                 EntailmentTypes.RDF -> {
                     val verbNode = getOrCreateNode(IriId(verb))
                     if (verbNode.id != RdfConstants.TYPE_ID) {
                         val propertyNode = getOrCreateNode(RdfConstants.PROPERTY_ID)
                         getOrCreatePredicate(
                             verbNode,
-                            RdfConstants.TYPE, propertyNode, true
+                            RdfConstants.TYPE,
+                            propertyNode,
+                            true
                         )
                     }
                 }
@@ -111,11 +112,11 @@ class Graph(val entailment: EntailmentTypes) {
         return predicateNodes.values.flatten().filter { it.asserted }.asSequence()
     }
 
-    fun getAllSubjects() : Sequence<NodeId> {
+    fun getAllSubjects(): Sequence<NodeId> {
         return nonTerminalNodes.keys().asSequence()
     }
 
-    fun getAllTerminals() : Sequence<LiteralId> {
+    fun getAllTerminals(): Sequence<LiteralId> {
         return terminalNodes.keys().asSequence()
     }
 }

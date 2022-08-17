@@ -7,7 +7,7 @@ import me.alejandrorm.klosure.sparql.SolutionMapping
 class Join(val operators: List<AlgebraOperator>) : AlgebraOperator {
 
     private val operatorsReordered: List<AlgebraOperator> = operators.filter { it !is Filter } +
-            operators.filterIsInstance<Filter>()
+        operators.filterIsInstance<Filter>()
 
     override fun toString(): String {
         return "Join(${operators.joinToString(", ")})"
@@ -23,10 +23,11 @@ class Join(val operators: List<AlgebraOperator>) : AlgebraOperator {
         }
     }
 
-    private fun topLevelJoin(l1: Sequence<SolutionMapping>,
-                             operator: AlgebraOperator,
-                             graph: Graph,
-                             graphs: Graphs
+    private fun topLevelJoin(
+        l1: Sequence<SolutionMapping>,
+        operator: AlgebraOperator,
+        graph: Graph,
+        graphs: Graphs
     ): Sequence<SolutionMapping> {
         return if (operator is Filter) {
             operator.eval(l1, graph, graphs)
@@ -42,10 +43,11 @@ class Join(val operators: List<AlgebraOperator>) : AlgebraOperator {
         graphs: Graphs
     ): Sequence<SolutionMapping> = sequence {
         val l2 =
-            if (operator is GraphGraphPattern)
+            if (operator is GraphGraphPattern) {
                 operator.specialEval(l1, sequenceOf(SolutionMapping.EmptySolutionMapping), graphs).toList()
-            else
+            } else {
                 operator.eval(sequenceOf(SolutionMapping.EmptySolutionMapping), graph, graphs).toList()
+            }
 
         for (solution1 in l1) {
             for (solution2 in l2) {

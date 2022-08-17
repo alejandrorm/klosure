@@ -1,6 +1,7 @@
 package me.alejandrorm.klosure.sparql.algebra.filters.builtins
 
-import me.alejandrorm.klosure.model.*
+import me.alejandrorm.klosure.model.BlankId
+import me.alejandrorm.klosure.model.NodeId
 import me.alejandrorm.klosure.model.literals.DataTypes
 import me.alejandrorm.klosure.sparql.SolutionMapping
 import me.alejandrorm.klosure.sparql.algebra.aggregates.CompositeExpression

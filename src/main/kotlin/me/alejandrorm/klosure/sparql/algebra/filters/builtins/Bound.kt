@@ -5,7 +5,6 @@ import me.alejandrorm.klosure.model.literals.DataTypes
 import me.alejandrorm.klosure.sparql.SolutionMapping
 import me.alejandrorm.klosure.sparql.Variable
 import me.alejandrorm.klosure.sparql.algebra.aggregates.NonAggregateExpression
-import me.alejandrorm.klosure.sparql.algebra.filters.Expression
 
 class Bound(val variable: Variable) : NonAggregateExpression {
     override fun eval(solution: SolutionMapping): NodeId {
