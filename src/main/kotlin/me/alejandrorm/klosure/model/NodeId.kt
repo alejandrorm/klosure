@@ -21,8 +21,8 @@ data class LiteralId(
 
     override fun equals(other: Any?): Boolean {
         return if (other is LiteralId) {
-            value == other.value 
-        }else false
+            value == other.value
+        } else false
     }
 
     override fun hashCode(): Int {
