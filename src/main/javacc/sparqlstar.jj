@@ -331,7 +331,7 @@ GroupCondition GroupCondition():
 {
   e = BuiltInCall() { return new BuiltinGroupCondition(e); }|
   FunctionCall() { throw new IllegalStateException("Not yet implemented"); }|
-  ( "(" e = Expression() ( "AS" v = Var()) ? ")") {
+  "(" e = Expression() ( "AS" v = Var()) ? ")" {
     if (v == null) {
       return new BuiltinGroupCondition(e);
     } else {
