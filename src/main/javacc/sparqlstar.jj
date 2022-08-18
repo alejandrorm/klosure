@@ -1419,7 +1419,7 @@ AggregateExpression Aggregate():
   "COUNT" "(" ("DISTINCT" { distinct = true; })? ( "*" | e = Expression() ) ")" { return new Count(distinct, e); }|
   "SUM" "(" ("DISTINCT")? Expression() ")" { throw new RuntimeException("Not implemented"); }|
   "MIN" "(" ("DISTINCT")? e = Expression() ")" { return new Min(e); }|
-  "MAX" "(" ("DISTINCT")? Expression() ")" { throw new RuntimeException("Not implemented"); }|
+  "MAX" "(" ("DISTINCT")? e = Expression() ")" { return new Max(e); }|
   "AVG" "(" ("DISTINCT")? Expression() ")" { throw new RuntimeException("Not implemented"); }|
   "SAMPLE" "(" ("DISTINCT")? Expression() ")" { throw new RuntimeException("Not implemented"); }|
   "GROUP_CONCAT" "(" ("DISTINCT")? Expression() ( ";" "SEPARATOR" "=" String()) ? ")" { throw new RuntimeException("Not implemented"); }

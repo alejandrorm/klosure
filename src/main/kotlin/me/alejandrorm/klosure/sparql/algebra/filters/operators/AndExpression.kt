@@ -1,5 +1,7 @@
 package me.alejandrorm.klosure.sparql.algebra.filters.operators
 
+import me.alejandrorm.klosure.model.Graph
+import me.alejandrorm.klosure.model.Graphs
 import me.alejandrorm.klosure.model.NodeId
 import me.alejandrorm.klosure.model.literals.DataTypes
 import me.alejandrorm.klosure.sparql.SolutionMapping
@@ -9,16 +11,21 @@ import me.alejandrorm.klosure.sparql.algebra.filters.getEffectiveBooleanValue
 
 class AndExpression(val expression1: Expression, val expression2: Expression) :
     CompositeExpression(listOf(expression1, expression2)) {
-    override fun eval(solution: SolutionMapping): NodeId? {
-        val v1 = getEffectiveBooleanValue(expression1.eval(solution))
-        val v2 = getEffectiveBooleanValue(expression2.eval(solution))
+    override fun eval(solution: SolutionMapping, activeGraph: Graph, graphs: Graphs): NodeId? {
+        val v1 = getEffectiveBooleanValue(expression1.eval(solution,activeGraph,graphs))
+        val v2 = getEffectiveBooleanValue(expression2.eval(solution,activeGraph, graphs))
 
         return eval(v1, v2)
     }
 
-    override fun evalGroup(solution: SolutionMapping, group: Sequence<SolutionMapping>): NodeId? {
-        val v1 = getEffectiveBooleanValue(expression1.evalGroup(solution, group))
-        val v2 = getEffectiveBooleanValue(expression2.evalGroup(solution, group))
+    override fun evalGroup(
+        solution: SolutionMapping,
+        group: Sequence<SolutionMapping>,
+        activeGraph: Graph,
+        graphs: Graphs
+    ): NodeId? {
+        val v1 = getEffectiveBooleanValue(expression1.evalGroup(solution, group,activeGraph,graphs))
+        val v2 = getEffectiveBooleanValue(expression2.evalGroup(solution, group,activeGraph,graphs))
 
         return eval(v1, v2)
     }

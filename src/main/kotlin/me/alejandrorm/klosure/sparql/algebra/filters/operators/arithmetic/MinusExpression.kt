@@ -1,5 +1,7 @@
 package me.alejandrorm.klosure.sparql.algebra.filters.operators.arithmetic
 
+import me.alejandrorm.klosure.model.Graph
+import me.alejandrorm.klosure.model.Graphs
 import me.alejandrorm.klosure.model.LiteralId
 import me.alejandrorm.klosure.model.NodeId
 import me.alejandrorm.klosure.model.literals.ByteValue
@@ -22,12 +24,17 @@ class MinusExpression(val e: Expression) : CompositeExpression(listOf(e)) {
         return "MINUS($e)"
     }
 
-    override fun eval(solution: SolutionMapping): NodeId? {
-        return eval(e.eval(solution))
+    override fun eval(solution: SolutionMapping, activeGraph: Graph, graphs: Graphs): NodeId? {
+        return eval(e.eval(solution,activeGraph,graphs))
     }
 
-    override fun evalGroup(solution: SolutionMapping, group: Sequence<SolutionMapping>): NodeId? {
-        return eval(e.evalGroup(solution, group))
+    override fun evalGroup(
+        solution: SolutionMapping,
+        group: Sequence<SolutionMapping>,
+        activeGraph: Graph,
+        graphs: Graphs
+    ): NodeId? {
+        return eval(e.evalGroup(solution, group,activeGraph,graphs))
     }
 
     private fun eval(value: NodeId?): NodeId? {

@@ -1,5 +1,7 @@
 package me.alejandrorm.klosure.sparql.algebra.filters.operators.arithmetic
 
+import me.alejandrorm.klosure.model.Graph
+import me.alejandrorm.klosure.model.Graphs
 import me.alejandrorm.klosure.model.LiteralId
 import me.alejandrorm.klosure.model.NodeId
 import me.alejandrorm.klosure.model.literals.ByteValue
@@ -36,14 +38,19 @@ class MultiplicativeExpression(val firstExpression: Expression, val expressionOp
         return "$firstExpression+${expressionOps.joinToString(separator = " ")}"
     }
 
-    override fun eval(solution: SolutionMapping): NodeId? {
-        return eval(firstExpression.eval(solution), expressionOps.map { it.operand.eval(solution) })
+    override fun eval(solution: SolutionMapping, activeGraph: Graph, graphs: Graphs): NodeId? {
+        return eval(firstExpression.eval(solution,activeGraph,graphs), expressionOps.map { it.operand.eval(solution,activeGraph,graphs) })
     }
 
-    override fun evalGroup(solution: SolutionMapping, group: Sequence<SolutionMapping>): NodeId? {
+    override fun evalGroup(
+        solution: SolutionMapping,
+        group: Sequence<SolutionMapping>,
+        activeGraph: Graph,
+        graphs: Graphs
+    ): NodeId? {
         return eval(
-            firstExpression.evalGroup(solution, group),
-            expressionOps.map { it.operand.evalGroup(solution, group) }
+            firstExpression.evalGroup(solution, group,activeGraph,graphs),
+            expressionOps.map { it.operand.evalGroup(solution, group,activeGraph,graphs) }
         )
     }
 

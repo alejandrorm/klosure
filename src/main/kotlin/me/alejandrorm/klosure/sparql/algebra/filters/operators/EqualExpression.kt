@@ -1,5 +1,7 @@
 package me.alejandrorm.klosure.sparql.algebra.filters.operators
 
+import me.alejandrorm.klosure.model.Graph
+import me.alejandrorm.klosure.model.Graphs
 import me.alejandrorm.klosure.model.LiteralId
 import me.alejandrorm.klosure.model.NodeId
 import me.alejandrorm.klosure.model.literals.BooleanValue
@@ -16,16 +18,21 @@ class EqualExpression(val left: Expression, val right: Expression) : CompositeEx
         return "$left = $right"
     }
 
-    override fun eval(solution: SolutionMapping): NodeId? {
-        val l = left.eval(solution)
-        val r = right.eval(solution)
+    override fun eval(solution: SolutionMapping, activeGraph: Graph, graphs: Graphs): NodeId? {
+        val l = left.eval(solution,activeGraph,graphs)
+        val r = right.eval(solution,activeGraph,graphs)
 
         return eval(l, r)
     }
 
-    override fun evalGroup(solution: SolutionMapping, group: Sequence<SolutionMapping>): NodeId? {
-        val l = left.evalGroup(solution, group)
-        val r = right.evalGroup(solution, group)
+    override fun evalGroup(
+        solution: SolutionMapping,
+        group: Sequence<SolutionMapping>,
+        activeGraph: Graph,
+        graphs: Graphs
+    ): NodeId? {
+        val l = left.evalGroup(solution, group,activeGraph,graphs)
+        val r = right.evalGroup(solution, group,activeGraph,graphs)
 
         return eval(l, r)
     }

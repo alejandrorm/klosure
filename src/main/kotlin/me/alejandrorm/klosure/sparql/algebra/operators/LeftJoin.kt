@@ -70,10 +70,10 @@ class LeftJoin(val left: AlgebraOperator, val right: AlgebraOperator) : AlgebraO
 
     private fun join(
         solutions: Sequence<SolutionMapping>,
-        graph: Graph,
+        activeGraph: Graph,
         graphs: Graphs
     ): Sequence<SolutionMapping> = sequence {
-        val l1 = left.eval(solutions, graph, graphs)
+        val l1 = left.eval(solutions, activeGraph, graphs)
         val l2 =
             if (nonFilterOperator is GraphGraphPattern) {
                 nonFilterOperator.specialEval(
@@ -82,7 +82,7 @@ class LeftJoin(val left: AlgebraOperator, val right: AlgebraOperator) : AlgebraO
                     graphs
                 ).toList()
             } else {
-                nonFilterOperator.eval(sequenceOf(SolutionMapping.EmptySolutionMapping), graph, graphs).toList()
+                nonFilterOperator.eval(sequenceOf(SolutionMapping.EmptySolutionMapping), activeGraph, graphs).toList()
             }
 
         for (solution1 in l1) {
@@ -92,8 +92,8 @@ class LeftJoin(val left: AlgebraOperator, val right: AlgebraOperator) : AlgebraO
                     val mergedSolution = solution1.merge(solution2)
                     if (filterExpression == null || getEffectiveBooleanValue(
                             filterExpression.eval(
-                                    mergedSolution
-                                )
+                                mergedSolution,activeGraph,graphs
+                            )
                         ) == true
                     ) {
                         yielded = true

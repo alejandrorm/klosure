@@ -1,5 +1,7 @@
 package me.alejandrorm.klosure.sparql.algebra.filters.builtins
 
+import me.alejandrorm.klosure.model.Graph
+import me.alejandrorm.klosure.model.Graphs
 import me.alejandrorm.klosure.model.IriId
 import me.alejandrorm.klosure.model.LiteralId
 import me.alejandrorm.klosure.model.NodeId
@@ -12,8 +14,8 @@ class Datatype(val e: Expression) : CompositeExpression(listOf(e)) {
         return "DATATYPE($e)"
     }
 
-    override fun eval(solution: SolutionMapping): NodeId? {
-        val v = e.eval(solution) ?: return null
+    override fun eval(solution: SolutionMapping, activeGraph: Graph, graphs: Graphs): NodeId? {
+        val v = e.eval(solution,activeGraph,graphs) ?: return null
         return if (v is LiteralId) IriId(v.value.type) else null
     }
 }

@@ -28,7 +28,7 @@ class Project(
 
     override fun eval(solutions: Sequence<SolutionMapping>, activeGraph: Graph, graphs: Graphs): Sequence<SolutionMapping> {
         return if (args.variables.isEmpty()) {
-            sm.eval(op.eval(solutions, activeGraph, graphs)).map {
+            sm.eval(op.eval(solutions, activeGraph, graphs), activeGraph, graphs).map {
                 if (it.groups.any()) {
                     throw IllegalArgumentException("Projecting variables not aggregated or grouped by")
                 } else {
@@ -51,7 +51,7 @@ class Project(
         activeGraph: Graph,
         graphs: Graphs
     ): Sequence<SolutionMapping> {
-        val results = sm.eval(op.eval(solutions, activeGraph, graphs))
+        val results = sm.eval(op.eval(solutions, activeGraph, graphs), activeGraph, graphs)
         if (allAggregates && !hasGroups) {
             // FIXME: solution group is being iterated multiple times
             val solutionGroup = results.map { it.boundVariables }
@@ -61,7 +61,7 @@ class Project(
                     args.variables.flatMap {
                         val expression = it.expression
                         // TODO report error if expression on variables not aggregated or grouped by
-                        val value = expression.evalGroup(SolutionMapping.EmptySolutionMapping, solutionGroup)
+                        val value = expression.evalGroup(SolutionMapping.EmptySolutionMapping, solutionGroup,activeGraph,graphs)
 
                         if (value == null) emptyList() else listOf(it.variable to value)
                     }.toMap()
@@ -74,7 +74,7 @@ class Project(
                     args.variables.flatMap {
                         val expression = it.expression
                         // TODO report error if expression on variables not aggregated or grouped by
-                        val value = expression.evalGroup(solution.boundVariables, solution.groups)
+                        val value = expression.evalGroup(solution.boundVariables, solution.groups,activeGraph,graphs)
 
                         if (value == null) emptyList() else listOf(it.variable to value)
                     }.toMap()

@@ -1,5 +1,7 @@
 package me.alejandrorm.klosure.sparql.algebra.filters.operators
 
+import me.alejandrorm.klosure.model.Graph
+import me.alejandrorm.klosure.model.Graphs
 import me.alejandrorm.klosure.model.IriId
 import me.alejandrorm.klosure.model.NodeId
 import me.alejandrorm.klosure.model.TripleId
@@ -13,10 +15,10 @@ class QuotedTripleExpression(val subject: Expression, val verb: TermOrVariableEx
         return "QtExpression($subject $verb $obj)"
     }
 
-    override fun eval(solution: SolutionMapping): NodeId? {
-        val s = subject.eval(solution)
-        val v = verb.eval(solution)
-        val o = obj.eval(solution)
+    override fun eval(solution: SolutionMapping, activeGraph: Graph, graphs: Graphs): NodeId? {
+        val s = subject.eval(solution,activeGraph,graphs)
+        val v = verb.eval(solution,activeGraph,graphs)
+        val o = obj.eval(solution,activeGraph,graphs)
 
         return if (s == null || v == null || o == null || v !is IriId) {
             null
