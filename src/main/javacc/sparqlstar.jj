@@ -1315,7 +1315,7 @@ Expression BuiltInCall():
 |	"BOUND" "(" v = Var() ")" { return new Bound(v); }
 |   "IRI" "(" Expression() ")" { return new UnsupportedBuiltinExpression("iri"); }
 |	"URI" "(" Expression() ")" { return new UnsupportedBuiltinExpression("uri"); }
-|	"BNODE" ( ( "(" Expression() ")") | <NIL>)  { return new UnsupportedBuiltinExpression("bnode"); }
+|	"BNODE" ( ( "(" e1 = Expression() ")") | <NIL> { e1 = null; })  { return new Bnode(e1); }
 |	"RAND" <NIL> { return new UnsupportedBuiltinExpression("rand"); }
 |	"ABS" "(" e1 = Expression() ")" { return new Abs(e1); }
 |	"CEIL" "(" Expression() ")" { return new UnsupportedBuiltinExpression("ceil"); }
