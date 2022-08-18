@@ -23,7 +23,13 @@ class Count(val distinct: Boolean, val expression: Expression?) : AggregateExpre
         activeGraph: Graph,
         graphs: Graphs
     ): NodeId {
-        val c = expression?.let { group.map { expression.eval(it, activeGraph, graphs) }.count { v -> v != null } } ?: group.count()
+        val c = if (distinct) {
+            expression?.let { group.map { expression.eval(it, activeGraph, graphs) }.filterNotNull().toSet().size }
+                ?: group.toSet().size
+        } else {
+            expression?.let { group.map { expression.eval(it, activeGraph, graphs) }.count { v -> v != null } }
+                ?: group.count()
+        }
         return LiteralId(c.toString(), IntegerValue(c.toBigInteger()))
     }
 }
