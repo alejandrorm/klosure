@@ -12,8 +12,8 @@ import me.alejandrorm.klosure.sparql.algebra.filters.getEffectiveBooleanValue
 class AndExpression(val expression1: Expression, val expression2: Expression) :
     CompositeExpression(listOf(expression1, expression2)) {
     override fun eval(solution: SolutionMapping, activeGraph: Graph, graphs: Graphs): NodeId? {
-        val v1 = getEffectiveBooleanValue(expression1.eval(solution,activeGraph,graphs))
-        val v2 = getEffectiveBooleanValue(expression2.eval(solution,activeGraph, graphs))
+        val v1 = getEffectiveBooleanValue(expression1.eval(solution, activeGraph, graphs))
+        val v2 = getEffectiveBooleanValue(expression2.eval(solution, activeGraph, graphs))
 
         return eval(v1, v2)
     }
@@ -24,8 +24,8 @@ class AndExpression(val expression1: Expression, val expression2: Expression) :
         activeGraph: Graph,
         graphs: Graphs
     ): NodeId? {
-        val v1 = getEffectiveBooleanValue(expression1.evalGroup(solution, group,activeGraph,graphs))
-        val v2 = getEffectiveBooleanValue(expression2.evalGroup(solution, group,activeGraph,graphs))
+        val v1 = getEffectiveBooleanValue(expression1.evalGroup(solution, group, activeGraph, graphs))
+        val v2 = getEffectiveBooleanValue(expression2.evalGroup(solution, group, activeGraph, graphs))
 
         return eval(v1, v2)
     }

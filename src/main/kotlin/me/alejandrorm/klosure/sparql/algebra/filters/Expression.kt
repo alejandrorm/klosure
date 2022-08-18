@@ -8,8 +8,13 @@ import me.alejandrorm.klosure.sparql.SolutionMapping
 interface Expression {
     fun eval(solution: SolutionMapping, activeGraph: Graph, graphs: Graphs): NodeId?
 
-    fun evalGroup(solution: SolutionMapping, group: Sequence<SolutionMapping>, activeGraph: Graph, graphs: Graphs): NodeId? =
-        eval(solution,activeGraph,graphs)
+    fun evalGroup(
+        solution: SolutionMapping,
+        group: Sequence<SolutionMapping>,
+        activeGraph: Graph,
+        graphs: Graphs
+    ): NodeId? =
+        eval(solution, activeGraph, graphs)
 
     fun isAggregate(): Boolean
 }

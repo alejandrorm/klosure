@@ -15,7 +15,7 @@ class Datatype(val e: Expression) : CompositeExpression(listOf(e)) {
     }
 
     override fun eval(solution: SolutionMapping, activeGraph: Graph, graphs: Graphs): NodeId? {
-        val v = e.eval(solution,activeGraph,graphs) ?: return null
+        val v = e.eval(solution, activeGraph, graphs) ?: return null
         return if (v is LiteralId) IriId(v.value.type) else null
     }
 }

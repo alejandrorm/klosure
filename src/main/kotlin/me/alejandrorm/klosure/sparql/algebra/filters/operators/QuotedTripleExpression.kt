@@ -16,9 +16,9 @@ class QuotedTripleExpression(val subject: Expression, val verb: TermOrVariableEx
     }
 
     override fun eval(solution: SolutionMapping, activeGraph: Graph, graphs: Graphs): NodeId? {
-        val s = subject.eval(solution,activeGraph,graphs)
-        val v = verb.eval(solution,activeGraph,graphs)
-        val o = obj.eval(solution,activeGraph,graphs)
+        val s = subject.eval(solution, activeGraph, graphs)
+        val v = verb.eval(solution, activeGraph, graphs)
+        val o = obj.eval(solution, activeGraph, graphs)
 
         return if (s == null || v == null || o == null || v !is IriId) {
             null

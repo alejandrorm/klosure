@@ -11,7 +11,7 @@ import me.alejandrorm.klosure.sparql.algebra.filters.Expression
 
 class IsBlank(val expression: Expression) : CompositeExpression(listOf(expression)) {
     override fun eval(solution: SolutionMapping, activeGraph: Graph, graphs: Graphs): NodeId? {
-        val v1 = expression.eval(solution,activeGraph,graphs) ?: return null
+        val v1 = expression.eval(solution, activeGraph, graphs) ?: return null
         if (v1 is BlankId) return DataTypes.TRUE
         return DataTypes.FALSE
     }

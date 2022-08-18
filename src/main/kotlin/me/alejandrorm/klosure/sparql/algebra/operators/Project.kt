@@ -22,11 +22,16 @@ class Project(
             throw IllegalArgumentException("Projection cannot have some aggregates without having a group by")
         }
     }
+
     override fun toString(): String {
         return "Project('${if (args.variables.isEmpty()) "*" else args.variables.joinToString(", ")}', $op)"
     }
 
-    override fun eval(solutions: Sequence<SolutionMapping>, activeGraph: Graph, graphs: Graphs): Sequence<SolutionMapping> {
+    override fun eval(
+        solutions: Sequence<SolutionMapping>,
+        activeGraph: Graph,
+        graphs: Graphs
+    ): Sequence<SolutionMapping> {
         return if (args.variables.isEmpty()) {
             sm.eval(op.eval(solutions, activeGraph, graphs), activeGraph, graphs).map {
                 if (it.groups.any()) {
@@ -61,7 +66,12 @@ class Project(
                     args.variables.flatMap {
                         val expression = it.expression
                         // TODO report error if expression on variables not aggregated or grouped by
-                        val value = expression.evalGroup(SolutionMapping.EmptySolutionMapping, solutionGroup,activeGraph,graphs)
+                        val value = expression.evalGroup(
+                            SolutionMapping.EmptySolutionMapping,
+                            solutionGroup,
+                            activeGraph,
+                            graphs
+                        )
 
                         if (value == null) emptyList() else listOf(it.variable to value)
                     }.toMap()
@@ -74,7 +84,7 @@ class Project(
                     args.variables.flatMap {
                         val expression = it.expression
                         // TODO report error if expression on variables not aggregated or grouped by
-                        val value = expression.evalGroup(solution.boundVariables, solution.groups,activeGraph,graphs)
+                        val value = expression.evalGroup(solution.boundVariables, solution.groups, activeGraph, graphs)
 
                         if (value == null) emptyList() else listOf(it.variable to value)
                     }.toMap()

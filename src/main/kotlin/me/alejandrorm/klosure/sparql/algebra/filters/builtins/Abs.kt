@@ -27,7 +27,7 @@ class Abs(val e: Expression) : CompositeExpression(listOf(e)) {
     }
 
     override fun eval(solution: SolutionMapping, activeGraph: Graph, graphs: Graphs): NodeId? {
-        val v = e.eval(solution,activeGraph,graphs) ?: return null
+        val v = e.eval(solution, activeGraph, graphs) ?: return null
         if (v !is LiteralId || v.value !is NumberValue) return null
 
         val absV = when (NumericTypePromotions.getNumericType(v.value)) {

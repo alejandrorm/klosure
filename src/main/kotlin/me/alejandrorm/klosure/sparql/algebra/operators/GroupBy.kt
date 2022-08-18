@@ -39,7 +39,7 @@ class GroupBy(val groupConditions: List<GroupCondition>) {
                 when (val c = it.second) {
                     is VarGroupCondition -> it.first to solution.boundVariables[c.variable]
                     is BuiltinGroupCondition -> it.first to c.expression.eval(solution, activeGraph, graphs)
-                    is ExpressionGroupCondition -> it.first to c.expression.eval(solution,activeGraph,graphs)
+                    is ExpressionGroupCondition -> it.first to c.expression.eval(solution, activeGraph, graphs)
                 }
             }
         }.entries.map { solution ->

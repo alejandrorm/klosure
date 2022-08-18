@@ -23,7 +23,7 @@ class Min(val expression: Expression) : AggregateExpression {
     ): NodeId? {
         var min: NodeId? = null
         group.forEach { solution ->
-            val value = expression.eval(solution,activeGraph,graphs) ?: return null
+            val value = expression.eval(solution, activeGraph, graphs) ?: return null
             if (min == null) {
                 min = value
             } else {

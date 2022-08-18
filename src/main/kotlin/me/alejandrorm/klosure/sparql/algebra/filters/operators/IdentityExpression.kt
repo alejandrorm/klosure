@@ -13,6 +13,6 @@ class IdentityExpression(val e: Expression) : CompositeExpression(listOf(e)) {
     }
 
     override fun eval(solution: SolutionMapping, activeGraph: Graph, graphs: Graphs): NodeId? {
-        return e.eval(solution,activeGraph,graphs)
+        return e.eval(solution, activeGraph, graphs)
     }
 }

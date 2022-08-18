@@ -25,7 +25,7 @@ class MinusExpression(val e: Expression) : CompositeExpression(listOf(e)) {
     }
 
     override fun eval(solution: SolutionMapping, activeGraph: Graph, graphs: Graphs): NodeId? {
-        return eval(e.eval(solution,activeGraph,graphs))
+        return eval(e.eval(solution, activeGraph, graphs))
     }
 
     override fun evalGroup(
@@ -34,7 +34,7 @@ class MinusExpression(val e: Expression) : CompositeExpression(listOf(e)) {
         activeGraph: Graph,
         graphs: Graphs
     ): NodeId? {
-        return eval(e.evalGroup(solution, group,activeGraph,graphs))
+        return eval(e.evalGroup(solution, group, activeGraph, graphs))
     }
 
     private fun eval(value: NodeId?): NodeId? {

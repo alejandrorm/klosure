@@ -14,8 +14,8 @@ class If(val e1: Expression, val e2: Expression, val e3: Expression) : Composite
     }
 
     override fun eval(solution: SolutionMapping, activeGraph: Graph, graphs: Graphs): NodeId? {
-        val v = getEffectiveBooleanValue(e1.eval(solution,activeGraph,graphs)) ?: return null
+        val v = getEffectiveBooleanValue(e1.eval(solution, activeGraph, graphs)) ?: return null
 
-        return if (v) e2.eval(solution,activeGraph,graphs) else e3.eval(solution,activeGraph,graphs)
+        return if (v) e2.eval(solution, activeGraph, graphs) else e3.eval(solution, activeGraph, graphs)
     }
 }

@@ -16,7 +16,12 @@ class SolutionModifiers(val groupBy: GroupBy?, val limit: Limit?) {
         graphs: Graphs
     ): Sequence<GroupedSolutionMapping> {
         val s1 =
-            groupBy?.eval(solutions, activeGraph, graphs) ?: solutions.map { GroupedSolutionMapping(it, emptySequence()) }
+            groupBy?.eval(solutions, activeGraph, graphs) ?: solutions.map {
+                GroupedSolutionMapping(
+                    it,
+                    emptySequence()
+                )
+            }
         return limit?.eval(s1) ?: s1
     }
 }

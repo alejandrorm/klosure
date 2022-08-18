@@ -39,7 +39,7 @@ class MultiplicativeExpression(val firstExpression: Expression, val expressionOp
     }
 
     override fun eval(solution: SolutionMapping, activeGraph: Graph, graphs: Graphs): NodeId? {
-        return eval(firstExpression.eval(solution,activeGraph,graphs), expressionOps.map { it.operand.eval(solution,activeGraph,graphs) })
+        return eval(firstExpression.eval(solution, activeGraph, graphs), expressionOps.map { it.operand.eval(solution, activeGraph, graphs) })
     }
 
     override fun evalGroup(
@@ -49,8 +49,8 @@ class MultiplicativeExpression(val firstExpression: Expression, val expressionOp
         graphs: Graphs
     ): NodeId? {
         return eval(
-            firstExpression.evalGroup(solution, group,activeGraph,graphs),
-            expressionOps.map { it.operand.evalGroup(solution, group,activeGraph,graphs) }
+            firstExpression.evalGroup(solution, group, activeGraph, graphs),
+            expressionOps.map { it.operand.evalGroup(solution, group, activeGraph, graphs) }
         )
     }
 

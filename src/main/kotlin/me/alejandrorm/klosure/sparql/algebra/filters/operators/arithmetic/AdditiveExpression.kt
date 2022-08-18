@@ -43,7 +43,7 @@ class AdditiveExpression(val expressionOps: List<AdditiveOperatorOperand>) :
     }
 
     override fun eval(solution: SolutionMapping, activeGraph: Graph, graphs: Graphs): NodeId? {
-        return eval(expressionOps.map { it.operand.eval(solution,activeGraph,graphs) })
+        return eval(expressionOps.map { it.operand.eval(solution, activeGraph, graphs) })
     }
 
     override fun evalGroup(
@@ -52,7 +52,7 @@ class AdditiveExpression(val expressionOps: List<AdditiveOperatorOperand>) :
         activeGraph: Graph,
         graphs: Graphs
     ): NodeId? {
-        return eval(expressionOps.map { it.operand.evalGroup(solution, group,activeGraph,graphs) })
+        return eval(expressionOps.map { it.operand.evalGroup(solution, group, activeGraph, graphs) })
     }
 
     private fun eval(values: List<NodeId?>): NodeId? {

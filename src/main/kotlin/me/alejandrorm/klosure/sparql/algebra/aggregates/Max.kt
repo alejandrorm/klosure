@@ -23,10 +23,10 @@ class Max(val expression: Expression) : AggregateExpression {
     ): NodeId? {
         var max: NodeId? = null
         group.forEach { solution ->
-            val value = expression.eval(solution,activeGraph,graphs)
+            val value = expression.eval(solution, activeGraph, graphs)
             if (max == null) {
                 max = value
-            } else if (value != null){
+            } else if (value != null) {
                 if (value > max!!) {
                     max = value
                 }

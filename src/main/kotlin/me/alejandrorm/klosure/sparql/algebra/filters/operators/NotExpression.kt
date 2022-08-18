@@ -15,7 +15,7 @@ class NotExpression(val expression: Expression) : CompositeExpression(listOf(exp
     }
 
     override fun eval(solution: SolutionMapping, activeGraph: Graph, graphs: Graphs): NodeId? {
-        return when (getEffectiveBooleanValue(expression.eval(solution,activeGraph,graphs))) {
+        return when (getEffectiveBooleanValue(expression.eval(solution, activeGraph, graphs))) {
             true -> DataTypes.FALSE
             false -> DataTypes.TRUE
             null -> null
@@ -28,7 +28,7 @@ class NotExpression(val expression: Expression) : CompositeExpression(listOf(exp
         activeGraph: Graph,
         graphs: Graphs
     ): NodeId? {
-        return when (getEffectiveBooleanValue(expression.evalGroup(solution, group,activeGraph,graphs))) {
+        return when (getEffectiveBooleanValue(expression.evalGroup(solution, group, activeGraph, graphs))) {
             true -> DataTypes.FALSE
             false -> DataTypes.TRUE
             null -> null

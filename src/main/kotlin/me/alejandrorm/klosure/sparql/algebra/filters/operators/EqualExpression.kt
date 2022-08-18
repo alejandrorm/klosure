@@ -19,8 +19,8 @@ class EqualExpression(val left: Expression, val right: Expression) : CompositeEx
     }
 
     override fun eval(solution: SolutionMapping, activeGraph: Graph, graphs: Graphs): NodeId? {
-        val l = left.eval(solution,activeGraph,graphs)
-        val r = right.eval(solution,activeGraph,graphs)
+        val l = left.eval(solution, activeGraph, graphs)
+        val r = right.eval(solution, activeGraph, graphs)
 
         return eval(l, r)
     }
@@ -31,8 +31,8 @@ class EqualExpression(val left: Expression, val right: Expression) : CompositeEx
         activeGraph: Graph,
         graphs: Graphs
     ): NodeId? {
-        val l = left.evalGroup(solution, group,activeGraph,graphs)
-        val r = right.evalGroup(solution, group,activeGraph,graphs)
+        val l = left.evalGroup(solution, group, activeGraph, graphs)
+        val r = right.evalGroup(solution, group, activeGraph, graphs)
 
         return eval(l, r)
     }

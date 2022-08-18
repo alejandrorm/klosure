@@ -11,9 +11,13 @@ class Filter(val expression: Expression) : AlgebraOperator {
         return "Filter($expression)"
     }
 
-    override fun eval(solutions: Sequence<SolutionMapping>, activeGraph: Graph, graphs: Graphs): Sequence<SolutionMapping> {
+    override fun eval(
+        solutions: Sequence<SolutionMapping>,
+        activeGraph: Graph,
+        graphs: Graphs
+    ): Sequence<SolutionMapping> {
         return solutions.filter {
-            val v = getEffectiveBooleanValue(expression.eval(it,activeGraph,graphs)) == true
+            val v = getEffectiveBooleanValue(expression.eval(it, activeGraph, graphs)) == true
             v
         }
     }

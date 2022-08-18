@@ -11,9 +11,13 @@ class Bind(val expression: Expression, val variable: Variable) : AlgebraOperator
         return "BIND($expression AS $variable)"
     }
 
-    override fun eval(solutions: Sequence<SolutionMapping>, activeGraph: Graph, graphs: Graphs): Sequence<SolutionMapping> {
+    override fun eval(
+        solutions: Sequence<SolutionMapping>,
+        activeGraph: Graph,
+        graphs: Graphs
+    ): Sequence<SolutionMapping> {
         return solutions.map {
-            val value = expression.eval(it,activeGraph,graphs)
+            val value = expression.eval(it, activeGraph, graphs)
             if (value != null) {
                 it.bind(variable, value)
             } else {
